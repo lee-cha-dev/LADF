@@ -432,7 +432,7 @@ const DashboardContent = () => {
 };
 
 function DashboardPage() {
-  const [defaultStart, defaultEnd] = buildDefaultRange(14);
+  const [defaultStart, defaultEnd] = buildDefaultRange(31);
 
   return (
     <DashboardProvider

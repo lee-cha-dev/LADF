@@ -9,7 +9,7 @@ const THEME_CLASS = {
 };
 
 function App() {
-  const [theme, setTheme] = useState('light');
+  const [theme, setTheme] = useState('dark');
   const routing = useRoutes(routes);
 
   useEffect(() => {

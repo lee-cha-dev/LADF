@@ -110,26 +110,11 @@ const exampleDashboard = {
       },
     },
     {
-      id: 'variance',
-      panelType: 'viz',
-      title: 'Regional Revenue Variance',
-      subtitle: 'Diverging palette driven by config rules.',
-      layout: { x: 1, y: 4, w: 12, h: 2 },
-      vizType: 'bar',
-      datasetId: 'example_dataset',
-      query: {
-        measures: ['total_revenue'],
-        dimensions: ['region'],
-      },
-      encodings: { x: 'region', y: 'total_revenue' },
-      options: { tooltip: true, legend: true, diverging: true },
-    },
-    {
       id: 'insights',
       panelType: 'insights',
       title: 'Automated Insights',
       subtitle: 'Trend and anomaly signals from the mock dataset.',
-      layout: { x: 1, y: 6, w: 12, h: 2 },
+      layout: { x: 1, y: 4, w: 12, h: 2 },
       datasetId: 'example_dataset',
       query: {
         measures: ['total_revenue'],

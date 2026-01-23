@@ -124,7 +124,7 @@ export const useQuery = (
     }
 
     if (!cached || isStale(cached, staleTime)) {
-      fetchData(hash);
+      fetchData(hash).then(r => {});
     }
 
     return () => {
