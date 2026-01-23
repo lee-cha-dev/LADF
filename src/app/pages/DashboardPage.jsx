@@ -30,7 +30,7 @@ import {
 import exampleDashboard from '../dashboards/example/example.dashboard.js';
 import ExampleFilterBar from '../dashboards/example/ExampleFilterBar.jsx';
 import '../dashboards/example/example.css';
-import { resolvePaletteClass } from '../../framework/core/viz/palettes/paletteResolver';
+import { resolvePalette } from '../../framework/core/viz/palettes/paletteResolver';
 
 const buildDefaultRange = (days) => {
   const end = new Date();
@@ -264,19 +264,16 @@ const VizPanel = ({ panelConfig }) => {
     setGlobalFilters,
   ]);
 
-  const panelPaletteClass = useMemo(
-    () =>
-      resolvePaletteClass({
-        panelConfig,
-        vizType: panelConfig.vizType,
-        encodings: resolvedEncodings,
-        options: panelConfig.options,
-        dashboardConfig: exampleDashboard,
-        dashboardState,
-        data,
-      }),
-    [dashboardState, data, panelConfig, resolvedEncodings]
-  );
+  const panelPaletteClass = useMemo(() => {
+    const palette = resolvePalette({
+      panelConfig,
+      vizType: panelConfig.vizType,
+      encodings: resolvedEncodings,
+      options: panelConfig.options,
+      data,
+    });
+    return palette?.paletteClass ?? null;
+  }, [data, panelConfig, resolvedEncodings]);
 
   const panelFooter = brushZoomEnabled ? (
     <div className="radf-brush">
@@ -336,6 +333,7 @@ const VizPanel = ({ panelConfig }) => {
       footer={panelFooter}
     >
       <VizRenderer
+        panelConfig={panelConfig}
         vizType={panelConfig.vizType}
         data={data || []}
         encodings={resolvedEncodings}
