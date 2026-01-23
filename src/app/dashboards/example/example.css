@@ -18,7 +18,7 @@
   padding: var(--radf-space-4);
   border-radius: var(--radf-radius-md);
   border: 1px solid var(--radf-color-border);
-  background: var(--radf-color-surface-alt);
+  background: var(--radf-color-surface);
 }
 
 .radf-filter-bar__group {
