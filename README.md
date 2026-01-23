@@ -321,4 +321,4 @@ Only a few folders matter when you embed RADF into your app:
 
 ## License
 
-TBD (MIT recommended if open source)
+TBD
