@@ -101,7 +101,7 @@ const exampleDashboard = {
         dimensions: ['region'],
       },
       encodings: { x: 'region', y: 'total_revenue' },
-      options: { tooltip: true, legend: false },
+      options: { tooltip: true, legend: true, colorBy: 'category' },
       interactions: {
         crossFilter: {
           field: 'region',
@@ -122,7 +122,7 @@ const exampleDashboard = {
         dimensions: ['region'],
       },
       encodings: { x: 'region', y: 'total_revenue' },
-      options: { tooltip: true, legend: false, diverging: true },
+      options: { tooltip: true, legend: true, diverging: true },
     },
     {
       id: 'insights',

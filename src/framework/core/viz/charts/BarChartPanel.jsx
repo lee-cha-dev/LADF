@@ -3,7 +3,7 @@ import {
   Bar,
   BarChart,
   CartesianGrid,
-  Legend,
+  Cell,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -11,7 +11,6 @@ import {
 } from 'recharts';
 import ChartContainer from '../common/ChartContainer.jsx';
 import ChartTooltip from '../common/ChartTooltip.jsx';
-import ChartLegend from '../common/ChartLegend.jsx';
 import { getSeriesColor, getSeriesColorsForKeys } from '../palettes/seriesColors';
 
 const resolveSeriesKeys = (encodings, data) => {
@@ -30,20 +29,43 @@ const resolveSeriesKeys = (encodings, data) => {
   return [];
 };
 
-function BarChartPanel({ data = [], encodings = {}, options = {}, handlers = {} }) {
-  const seriesKeys = resolveSeriesKeys(encodings, data);
-  const showLegend = options.legend !== false && seriesKeys.length > 1;
+function BarChartPanel({
+  data = [],
+  encodings = {},
+  options = {},
+  handlers = {},
+  colorAssignment,
+  hiddenKeys,
+}) {
+  const assignedKeys =
+    colorAssignment?.mode === 'series' || colorAssignment?.mode === 'single'
+      ? colorAssignment.items.map((item) => item.key)
+      : [];
+  const seriesKeys = assignedKeys.length ? assignedKeys : resolveSeriesKeys(encodings, data);
   const showTooltip = options.tooltip !== false;
-  const isStacked = options.stacked === true;
+  const isStacked = options.stacked === true || Array.isArray(options.stackedKeys);
   const seriesColors = useMemo(
     () => getSeriesColorsForKeys(seriesKeys),
     [seriesKeys]
   );
+  const filteredSeriesKeys = seriesKeys.filter(
+    (key) => !hiddenKeys?.has(String(key))
+  );
+  const isCategoryMode = colorAssignment?.mode === 'category';
+  const isSeriesMode = colorAssignment?.mode === 'series';
+  const useCells =
+    colorAssignment?.mode === 'category' ||
+    colorAssignment?.mode === 'diverging' ||
+    colorAssignment?.mode === 'sequential';
+  const chartData =
+    isCategoryMode && hiddenKeys?.size
+      ? data.filter((row) => !hiddenKeys.has(String(row?.[encodings.x])))
+      : data;
 
   return (
     <ChartContainer>
       <ResponsiveContainer width="100%" height={280}>
-        <BarChart data={data} margin={{ top: 8, right: 16, left: 0, bottom: 8 }}>
+        <BarChart data={chartData} margin={{ top: 8, right: 16, left: 0, bottom: 8 }}>
           <CartesianGrid stroke="var(--radf-chart-grid)" strokeDasharray="3 3" />
           <XAxis
             dataKey={encodings.x}
@@ -55,17 +77,46 @@ function BarChartPanel({ data = [], encodings = {}, options = {}, handlers = {} 
             axisLine={{ stroke: 'var(--radf-border-divider)' }}
           />
           {showTooltip ? <Tooltip content={<ChartTooltip />} /> : null}
-          {showLegend ? <Legend content={<ChartLegend />} /> : null}
-          {seriesKeys.map((key, index) => (
-            <Bar
-              key={key}
-              dataKey={key}
-              fill={seriesColors[key] || getSeriesColor(index)}
-              stackId={isStacked ? 'radf-stack' : undefined}
-              radius={[6, 6, 0, 0]}
-              onClick={handlers.onClick}
-            />
-          ))}
+          {isSeriesMode
+            ? filteredSeriesKeys.map((key, index) => (
+                <Bar
+                  key={key}
+                  dataKey={key}
+                  fill={
+                    colorAssignment?.getColor?.(key) ||
+                    seriesColors[key] ||
+                    getSeriesColor(index)
+                  }
+                  stackId={isStacked ? 'radf-stack' : undefined}
+                  radius={[6, 6, 0, 0]}
+                  onClick={handlers.onClick}
+                />
+              ))
+            : (
+              <Bar
+                dataKey={encodings.y}
+                fill={colorAssignment?.getColor?.(encodings.y) || getSeriesColor(0)}
+                radius={[6, 6, 0, 0]}
+                onClick={handlers.onClick}
+              >
+                {useCells
+                  ? chartData.map((entry, index) => {
+                      const categoryKey = entry?.[encodings.x];
+                      const value = entry?.[encodings.y];
+                      const color =
+                        colorAssignment?.mode === 'category'
+                          ? colorAssignment?.getColor?.(categoryKey)
+                          : colorAssignment?.getColor?.(value);
+                      return (
+                        <Cell
+                          key={`cell-${index}`}
+                          fill={color || getSeriesColor(index)}
+                        />
+                      );
+                    })
+                  : null}
+              </Bar>
+            )}
         </BarChart>
       </ResponsiveContainer>
     </ChartContainer>

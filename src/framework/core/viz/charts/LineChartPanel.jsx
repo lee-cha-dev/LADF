@@ -8,11 +8,9 @@ import {
   Tooltip,
   XAxis,
   YAxis,
-  Legend,
 } from 'recharts';
 import ChartContainer from '../common/ChartContainer.jsx';
 import ChartTooltip from '../common/ChartTooltip.jsx';
-import ChartLegend from '../common/ChartLegend.jsx';
 import { getSeriesColor, getSeriesColorsForKeys } from '../palettes/seriesColors';
 
 const resolveSeriesKeys = (encodings, data) => {
@@ -31,9 +29,22 @@ const resolveSeriesKeys = (encodings, data) => {
   return [];
 };
 
-function LineChartPanel({ data = [], encodings = {}, options = {}, handlers = {} }) {
-  const seriesKeys = resolveSeriesKeys(encodings, data);
-  const showLegend = options.legend !== false && seriesKeys.length > 1;
+function LineChartPanel({
+  data = [],
+  encodings = {},
+  options = {},
+  handlers = {},
+  colorAssignment,
+  hiddenKeys,
+}) {
+  const assignedKeys =
+    colorAssignment?.mode === 'series' || colorAssignment?.mode === 'single'
+      ? colorAssignment.items.map((item) => item.key)
+      : [];
+  const seriesKeys = assignedKeys.length ? assignedKeys : resolveSeriesKeys(encodings, data);
+  const visibleSeriesKeys = seriesKeys.filter(
+    (key) => !hiddenKeys?.has(String(key))
+  );
   const showTooltip = options.tooltip !== false;
   const brushConfig = options.brush || {};
   const brushEnabled = Boolean(brushConfig.enabled) && data.length > 1;
@@ -61,13 +72,16 @@ function LineChartPanel({ data = [], encodings = {}, options = {}, handlers = {}
             axisLine={{ stroke: 'var(--radf-border-divider)' }}
           />
           {showTooltip ? <Tooltip content={<ChartTooltip />} /> : null}
-          {showLegend ? <Legend content={<ChartLegend />} /> : null}
-          {seriesKeys.map((key, index) => (
+          {visibleSeriesKeys.map((key, index) => (
             <Line
               key={key}
               type="monotone"
               dataKey={key}
-              stroke={seriesColors[key] || getSeriesColor(index)}
+              stroke={
+                colorAssignment?.getColor?.(key) ||
+                seriesColors[key] ||
+                getSeriesColor(index)
+              }
               strokeWidth={2}
               dot={{ r: 3 }}
               activeDot={{ r: 5, onClick: handlers.onClick }}
