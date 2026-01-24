@@ -1,7 +1,32 @@
 import React from 'react';
 
+/**
+ * @module layout/GridLayout
+ * @description
+ * 12-column grid layout for positioning dashboard panels.
+ */
+
+/**
+ * @typedef {Object} GridLayoutItem
+ * @property {string} id - Unique id used as the React key.
+ * @property {{x?: number, y?: number, w?: number, h?: number}} [layout] - Grid
+ *   coordinates and spans in 12-column units.
+ */
+
+/**
+ * @typedef {Object} GridLayoutProps
+ * @property {GridLayoutItem[]} panels - Panels to render in the grid.
+ * @property {(panel: GridLayoutItem) => React.ReactNode} renderPanel - Renderer for each panel.
+ * @property {string} [className] - Optional class appended to the grid container.
+ */
+
 const GRID_COLUMNS = 12;
 
+/**
+ * @param {number} value
+ * @param {number} fallback
+ * @returns {number}
+ */
 const toPositiveNumber = (value, fallback) => {
   if (typeof value !== 'number' || Number.isNaN(value)) {
     return fallback;
@@ -9,6 +34,10 @@ const toPositiveNumber = (value, fallback) => {
   return value > 0 ? value : fallback;
 };
 
+/**
+ * @param {GridLayoutItem['layout']} layout
+ * @returns {string}
+ */
 const buildGridItemClasses = (layout) => {
   if (!layout) {
     return 'radf-grid__item';
@@ -28,6 +57,20 @@ const buildGridItemClasses = (layout) => {
   ].join(' ');
 };
 
+/**
+ * Renders a CSS grid of panels using RADF grid utility classes.
+ *
+ * Uses:
+ * - `radf-grid`
+ * - `radf-grid__item`
+ * - `radf-grid__item--col-start-*`
+ * - `radf-grid__item--col-span-*`
+ * - `radf-grid__item--row-start-*`
+ * - `radf-grid__item--row-span-*`
+ *
+ * @param {GridLayoutProps} props
+ * @returns {JSX.Element}
+ */
 function GridLayout({ panels, renderPanel, className }) {
   const gridClassName = ['radf-grid', className].filter(Boolean).join(' ');
 
