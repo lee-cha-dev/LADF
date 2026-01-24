@@ -408,6 +408,37 @@ Until then, embedding is the supported distribution strategy.
 
 ---
 
+## API / Extension Points
+
+The framework is designed to be extended in a few key areas. Start here when you need to customize behavior or add new capabilities. For canonical typedefs and shared shapes, see `src/framework/core/docs/jsdocTypes.js`.
+
+### Data Providers
+- Contract and validation: `src/framework/core/query/DataProvider.js`
+- Mock provider example: `src/framework/core/query/MockDataProvider.js`
+- `useQuery` expects providers to implement `execute(querySpec, { signal })` and return `{ rows, meta }`.
+
+### QuerySpec + Transforms
+- QuerySpec builder + normalization: `src/framework/core/query/buildQuerySpec.js`, `src/framework/core/query/normalizeQuerySpec.js`
+- Caching + hashing: `src/framework/core/query/cache.js`, `src/framework/core/query/hashQuerySpec.js`
+- Transform pipeline: `src/framework/core/query/transforms/index.js`
+
+### Registry (Charts + Insights)
+- Chart registry + defaults: `src/framework/core/registry/registerCharts.js`
+- Insight registry + defaults: `src/framework/core/registry/registerInsights.js`
+- Core registry utility: `src/framework/core/registry/registry.js`
+
+### Themes
+- Tokens + base variables: `src/framework/styles/tokens.css`
+- Light/dark themes: `src/framework/styles/theme.light.css`, `src/framework/styles/theme.dark.css`
+- Component styling: `src/framework/styles/components/`
+
+### Interactions + Drilldowns
+- Cross-filter, drilldown, brush zoom: `src/framework/core/interactions/`
+- Selection UI: `src/framework/core/interactions/SelectionChips.jsx`
+- Drill breadcrumbs UI: `src/framework/core/interactions/DrillBreadcrumbs.jsx`
+
+---
+
 ## License
 
 TBD
