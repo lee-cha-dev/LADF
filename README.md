@@ -358,6 +358,56 @@ Only a few folders matter when you embed RADF into your app:
 
 ---
 
+## Distribution / Packaging
+
+RADF is currently designed to be **embedded** directly into another React app rather than consumed as a published npm package. The recommended approach is to copy the framework folder and styles into your app and keep it versioned alongside your product code.
+
+### Recommended embed layout
+
+```
+src/
+  components/
+    radf/
+      core/
+      styles/
+```
+
+You can also place RADF under `src/lib/radf/` if that matches your project conventions.
+
+### What to copy
+
+**Required**
+- `src/framework/core/` (all framework logic)
+- `src/framework/styles/` (tokens, themes, component CSS)
+
+**Optional (when you need them)**
+- `src/app/dashboards/example/` (reference configs + examples)
+- Any mock data providers or sample configs you want to use as templates
+
+### Minimal integration checklist
+
+1) Copy `core/` and `styles/` into your app’s `radf/` folder.
+2) Import the RADF CSS files in your entry point in the order shown above.
+3) Call `registerCharts()` and `registerInsights()` once at startup.
+4) Build dashboards using a local config file that matches your semantic layer (metrics + dimensions).
+
+### Versioning guidance
+
+- Treat RADF as vendored source: update by pulling changes from this repo and resolving conflicts.
+- Keep a changelog of dashboard-facing changes (new panels, breaking semantic layer changes).
+- When you upgrade, smoke test dashboards that rely on custom metrics/dimensions.
+
+### Packaging plan (future)
+
+If RADF is published later, the expected shape is a single package that exports:
+- Core components/hooks (dashboard, layout, viz, query)
+- Registry helpers (`registerCharts`, `registerInsights`)
+- Styles (tokens + themes + component CSS)
+
+Until then, embedding is the supported distribution strategy.
+
+---
+
 ## License
 
 TBD
