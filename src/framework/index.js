@@ -41,8 +41,8 @@ export { default as Panel } from './core/layout/Panel.jsx';
 export { default as VizRenderer } from './core/viz/VizRenderer.jsx';
 
 /** Create a dataset definition for the semantic layer. */
-export { createDataset } from './core/model/createDataset.js';
+export { default as createDataset } from './core/model/createDataset.js';
 /** Create a dimension definition for the semantic layer. */
-export { createDimension } from './core/model/createDimension.js';
+export { default as createDimension } from './core/model/createDimension.js';
 /** Create a metric definition for the semantic layer. */
-export { createMetric } from './core/model/createMetric.js';
+export { default as createMetric } from './core/model/createMetric.js';
