@@ -31,9 +31,10 @@ Add baseline quality gates for developer experience and CI readiness: ESLint, Pr
 
 ### Files
 - `package.json` (deps + scripts)
-- `.eslintrc.*` (or `eslint.config.*`)
+- `eslint.config.js` (or equivalent)
 - `.prettierrc*`, `.prettierignore`
-- `vitest.config.*`
+- `vitest.config.js`
+- `vitest.setup.js`
 - `src/**` (only if lint fixes are required)
 - Optional:
   - `.editorconfig`
@@ -75,11 +76,11 @@ Add a GitHub Actions workflow to run lint + tests + build on PRs.
 ### Acceptance Criteria
 - CI runs successfully on a fresh runner.
 - Workflow is fast and deterministic.
-- Uses `npm ci` and respects lockfile policy (see Notes).
+- Uses `npm ci` and respects lockfile policy.
 
 ### Notes
-- If the repo doesn’t currently have a lockfile and you intend to keep it that way, CI should use `npm install` instead of `npm ci`.
-- If you decide to introduce a lockfile as part of “quality gates,” do it intentionally and document it.
+- If lockfile is required: use `npm ci`.
+- If lockfile is intentionally not used: use `npm install` and document it (but this repo currently has `package-lock.json`).
 
 ---
 
@@ -110,7 +111,6 @@ Eliminate confusion by standardizing theme class naming between docs and the app
 
 ### Notes
 - Keep class naming consistent: `radf-theme-light`, `radf-theme-dark` (or similar).
-- If themes are also used in the example config, ensure nothing breaks.
 
 ---
 
@@ -183,7 +183,7 @@ Detect malformed provider results early to avoid silent chart failures.
 
 ### Files
 - `src/framework/core/query/useQuery.js`
-- `src/framework/core/query/*` (if contract docs exist here)
+- `src/framework/core/query/DataProvider.js`
 - `README.md` (or DataProvider docs section)
 
 ### Acceptance Criteria
@@ -276,19 +276,337 @@ Clarify how consumers should adopt RADF (copy strategy vs packaging vs npm publi
 
 ---
 
-# Sprint Ordering (suggested)
+# Documentation Sprint — Full Project JSDoc
 
-## Quick Wins (do first)
+Objective: produce **high-quality JSDoc documentation** for the entire RADF codebase (framework + example app) so new contributors and consumers can understand APIs, contracts, and extension points quickly.
+
+Rules:
+- Use **JSDoc** (not TypeScript).
+- Prefer **module-level** docs + **public API** docs over commenting every trivial line.
+- Document **contracts**, **inputs/outputs**, **side effects**, **error cases**, and **examples**.
+- When a file exports multiple things, add a short “Exports” section at top.
+- Keep docs consistent across folders (types, naming, tags).
+- Do not change runtime behavior except where absolutely necessary to make docs accurate.
+
+## JSDoc style requirement (classes + functions)
+
+You prefer JSDoc on **classes** and **methods/functions** (not just modules). Apply the following consistently:
+
+### General rules
+- Every **exported** function/class/component must have JSDoc.
+- Every **class** must have:
+  - Class-level JSDoc describing purpose + lifecycle + side effects.
+  - JSDoc for constructor params (if any).
+  - JSDoc for each public method.
+- Non-exported helpers: document only if non-trivial or reused across modules.
+
+### Function documentation checklist
+For each exported function:
+- `@param` for every parameter (include shapes via `@typedef` where possible)
+- `@returns` with explicit shape
+- `@throws` when it can throw
+- `@example` for consumer-facing functions
+
+### Class documentation checklist
+For each exported class:
+- Class-level doc + `@module` at file top
+- Document:
+  - constructor signature and invariants
+  - public methods and their contracts
+  - mutable state and side effects
+  - async behavior (promises, abort signals, caching, etc.)
+- Use `@private` for internal methods if you keep them on the class
+
+### React components
+- JSDoc the component function and define `Props` typedef:
+  - `/** @typedef {Object} MyComponentProps ... */`
+  - `/** @param {MyComponentProps} props */`
+
+### Typedef strategy
+- Prefer shared typedefs from the canonical file created in `feature/docs-jsdoc-foundation`
+- Reference typedefs via JSDoc (no runtime imports required)
+
+Deliverables:
+- Consistent JSDoc coverage across **framework/core** (primary), then app/example.
+- A small canonical typedef module containing shared shapes referenced throughout.
+- README section: “API / Extension Points” linking to the main modules.
+
+---
+
+## feature/docs-jsdoc-foundation
+
+### Goal
+Create the shared documentation foundation: typedefs, standards, and first pass on entrypoints.
+
+### Scope / Tasks
+- Add a canonical typedef file for commonly referenced shapes:
+  - QuerySpec, QueryResult, ProviderResult, Dataset, Dimension, Metric, DashboardConfig, PanelConfig, VizConfig, InsightConfig
+  - DashboardState, DashboardAction, SelectionState, DrilldownState
+- Add module headers to entrypoints and “public surface” modules.
+- Add a short README section describing where the docs live and how to read them.
+
+### Files
+- New: `src/framework/core/docs/jsdocTypes.js` (or similar canonical location)
+- `src/main.jsx`, `src/routes.jsx`, `src/App.jsx`
+- `README.md`
+
+### Acceptance Criteria
+- There is exactly one canonical place for shared typedefs.
+- Entry points explain how RADF boots, registers charts/insights, and renders routes.
+- No behavior changes.
+
+---
+
+## feature/docs-dashboard-core
+
+### Goal
+Document the dashboard state system (provider/reducer/actions/selectors/hooks) so consumers know how to integrate and extend.
+
+### Scope / Tasks
+- Add JSDoc for:
+  - `DashboardContext.js`
+  - `DashboardProvider.jsx`
+  - `dashboardReducer.js`
+  - `dashboardActions.js`
+  - `dashboardSelectors.js`
+  - `useDashboardActions.js`
+  - `useDashboardState.js`
+- Document:
+  - state shape
+  - supported actions and what they do
+  - selector contracts (inputs/outputs)
+  - provider responsibilities and usage examples
+
+### Files
+- `src/framework/core/dashboard/*`
+
+### Acceptance Criteria
+- A new dev can answer: “Where does state live?”, “How do I dispatch?”, “How do I read derived state?”
+- Each exported function/class has JSDoc with accurate types and examples where appropriate.
+- Class methods (if any) are documented.
+
+---
+
+## feature/docs-query-layer
+
+### Goal
+Document the entire query layer: QuerySpec creation/normalization/hash/cache/useQuery and the DataProvider contract.
+
+### Scope / Tasks
+- Add JSDoc for:
+  - `DataProvider.js` (contract) + `MockDataProvider.js`
+  - `QuerySpec.js`
+  - `buildQuerySpec.js`
+  - `normalizeQuerySpec.js`
+  - `hashQuerySpec.js`
+  - `cache.js`
+  - `useQuery.js`
+  - `transforms/*` + `transforms/index.js`
+- Must include:
+  - QuerySpec shape (typedef)
+  - ProviderResult shape (rows/meta/errors)
+  - caching semantics (stale, keying, eviction expectations)
+  - abort behavior / side effects
+  - transform contracts (input rows -> output rows)
+
+### Files
+- `src/framework/core/query/**`
+
+### Acceptance Criteria
+- DataProvider contract is crystal clear (methods, expected args, return shape, error handling).
+- useQuery documents lifecycle: cache hit, fetch, abort, stale rules, validation expectations.
+- Transforms list their supported options and sample usage.
+- If there are classes, their methods are documented.
+
+---
+
+## feature/docs-interactions
+
+### Goal
+Document interaction utilities and UI components: cross-filter, drilldown, brush zoom, chips, breadcrumbs.
+
+### Scope / Tasks
+- Add JSDoc for:
+  - `brushZoom.js`
+  - `crossFilter.js`
+  - `drilldown.js`
+  - `SelectionChips.jsx`
+  - `DrillBreadcrumbs.jsx`
+- Document:
+  - selection shapes
+  - expected inputs/outputs
+  - edge cases (empty selection, multi-select, hierarchy navigation)
+  - usage in dashboards (short examples)
+
+### Files
+- `src/framework/core/interactions/**`
+
+### Acceptance Criteria
+- Utility functions read like small APIs with clear contracts.
+- Components document props, expected state integration, and typical placement.
+
+---
+
+## feature/docs-insights
+
+### Goal
+Document the insights engine (analyzers + panel + hook) so new analyzers can be added safely.
+
+### Scope / Tasks
+- Add JSDoc for:
+  - `InsightEngine.js`
+  - `useInsights.js`
+  - `InsightsPanel.jsx`
+  - `analyzers/*` + `analysisUtils.js`
+- Document:
+  - analyzer interface (inputs: data/context/config; outputs: insights array)
+  - severity/priority conventions
+  - how analyzers are registered
+  - expected result shapes and UI rendering assumptions
+
+### Files
+- `src/framework/core/insights/**`
+
+### Acceptance Criteria
+- A dev can implement a new analyzer using docs alone.
+- Registration pathway and analyzer lifecycle are documented.
+- If there are classes, their methods are documented.
+
+---
+
+## feature/docs-registry-and-viz
+
+### Goal
+Document visualization registry + renderer + core chart panels and shared chart components.
+
+### Scope / Tasks
+- Add JSDoc for:
+  - `registry/registry.js`, `registerCharts.js`, `registerInsights.js`
+  - `viz/VizRenderer.jsx`
+  - `viz/charts/*`
+  - `viz/common/*`
+  - `viz/palettes/*`
+  - `viz/legend/*`
+- Document:
+  - how to register a new viz type
+  - viz config shape (panel config, series config, axes, formatting)
+  - renderer behavior when missing registry entries
+  - palette assignment rules + customization points
+
+### Files
+- `src/framework/core/registry/**`
+- `src/framework/core/viz/**`
+
+### Acceptance Criteria
+- Clear extension guide: “How to add a chart type” end-to-end.
+- Public props for panels and renderer are documented.
+- Palette logic is understandable and consistent.
+
+---
+
+## feature/docs-layout-and-error-handling
+
+### Goal
+Document layout components and the error boundary states so consumers know what is framework UI vs app UI.
+
+### Scope / Tasks
+- Add JSDoc for:
+  - `layout/*` components (Panel, GridLayout, Loading/Error states, EmptyState)
+  - `ErrorBoundary.jsx` including reset behavior
+- Document:
+  - component responsibilities
+  - expected props
+  - styling assumptions (CSS classes used)
+
+### Files
+- `src/framework/core/layout/**`
+
+### Acceptance Criteria
+- Layout components have concise, accurate docs and prop definitions.
+- ErrorBoundary explains fallback behavior and integration.
+
+---
+
+## feature/docs-model-layer
+
+### Goal
+Document the semantic/model layer (dataset/dimensions/metrics) and validation helpers.
+
+### Scope / Tasks
+- Add JSDoc for:
+  - `createDataset.js`
+  - `createDimension.js`
+  - `createMetric.js`
+  - `fieldTypes.js`
+  - `hierarchies.js`
+- Document:
+  - schema expectations
+  - required fields
+  - examples for defining a dataset and referencing it in dashboards
+
+### Files
+- `src/framework/core/model/**`
+
+### Acceptance Criteria
+- A consumer can define datasets/metrics/dimensions correctly from docs + examples.
+
+---
+
+## feature/docs-example-app
+
+### Goal
+Document the example dashboard and app-level usage patterns (how a consumer would wire RADF).
+
+### Scope / Tasks
+- Add JSDoc for:
+  - `src/app/pages/DashboardPage.jsx`
+  - `src/app/dashboards/example/*` (dashboard/dataset/dimensions/metrics/filter bar)
+- Document:
+  - where dashboard config lives
+  - how example dataset maps to panels + filters + interactions
+  - how to clone the example to create a new dashboard
+
+### Files
+- `src/app/**`
+
+### Acceptance Criteria
+- The example becomes a “living tutorial.”
+- Clear instructions: “copy this folder and replace X/Y/Z.”
+
+---
+
+# Suggested Execution Order (least dependencies → most)
+
+## Core sprint (quality + reliability)
 1. `feature/tooling-quality-gates`
 2. `feature/theme-namespace-standardization`
 3. `feature/root-element-guard`
-
-## Next (highest leverage)
 4. `feature/query-cache-eviction`
 5. `feature/provider-result-validation`
 6. `feature/ci-workflow`
-
-## After (nice-to-have, but valuable)
 7. `feature/core-tests-query-and-interactions`
 8. `feature/dashboard-selectors`
 9. `feature/distribution-docs`
+
+## Documentation sprint (JSDoc)
+1. `feature/docs-jsdoc-foundation`
+2. `feature/docs-query-layer`
+3. `feature/docs-dashboard-core`
+4. `feature/docs-registry-and-viz`
+5. `feature/docs-interactions`
+6. `feature/docs-insights`
+7. `feature/docs-layout-and-error-handling`
+8. `feature/docs-model-layer`
+9. `feature/docs-example-app`
+
+---
+
+# Definition of Done (Documentation Sprint) — Updated
+
+- Every file in `src/framework/core/**` has:
+  - module header (or clear top-level summary)
+  - JSDoc for **each exported class/function/component**
+  - JSDoc for **class methods** (public; private if non-trivial)
+  - typedef references used consistently for shared shapes
+- README includes an “API / Extension Points” section pointing to the primary modules.
+- No behavior changes unless required to fix doc inaccuracies (and if so, documented in PR notes).
