@@ -102,7 +102,7 @@ const dimensionDefaults = {
   segment: ['Consumer', 'SMB', 'Enterprise'],
 };
 
-const getDimensionValues = (dimensionId, random) => {
+const getDimensionValues = (dimensionId) => {
   if (dimensionDefaults[dimensionId]) {
     return dimensionDefaults[dimensionId];
   }
@@ -143,7 +143,7 @@ const generateRows = ({ measures, dimensions, timeRange, random }) => {
         return formatDate(date);
       });
     }
-    return getDimensionValues(dimensionId, random);
+    return getDimensionValues(dimensionId);
   });
 
   const buildRow = (depth, base) => {
