@@ -10,7 +10,7 @@ export { default as DashboardProvider } from './core/dashboard/DashboardProvider
 export { useDashboardActions } from './core/dashboard/useDashboardActions.js';
 /** Hook to read the current dashboard state. */
 export { useDashboardState } from './core/dashboard/useDashboardState.js';
-/** Selector helpers for dashboard state. */
+/** Selector helpers for the dashboard state. */
 export * as dashboardSelectors from './core/dashboard/dashboardSelectors.js';
 
 /** Build a normalized query specification from a panel config. */
