@@ -2,21 +2,7 @@
  * RADF public entry point.
  * Importing this module applies RADF styles automatically.
  */
-import { RADF_INLINE_CSS } from "./styles/__generated__/inlineStyles.js";
-
-const STYLE_ELEMENT_ID = 'radf-framework-styles';
-
-const ensureFrameworkStyles = () => {
-  if (typeof document === "undefined") return;
-  if (document.getElementById(STYLE_ELEMENT_ID)) return;
-
-  const style = document.createElement("style");
-  style.id = STYLE_ELEMENT_ID;
-  style.textContent = RADF_INLINE_CSS;
-  document.head.appendChild(style);
-};
-
-ensureFrameworkStyles();
+import './styles/framework.entry.css';
 
 /** Provider that supplies dashboard state and actions. */
 export { default as DashboardProvider } from './core/dashboard/DashboardProvider.jsx';
