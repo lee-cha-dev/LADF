@@ -5,6 +5,7 @@ export { useDashboardState } from './framework/core/dashboard/useDashboardState.
 export { useDashboardActions } from './framework/core/dashboard/useDashboardActions.js';
 export { default as PanelBody } from './framework/core/layout/PanelBody.jsx';
 export { default as PanelHeader } from './framework/core/layout/PanelHeader.jsx';
+export { dashboardSelectors } from './framework/core/dashboard/dashboardSelectors.js';
 
 /** Build a normalized query specification from a panel config. */
 export { buildQuerySpec } from './framework/core/query/buildQuerySpec.js';
