@@ -2,7 +2,17 @@
  * RADF public entry point.
  * Importing this module applies RADF styles automatically.
  */
-import frameworkStyles from './styles/framework.entry.css?inline';
+import tokensStyles from './styles/tokens.css?inline';
+import palettesStyles from './styles/palettes.css?inline';
+import frameworkStyles from './styles/framework.css?inline';
+import gridStyles from './styles/components/grid.css?inline';
+import panelStyles from './styles/components/panel.css?inline';
+import chartsStyles from './styles/components/charts.css?inline';
+import filtersStyles from './styles/components/filters.css?inline';
+import insightsStyles from './styles/components/insights.css?inline';
+import tableStyles from './styles/components/table.css?inline';
+import lightThemeStyles from './styles/theme.light.css?inline';
+import darkThemeStyles from './styles/theme.dark.css?inline';
 
 const STYLE_ELEMENT_ID = 'radf-framework-styles';
 
@@ -17,7 +27,19 @@ const ensureFrameworkStyles = () => {
 
   const style = document.createElement('style');
   style.id = STYLE_ELEMENT_ID;
-  style.textContent = frameworkStyles;
+  style.textContent = [
+    tokensStyles,
+    palettesStyles,
+    frameworkStyles,
+    gridStyles,
+    panelStyles,
+    chartsStyles,
+    filtersStyles,
+    insightsStyles,
+    tableStyles,
+    lightThemeStyles,
+    darkThemeStyles,
+  ].join('\n');
   document.head.appendChild(style);
 };
 
