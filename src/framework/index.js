@@ -2,7 +2,26 @@
  * RADF public entry point.
  * Importing this module applies RADF styles automatically.
  */
-import './styles/framework.entry.css';
+import frameworkStyles from './styles/framework.entry.css?inline';
+
+const STYLE_ELEMENT_ID = 'radf-framework-styles';
+
+const ensureFrameworkStyles = () => {
+  if (typeof document === 'undefined') {
+    return;
+  }
+
+  if (document.getElementById(STYLE_ELEMENT_ID)) {
+    return;
+  }
+
+  const style = document.createElement('style');
+  style.id = STYLE_ELEMENT_ID;
+  style.textContent = frameworkStyles;
+  document.head.appendChild(style);
+};
+
+ensureFrameworkStyles();
 
 /** Provider that supplies dashboard state and actions. */
 export { default as DashboardProvider } from './core/dashboard/DashboardProvider.jsx';
@@ -37,12 +56,46 @@ export { default as registerInsights } from './core/registry/registerInsights.js
 export { default as GridLayout } from './core/layout/GridLayout.jsx';
 /** Panel chrome component for titles, loading, and empty states. */
 export { default as Panel } from './core/layout/Panel.jsx';
+/** Error boundary component for dashboard routes. */
+export { default as ErrorBoundary } from './core/layout/ErrorBoundary.jsx';
 /** Visualization renderer for registered viz types. */
 export { default as VizRenderer } from './core/viz/VizRenderer.jsx';
+/** Insights renderer for insights panels. */
+export { default as InsightsPanel } from './core/insights/InsightsPanel.jsx';
+/** Hook to run the insights engine. */
+export { useInsights } from './core/insights/useInsights.js';
+
+/** Drill breadcrumb trail for drilldown interactions. */
+export { default as DrillBreadcrumbs } from './core/interactions/DrillBreadcrumbs.jsx';
+/** Helpers for cross-filter interactions. */
+export {
+  buildCrossFilterSelectionFromEvent,
+  isSelectionDuplicate,
+} from './core/interactions/crossFilter.js';
+/** Helpers for drilldown interactions. */
+export {
+  applyDrilldownToDimensions,
+  buildDrilldownEntryFromEvent,
+  isDrilldownDuplicate,
+} from './core/interactions/drilldown.js';
+/** Helpers for brush/zoom interactions. */
+export {
+  buildBrushFilter,
+  formatBrushRangeLabel,
+  getBrushRange,
+  removeBrushFilter,
+  upsertBrushFilter,
+} from './core/interactions/brushZoom.js';
+/** Resolve palette classes for panels. */
+export { resolvePalette } from './core/viz/palettes/paletteResolver.js';
 
 /** Create a dataset definition for the semantic layer. */
 export { default as createDataset } from './core/model/createDataset.js';
+/** Create hierarchy definitions for semantic layer drilldowns. */
+export { createHierarchy } from './core/model/hierarchies.js';
 /** Create a dimension definition for the semantic layer. */
 export { default as createDimension } from './core/model/createDimension.js';
+/** Field type constants for dimensions. */
+export { FIELD_TYPES } from './core/model/fieldTypes.js';
 /** Create a metric definition for the semantic layer. */
 export { default as createMetric } from './core/model/createMetric.js';
