@@ -101,6 +101,14 @@ const App = () => {
 export default App;
 ```
 
+## Forking & Extending RADF
+
+If you want to fork RADF, extend the framework, or contribute changes back, start with:
+
+- [docs/FORKING.md](docs/FORKING.md) — fork workflow, local setup, and validating a fork in a consumer app.
+- [docs/EXTENDING.md](docs/EXTENDING.md) — adding dashboards, panels, viz types, insights, providers, and themes.
+- [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md) — scripts, tests, and contributor hygiene.
+
 ### Theme toggling
 
 RADF themes are applied by root classes. Add one of these classes to `document.documentElement`:
