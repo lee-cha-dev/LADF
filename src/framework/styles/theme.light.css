@@ -1,0 +1,99 @@
+:root.radf-theme-light {
+  --radf-surface-bg: #f3f5fb;
+  --radf-surface-1: #ffffff;
+  --radf-surface-2: #f9fafc;
+  --radf-surface-3: #eef2f7;
+  --radf-surface-well: #f5f7fb;
+  --radf-surface-overlay: #ffffff;
+  --radf-surface-muted: #eef2f7;
+
+  --radf-border-subtle: #e2e8f0;
+  --radf-border-strong: #cbd5f5;
+  --radf-border-divider: #d8dee9;
+  --radf-border-focus: #2563eb;
+
+  --radf-text-primary: #0f172a;
+  --radf-text-secondary: #1f2937;
+  --radf-text-muted: #64748b;
+  --radf-text-inverse: #f8fafc;
+
+  --radf-accent-primary: #2563eb;
+  --radf-accent-secondary: #14b8a6;
+  --radf-accent-success: #16a34a;
+  --radf-accent-warning: #d97706;
+  --radf-accent-danger: #dc2626;
+  --radf-accent-primary-soft: rgba(37, 99, 235, 0.12);
+  --radf-accent-secondary-soft: rgba(20, 184, 166, 0.12);
+
+  --radf-shadow-low: 0 1px 2px rgba(15, 23, 42, 0.08), 0 1px 1px rgba(15, 23, 42, 0.04);
+  --radf-shadow-med: 0 10px 24px rgba(15, 23, 42, 0.12), 0 4px 10px rgba(15, 23, 42, 0.08);
+  --radf-shadow-high: 0 20px 45px rgba(15, 23, 42, 0.16), 0 8px 20px rgba(15, 23, 42, 0.1);
+  --radf-shadow-inset: inset 0 1px 0 rgba(255, 255, 255, 0.7), inset 0 -1px 0 rgba(15, 23, 42, 0.03);
+
+  --radf-app-gradient: radial-gradient(circle at top, rgba(37, 99, 235, 0.08), transparent 55%),
+    linear-gradient(180deg, #f7f9fe 0%, #eef2f7 100%);
+  --radf-panel-gradient: linear-gradient(180deg, #ffffff 0%, #f5f7fb 100%);
+  --radf-panel-header-gradient: linear-gradient(180deg, #f7f9ff 0%, #eef2f7 100%);
+
+  --radf-chart-grid: rgba(148, 163, 184, 0.35);
+
+  --radf-color-bg: var(--radf-surface-bg);
+  --radf-color-surface: var(--radf-surface-2);
+  --radf-color-surface-alt: var(--radf-surface-1);
+  --radf-color-text: var(--radf-text-primary);
+  --radf-color-muted: var(--radf-text-muted);
+  --radf-color-border: var(--radf-border-subtle);
+  --radf-color-accent: var(--radf-accent-primary);
+  --radf-color-accent-weak: var(--radf-accent-primary-soft);
+
+}
+
+:root.fecc-theme-light {
+  --radf-surface-bg: #f8f9fa;
+  --radf-surface-1: #e9ecef;
+  --radf-surface-2: #ffffff;
+  --radf-surface-3: #f3f4f6;
+  --radf-surface-well: #f8f9fa;
+  --radf-surface-overlay: #ffffff;
+  --radf-surface-muted: #e9ecef;
+
+  --radf-border-subtle: #d1d5db;
+  --radf-border-strong: #b9c0ca;
+  --radf-border-divider: #d1d5db;
+  --radf-border-focus: #186329;
+
+  --radf-text-primary: #111827;
+  --radf-text-secondary: #0f172a;
+  --radf-text-muted: #64748b;
+  --radf-text-inverse: #f8fafc;
+
+  --radf-accent-primary: #186329;
+  --radf-accent-secondary: #1c7330;
+  --radf-accent-success: #16a34a;
+  --radf-accent-warning: #f97316;
+  --radf-accent-danger: #dc2626;
+  --radf-accent-primary-soft: rgba(24, 99, 41, 0.12);
+  --radf-accent-secondary-soft: rgba(28, 115, 48, 0.12);
+
+  --radf-shadow-low: 0 1px 2px rgba(17, 24, 39, 0.08), 0 1px 1px rgba(17, 24, 39, 0.04);
+  --radf-shadow-med: 0 10px 24px rgba(17, 24, 39, 0.12), 0 4px 10px rgba(17, 24, 39, 0.08);
+  --radf-shadow-high: 0 20px 45px rgba(17, 24, 39, 0.16), 0 8px 20px rgba(17, 24, 39, 0.1);
+  --radf-shadow-inset: inset 0 1px 0 rgba(255, 255, 255, 0.7), inset 0 -1px 0 rgba(17, 24, 39, 0.03);
+
+  --radf-app-gradient: radial-gradient(circle at top, rgba(24, 99, 41, 0.08), transparent 55%),
+  linear-gradient(180deg, #f8f9fa 0%, #f3f4f6 100%);
+  --radf-panel-gradient: linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%);
+  --radf-panel-header-gradient: linear-gradient(180deg, #f8f9fa 0%, #e9ecef 100%);
+
+  --radf-chart-grid: rgba(100, 116, 139, 0.3);
+
+  --radf-color-bg: var(--radf-surface-bg);
+  --radf-color-surface: var(--radf-surface-2);
+  --radf-color-surface-alt: var(--radf-surface-1);
+  --radf-color-text: var(--radf-text-primary);
+  --radf-color-muted: var(--radf-text-muted);
+  --radf-color-border: var(--radf-border-subtle);
+  --radf-color-accent: var(--radf-accent-primary);
+  --radf-color-accent-weak: var(--radf-accent-primary-soft);
+
+}
