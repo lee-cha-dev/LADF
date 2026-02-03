@@ -59,7 +59,7 @@ textarea {
 
 .radf-app__content {
   padding: 0 var(--radf-space-6) var(--radf-space-8);
-  width: 100%;
+  width: auto;
   margin: 0 auto;
 }
 
