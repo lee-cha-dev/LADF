@@ -1,10 +1,12 @@
 /**
  * @module core/viz/charts/BarWithThresholdPanel
  * @description Bullet chart table with per-row threshold markers, department coloring,
- * and a three-column layout (names | bars | percent).
+ * vertical grid lines, and a three-column layout (names | bars | percent).
  */
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useCallback } from 'react';
 import ChartContainer from '../common/ChartContainer.jsx';
+import BulletChartTooltip from '../common/BulletChartTooltip.jsx';
+import { getSeriesVar } from '../palettes/paletteRegistry';
 
 /**
  * @typedef {Object} BarWithThresholdPanelProps
@@ -17,13 +19,25 @@ import ChartContainer from '../common/ChartContainer.jsx';
  */
 
 /**
- * Build a color map for categorical coloring.
+ * Build a color map for categorical coloring using series palette.
+ * Ensures each unique category gets a distinct color from the palette.
  */
 const buildCategoryColorMap = (data, colorKey, colorAssignment) => {
   if (!colorKey || !data?.length) {
     return new Map();
   }
-  const categories = [...new Set(data.map((row) => row[colorKey]).filter(Boolean))];
+
+  // Get unique categories in order of first appearance
+  const categories = [];
+  const seen = new Set();
+  data.forEach((row) => {
+    const cat = row[colorKey];
+    if (cat && !seen.has(cat)) {
+      seen.add(cat);
+      categories.push(cat);
+    }
+  });
+
   const colorMap = new Map();
 
   if (colorAssignment?.getColor) {
@@ -31,15 +45,16 @@ const buildCategoryColorMap = (data, colorKey, colorAssignment) => {
       colorMap.set(cat, colorAssignment.getColor(cat));
     });
   } else {
+    // Use series colors from palette - each category gets a unique color
     categories.forEach((cat, index) => {
-      colorMap.set(cat, `var(--radf-series-${(index % 12) + 1})`);
+      colorMap.set(cat, getSeriesVar(index));
     });
   }
   return colorMap;
 };
 
 /**
- * Single bullet row component.
+ * Single bullet row component with tooltip support.
  */
 function BulletRow({
   row,
@@ -52,13 +67,15 @@ function BulletRow({
   percentKey,
   showPercent,
   onClick,
+  onMouseEnter,
+  onMouseLeave,
 }) {
   const value = row[xKey] || 0;
   const label = row[yKey] || '';
   const category = row[colorKey];
   const barColor = category
-    ? colorMap.get(category) || 'var(--radf-accent-primary)'
-    : 'var(--radf-accent-primary)';
+    ? colorMap.get(category) || 'var(--radf-series-1)'
+    : 'var(--radf-series-1)';
   const dotColor = barColor;
 
   const threshold = thresholdConfig?.enabled ? row[thresholdConfig.valueKey] : null;
@@ -69,8 +86,28 @@ function BulletRow({
 
   const exceedsThreshold = threshold != null && value > threshold;
 
+  const handleMouseEnter = useCallback(
+    (e) => {
+      const rect = e.currentTarget.getBoundingClientRect();
+      onMouseEnter?.(row, {
+        x: rect.left + rect.width / 2,
+        y: rect.top,
+        barColor,
+        exceedsThreshold,
+      });
+    },
+    [row, onMouseEnter, barColor, exceedsThreshold]
+  );
+
   return (
-    <div className="radf-bullet__row" onClick={() => onClick?.(row)} role="button" tabIndex={0}>
+    <div
+      className="radf-bullet__row"
+      onClick={() => onClick?.(row)}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={onMouseLeave}
+      role="button"
+      tabIndex={0}
+    >
       {/* Name column */}
       <div className="radf-bullet__name-cell">
         <span className="radf-bullet__dot" style={{ background: dotColor }} />
@@ -133,6 +170,14 @@ function BarWithThresholdPanel({
   colorAssignment,
   hiddenKeys,
 }) {
+  const [tooltip, setTooltip] = useState({
+    visible: false,
+    row: null,
+    position: null,
+    barColor: null,
+    exceedsThreshold: false,
+  });
+
   const isHorizontal = options.orientation === 'horizontal';
   const thresholdConfig = options.thresholdMarkers;
   const colorKey = encodings.color || options.colorBy;
@@ -151,7 +196,16 @@ function BarWithThresholdPanel({
     if (!colorKey || !data?.length) {
       return [];
     }
-    const categories = [...new Set(data.map((row) => row[colorKey]).filter(Boolean))];
+    // Get unique categories in order of first appearance
+    const categories = [];
+    const seen = new Set();
+    data.forEach((row) => {
+      const cat = row[colorKey];
+      if (cat && !seen.has(cat)) {
+        seen.add(cat);
+        categories.push(cat);
+      }
+    });
     return categories.map((cat) => ({
       key: cat,
       label: cat.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()),
@@ -187,6 +241,30 @@ function BarWithThresholdPanel({
     return ticks;
   }, [maxValue]);
 
+  // Check if any rows exceed threshold
+  const hasExceededThreshold = useMemo(() => {
+    if (!thresholdConfig?.enabled) return false;
+    return filteredData.some((row) => {
+      const val = row[xKey] || 0;
+      const threshold = row[thresholdConfig.valueKey];
+      return threshold != null && val > threshold;
+    });
+  }, [filteredData, xKey, thresholdConfig]);
+
+  const handleMouseEnter = useCallback((row, { x, y, barColor, exceedsThreshold }) => {
+    setTooltip({
+      visible: true,
+      row,
+      position: { x, y },
+      barColor,
+      exceedsThreshold,
+    });
+  }, []);
+
+  const handleMouseLeave = useCallback(() => {
+    setTooltip((prev) => ({ ...prev, visible: false }));
+  }, []);
+
   return (
     <ChartContainer>
       <div className="radf-bullet">
@@ -203,6 +281,23 @@ function BarWithThresholdPanel({
 
         {/* Data rows */}
         <div className="radf-bullet__body">
+          {/* Vertical grid lines container */}
+          <div className="radf-bullet__grid-lines">
+            <div className="radf-bullet__name-cell" />
+            <div className="radf-bullet__bar-cell">
+              <div className="radf-bullet__grid-container">
+                {xTicks.map((tick) => (
+                  <div
+                    key={tick}
+                    className="radf-bullet__grid-line"
+                    style={{ left: `${(tick / maxValue) * 100}%` }}
+                  />
+                ))}
+              </div>
+            </div>
+            {showPercent && <div className="radf-bullet__pct-cell" />}
+          </div>
+
           {filteredData.map((row, index) => (
             <BulletRow
               key={row[yKey] || index}
@@ -216,6 +311,8 @@ function BarWithThresholdPanel({
               percentKey={percentKey}
               showPercent={showPercent}
               onClick={handlers.onClick}
+              onMouseEnter={handleMouseEnter}
+              onMouseLeave={handleMouseLeave}
             />
           ))}
         </div>
@@ -240,7 +337,7 @@ function BarWithThresholdPanel({
         </div>
 
         {/* Legend */}
-        {(legendItems.length > 0 || thresholdConfig?.enabled) && (
+        {(legendItems.length > 0 || thresholdConfig?.enabled || hasExceededThreshold) && (
           <div className="radf-bullet__legend">
             <ul className="radf-bullet__legend-list">
               {legendItems.map((item) => {
@@ -278,13 +375,33 @@ function BarWithThresholdPanel({
                     }}
                   />
                   <span className="radf-bullet__legend-label">
-                    {thresholdConfig.label || 'Threshold'}
+                    {thresholdConfig.label || 'Dept Threshold (μ + 1.5σ)'}
                   </span>
+                </li>
+              )}
+              {hasExceededThreshold && (
+                <li className="radf-bullet__legend-item radf-bullet__legend-item--exceeded">
+                  <span className="radf-bullet__legend-exceeded-swatch" />
+                  <span className="radf-bullet__legend-label">Exceeds Threshold</span>
                 </li>
               )}
             </ul>
           </div>
         )}
+
+        {/* Custom Tooltip */}
+        <BulletChartTooltip
+          row={tooltip.row}
+          nameKey={yKey}
+          valueKey={xKey}
+          colorKey={colorKey}
+          percentKey={percentKey}
+          thresholdConfig={thresholdConfig}
+          barColor={tooltip.barColor}
+          exceedsThreshold={tooltip.exceedsThreshold}
+          position={tooltip.position}
+          visible={tooltip.visible}
+        />
       </div>
     </ChartContainer>
   );

@@ -1,9 +1,11 @@
 /**
  * Bullet chart table styles
  * Three-column layout: names | bars with threshold markers | percent
+ * Includes vertical grid lines and exceeded threshold legend
  */
 
 .radf-bullet {
+    position: relative;
     display: flex;
     flex-direction: column;
     width: 100%;
@@ -44,12 +46,47 @@
 
 /* Body */
 .radf-bullet__body {
+    position: relative;
     display: flex;
     flex-direction: column;
 }
 
+/* Vertical Grid Lines */
+.radf-bullet__grid-lines {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: grid;
+    grid-template-columns: minmax(140px, 2fr) 5fr minmax(80px, 1fr);
+    gap: var(--radf-space-2);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.radf-bullet__grid-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.radf-bullet__grid-line {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: var(--radf-chart-grid, rgba(148, 163, 184, 0.2));
+    transform: translateX(-50%);
+}
+
+.radf-bullet__grid-line:first-child {
+    transform: translateX(0);
+}
+
 /* Row */
 .radf-bullet__row {
+    position: relative;
     display: grid;
     grid-template-columns: minmax(140px, 2fr) 5fr minmax(80px, 1fr);
     gap: var(--radf-space-2);
@@ -57,6 +94,7 @@
     padding: var(--radf-space-2) 0;
     cursor: pointer;
     transition: background 0.15s ease;
+    z-index: 1;
 }
 
 .radf-bullet__row:hover {
@@ -258,11 +296,33 @@
     border-radius: 2px;
 }
 
+/* Exceeded Threshold Legend Item */
+.radf-bullet__legend-item--exceeded {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--radf-space-2);
+    padding: var(--radf-space-1) var(--radf-space-2);
+    margin-left: var(--radf-space-3);
+    border-left: 1px solid var(--radf-border-subtle);
+    padding-left: var(--radf-space-4);
+}
+
+.radf-bullet__legend-exceeded-swatch {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border-radius: 3px;
+    background: var(--radf-surface-well, rgba(128, 128, 128, 0.3));
+    box-shadow: inset 0 0 0 2px var(--radf-accent-danger);
+    flex-shrink: 0;
+}
+
 /* Responsive: collapse to simpler layout on small screens */
 @media (max-width: 600px) {
     .radf-bullet__header,
     .radf-bullet__row,
-    .radf-bullet__axis {
+    .radf-bullet__axis,
+    .radf-bullet__grid-lines {
         grid-template-columns: minmax(100px, 1.5fr) 4fr minmax(60px, 1fr);
     }
 
