@@ -1,12 +1,129 @@
 /**
  * @module core/viz/charts/BarWithThresholdPanel
- * @description Bullet chart table with per-row threshold markers, department coloring,
+ * @description Bullet chart table with per-row marker lines, department coloring,
  * vertical grid lines, and a three-column layout (names | bars | percent).
  */
 import React, { useMemo, useState, useCallback } from 'react';
 import ChartContainer from '../common/ChartContainer.jsx';
 import BulletChartTooltip from '../common/BulletChartTooltip.jsx';
 import { getSeriesVar } from '../palettes/paletteRegistry';
+
+const SERIES_COUNT = 12;
+
+/**
+ * Normalize a category key.
+ * @param {*} value - Raw value.
+ * @returns {string|null} Normalized key.
+ */
+const normalizeKey = (value) => (value == null ? null : String(value));
+
+/**
+ * Parse a CSS color string into rgb values.
+ * @param {string} color - CSS color string.
+ * @returns {{r:number,g:number,b:number}|null} RGB or null.
+ */
+const parseColor = (color) => {
+  if (!color) {
+    return null;
+  }
+  const trimmed = color.trim();
+  if (trimmed.startsWith('#')) {
+    const hex = trimmed.replace('#', '');
+    if (hex.length === 3) {
+      return {
+        r: parseInt(hex[0] + hex[0], 16),
+        g: parseInt(hex[1] + hex[1], 16),
+        b: parseInt(hex[2] + hex[2], 16),
+      };
+    }
+    if (hex.length === 6) {
+      return {
+        r: parseInt(hex.slice(0, 2), 16),
+        g: parseInt(hex.slice(2, 4), 16),
+        b: parseInt(hex.slice(4, 6), 16),
+      };
+    }
+    return null;
+  }
+  if (trimmed.startsWith('rgb')) {
+    const match = trimmed.match(/rgba?\(([^)]+)\)/i);
+    if (!match) {
+      return null;
+    }
+    const parts = match[1].split(',').map((part) => parseFloat(part.trim()));
+    if (parts.length < 3) {
+      return null;
+    }
+    return { r: parts[0], g: parts[1], b: parts[2] };
+  }
+  return null;
+};
+
+/**
+ * Convert RGB to HSL hue.
+ * @param {{r:number,g:number,b:number}} rgb - RGB values.
+ * @returns {{h:number,s:number,l:number}} HSL values.
+ */
+const rgbToHsl = ({ r, g, b }) => {
+  const nr = r / 255;
+  const ng = g / 255;
+  const nb = b / 255;
+  const max = Math.max(nr, ng, nb);
+  const min = Math.min(nr, ng, nb);
+  const delta = max - min;
+  let h = 0;
+  let s = 0;
+  const l = (max + min) / 2;
+
+  if (delta !== 0) {
+    if (max === nr) {
+      h = ((ng - nb) / delta) % 6;
+    } else if (max === ng) {
+      h = (nb - nr) / delta + 2;
+    } else {
+      h = (nr - ng) / delta + 4;
+    }
+    h = Math.round(h * 60);
+    if (h < 0) {
+      h += 360;
+    }
+    s = delta / (1 - Math.abs(2 * l - 1));
+  }
+
+  return { h, s, l };
+};
+
+/**
+ * Determine if a color reads as a red hue.
+ * @param {string} color - CSS color string.
+ * @returns {boolean} True if color is red-ish.
+ */
+const isRedHue = (color) => {
+  const rgb = parseColor(color);
+  if (!rgb) {
+    return false;
+  }
+  const { h, s, l } = rgbToHsl(rgb);
+  const isHueRed = h <= 20 || h >= 340;
+  return isHueRed && s > 0.35 && l > 0.2 && l < 0.85;
+};
+
+/**
+ * Resolve non-red series indices based on computed palette colors.
+ * @returns {number[]} Series indices that avoid red hues.
+ */
+const resolveNonRedSeriesIndices = () => {
+  const indices = Array.from({ length: SERIES_COUNT }, (_, index) => index);
+  if (typeof window === 'undefined' || !window.getComputedStyle) {
+    return indices.filter((index) => index !== 2);
+  }
+  const styles = window.getComputedStyle(document.documentElement);
+  const allowed = indices.filter((index) => {
+    const color = styles.getPropertyValue(`--radf-series-${index + 1}`);
+    return !isRedHue(color);
+  });
+  return allowed.length ? allowed : indices;
+};
 
 /**
  * @typedef {Object} BarWithThresholdPanelProps
@@ -22,7 +139,7 @@ import { getSeriesVar } from '../palettes/paletteRegistry';
  * Build a color map for categorical coloring using series palette.
  * Ensures each unique category gets a distinct color from the palette.
  */
-const buildCategoryColorMap = (data, colorKey, colorAssignment) => {
+const buildCategoryColorMap = (data, colorKey, seriesIndices) => {
   if (!colorKey || !data?.length) {
     return new Map();
   }
@@ -31,7 +148,7 @@ const buildCategoryColorMap = (data, colorKey, colorAssignment) => {
   const categories = [];
   const seen = new Set();
   data.forEach((row) => {
-    const cat = row[colorKey];
+    const cat = normalizeKey(row[colorKey]);
     if (cat && !seen.has(cat)) {
       seen.add(cat);
       categories.push(cat);
@@ -40,17 +157,99 @@ const buildCategoryColorMap = (data, colorKey, colorAssignment) => {
 
   const colorMap = new Map();
 
-  if (colorAssignment?.getColor) {
-    categories.forEach((cat) => {
-      colorMap.set(cat, colorAssignment.getColor(cat));
+  categories.forEach((cat, index) => {
+    const seriesIndex = seriesIndices[index % seriesIndices.length] ?? 0;
+    colorMap.set(cat, {
+      color: getSeriesVar(seriesIndex),
+      index: seriesIndex,
     });
-  } else {
-    // Use series colors from palette - each category gets a unique color
-    categories.forEach((cat, index) => {
-      colorMap.set(cat, getSeriesVar(index));
-    });
-  }
+  });
   return colorMap;
+};
+
+/**
+ * Compute a quantile for sorted values.
+ * @param {number[]} values - Sorted numeric values.
+ * @param {number} quantile - Quantile between 0-1.
+ * @returns {number|null} Quantile value.
+ */
+const computeQuantile = (values, quantile) => {
+  if (!values.length) {
+    return null;
+  }
+  const position = (values.length - 1) * quantile;
+  const base = Math.floor(position);
+  const rest = position - base;
+  if (values[base + 1] != null) {
+    return values[base] + rest * (values[base + 1] - values[base]);
+  }
+  return values[base];
+};
+
+/**
+ * Compute IQR upper bounds per group.
+ * @param {Array<Object>} data - Rows.
+ * @param {string|null} groupKey - Grouping key.
+ * @param {string} valueKey - Value key.
+ * @returns {Map<string, number>} Group to upper bound map.
+ */
+const computeIqrUpperBounds = (data, groupKey, valueKey) => {
+  const grouped = new Map();
+  data.forEach((row) => {
+    const group = normalizeKey(groupKey ? row[groupKey] : 'all');
+    const value = row[valueKey];
+    if (group && Number.isFinite(value)) {
+      if (!grouped.has(group)) {
+        grouped.set(group, []);
+      }
+      grouped.get(group).push(value);
+    }
+  });
+
+  const bounds = new Map();
+  grouped.forEach((values, group) => {
+    const sorted = [...values].sort((a, b) => a - b);
+    const q1 = computeQuantile(sorted, 0.25);
+    const q3 = computeQuantile(sorted, 0.75);
+    if (q1 == null || q3 == null) {
+      return;
+    }
+    const iqr = q3 - q1;
+    bounds.set(group, q3 + 1.5 * iqr);
+  });
+
+  return bounds;
+};
+
+/**
+ * Compute averages per group.
+ * @param {Array<Object>} data - Rows.
+ * @param {string|null} groupKey - Grouping key.
+ * @param {string} valueKey - Value key.
+ * @returns {Map<string, number>} Group to average map.
+ */
+const computeGroupAverages = (data, groupKey, valueKey) => {
+  const grouped = new Map();
+  data.forEach((row) => {
+    const group = normalizeKey(groupKey ? row[groupKey] : 'all');
+    const value = row[valueKey];
+    if (group && Number.isFinite(value)) {
+      if (!grouped.has(group)) {
+        grouped.set(group, { total: 0, count: 0 });
+      }
+      const entry = grouped.get(group);
+      entry.total += value;
+      entry.count += 1;
+    }
+  });
+
+  const averages = new Map();
+  grouped.forEach((entry, group) => {
+    if (entry.count > 0) {
+      averages.set(group, entry.total / entry.count);
+    }
+  });
+  return averages;
 };
 
 /**
@@ -61,9 +260,14 @@ function BulletRow({
   xKey,
   yKey,
   colorKey,
-  colorMap,
+  dotColorKey,
+  barColorMap,
+  dotColorMap,
+  showAnnotations,
   maxValue,
-  thresholdConfig,
+  markerValue,
+  markerConfig,
+  outlierBound,
   percentKey,
   showPercent,
   onClick,
@@ -72,19 +276,27 @@ function BulletRow({
 }) {
   const value = row[xKey] || 0;
   const label = row[yKey] || '';
-  const category = row[colorKey];
-  const barColor = category
-    ? colorMap.get(category) || 'var(--radf-series-1)'
-    : 'var(--radf-series-1)';
-  const dotColor = barColor;
+  const category = normalizeKey(row[colorKey]);
+  const dotCategory = normalizeKey(row[dotColorKey]);
+  const barColorEntry = category ? barColorMap.get(category) : null;
+  const dotColorEntry = dotCategory ? dotColorMap.get(dotCategory) : null;
+  const barColorClass = barColorEntry
+    ? `radf-chart-color-${barColorEntry.index}`
+    : 'radf-chart-color-0';
+  const dotColorClass = dotColorEntry
+    ? `radf-chart-color-${dotColorEntry.index}`
+    : barColorClass;
 
-  const threshold = thresholdConfig?.enabled ? row[thresholdConfig.valueKey] : null;
+  const markerEnabled = markerConfig?.enabled !== false;
   const percent = showPercent && percentKey ? row[percentKey] : null;
 
   const barWidthPercent = maxValue > 0 ? (value / maxValue) * 100 : 0;
-  const thresholdPercent = threshold != null && maxValue > 0 ? (threshold / maxValue) * 100 : null;
+  const markerPercent =
+    markerEnabled && markerValue != null && maxValue > 0
+      ? (markerValue / maxValue) * 100
+      : null;
 
-  const exceedsThreshold = threshold != null && value > threshold;
+  const exceedsThreshold = outlierBound != null && value > outlierBound;
 
   const handleMouseEnter = useCallback(
     (e) => {
@@ -92,11 +304,9 @@ function BulletRow({
       onMouseEnter?.(row, {
         x: rect.left + rect.width / 2,
         y: rect.top,
-        barColor,
-        exceedsThreshold,
       });
     },
-    [row, onMouseEnter, barColor, exceedsThreshold]
+    [row, onMouseEnter]
   );
 
   return (
@@ -110,7 +320,9 @@ function BulletRow({
     >
       {/* Name column */}
       <div className="radf-bullet__name-cell">
-        <span className="radf-bullet__dot" style={{ background: dotColor }} />
+        {showAnnotations ? (
+          <span className={['radf-bullet__dot', dotColorClass].join(' ')} />
+        ) : null}
         <span className="radf-bullet__name">{label}</span>
       </div>
 
@@ -122,12 +334,15 @@ function BulletRow({
 
           {/* Value bar */}
           <div
-            className={['radf-bullet__bar', exceedsThreshold ? 'radf-bullet__bar--exceeded' : '']
+            className={[
+              'radf-bullet__bar',
+              barColorClass,
+              exceedsThreshold ? 'radf-bullet__bar--exceeded' : '',
+            ]
               .filter(Boolean)
               .join(' ')}
             style={{
               width: `${barWidthPercent}%`,
-              background: barColor,
             }}
           >
             {/* Value label ON the bar */}
@@ -136,13 +351,13 @@ function BulletRow({
             </span>
           </div>
 
-          {/* Threshold marker */}
-          {thresholdPercent != null && (
+          {/* Marker line */}
+          {markerPercent != null && markerEnabled && (
             <div
               className="radf-bullet__threshold"
               style={{
-                left: `${thresholdPercent}%`,
-                background: thresholdConfig.color || 'var(--radf-accent-warning)',
+                left: `${markerPercent}%`,
+                background: markerConfig.color || 'var(--radf-border-divider)',
               }}
             />
           )}
@@ -160,58 +375,36 @@ function BulletRow({
 }
 
 /**
- * Render a bullet chart table with per-row threshold markers.
+ * Render a bullet chart table with per-row marker lines.
  */
 function BulletChart({
   data = [],
   encodings = {},
   options = {},
   handlers = {},
-  colorAssignment,
   hiddenKeys,
 }) {
   const [tooltip, setTooltip] = useState({
     visible: false,
     row: null,
     position: null,
-    barColor: null,
-    exceedsThreshold: false,
   });
 
   const isHorizontal = options.orientation === 'horizontal';
-  const thresholdConfig = options.thresholdMarkers;
+  const markerConfig = options.markerLines || options.thresholdMarkers || {};
+  const markerEnabled = markerConfig?.enabled !== false;
+  const outlierConfig = options.outlierRule || {};
   const colorKey = encodings.color || options.colorBy;
+  const leftAnnotations = options.leftAnnotations || {};
+  const leftAnnotationKey = leftAnnotations.colorBy || colorKey;
+  const showAnnotations = leftAnnotations.enabled !== false && leftAnnotations.type !== 'none';
   const showPercent = options.showPercentColumn !== false;
   const percentKey = options.percentKey;
 
   const xKey = isHorizontal ? encodings.x : encodings.y;
   const yKey = isHorizontal ? encodings.y : encodings.x;
 
-  const colorMap = useMemo(
-    () => buildCategoryColorMap(data, colorKey, colorAssignment),
-    [data, colorKey, colorAssignment]
-  );
-
-  const legendItems = useMemo(() => {
-    if (!colorKey || !data?.length) {
-      return [];
-    }
-    // Get unique categories in order of first appearance
-    const categories = [];
-    const seen = new Set();
-    data.forEach((row) => {
-      const cat = row[colorKey];
-      if (cat && !seen.has(cat)) {
-        seen.add(cat);
-        categories.push(cat);
-      }
-    });
-    return categories.map((cat) => ({
-      key: cat,
-      label: cat.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()),
-      color: colorMap.get(cat) || 'var(--radf-series-1)',
-    }));
-  }, [data, colorKey, colorMap]);
+  const seriesIndices = useMemo(() => resolveNonRedSeriesIndices(), []);
 
   const filteredData = useMemo(() => {
     if (!hiddenKeys?.size || !colorKey) {
@@ -220,16 +413,125 @@ function BulletChart({
     return data.filter((row) => !hiddenKeys.has(row[colorKey]));
   }, [data, hiddenKeys, colorKey]);
 
+  const barColorMap = useMemo(
+    () => buildCategoryColorMap(filteredData, colorKey, seriesIndices),
+    [filteredData, colorKey, seriesIndices]
+  );
+
+  const annotationColorMap = useMemo(
+    () =>
+      leftAnnotationKey === colorKey
+        ? barColorMap
+        : buildCategoryColorMap(filteredData, leftAnnotationKey, seriesIndices),
+    [filteredData, leftAnnotationKey, colorKey, seriesIndices, barColorMap]
+  );
+
+  const legendItems = useMemo(() => {
+    if (!colorKey || !filteredData?.length) {
+      return [];
+    }
+    const categories = [];
+    const seen = new Set();
+    filteredData.forEach((row) => {
+      const cat = normalizeKey(row[colorKey]);
+      if (cat && !seen.has(cat)) {
+        seen.add(cat);
+        categories.push(cat);
+      }
+    });
+    return categories.map((cat) => {
+      const entry = barColorMap.get(cat);
+      return {
+        key: cat,
+        label: cat.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()),
+        index: entry?.index ?? 0,
+      };
+    });
+  }, [filteredData, colorKey, barColorMap]);
+
+  const outlierValueKey =
+    outlierConfig.valueKey ||
+    options.iqrValueKey ||
+    options.outlierValueKey ||
+    options.thresholdMarkers?.valueKey ||
+    'dept_threshold';
+
+  const markerValueKey =
+    options.markerLines?.valueKey ||
+    (markerConfig.valueKey && markerConfig.valueKey !== outlierValueKey
+      ? markerConfig.valueKey
+      : null) ||
+    options.averageKey ||
+    'dept_average';
+
+  const hasOutlierKey = useMemo(
+    () => filteredData.some((row) => Number.isFinite(row?.[outlierValueKey])),
+    [filteredData, outlierValueKey]
+  );
+
+  const iqrBounds = useMemo(() => {
+    if (hasOutlierKey) {
+      return new Map();
+    }
+    return computeIqrUpperBounds(filteredData, colorKey, xKey);
+  }, [filteredData, colorKey, xKey, hasOutlierKey]);
+
+  const hasMarkerKey = useMemo(
+    () => filteredData.some((row) => Number.isFinite(row?.[markerValueKey])),
+    [filteredData, markerValueKey]
+  );
+
+  const markerAverages = useMemo(() => {
+    if (hasMarkerKey) {
+      return new Map();
+    }
+    return computeGroupAverages(filteredData, colorKey, xKey);
+  }, [filteredData, colorKey, xKey, hasMarkerKey]);
+
+  const getMarkerValue = useCallback(
+    (row) => {
+      if (!markerEnabled) {
+        return null;
+      }
+      if (Number.isFinite(row?.[markerValueKey])) {
+        return row[markerValueKey];
+      }
+      const group = normalizeKey(colorKey ? row[colorKey] : 'all');
+      return markerAverages.get(group) ?? null;
+    },
+    [markerEnabled, markerValueKey, markerAverages, colorKey]
+  );
+
+  const getOutlierBound = useCallback(
+    (row) => {
+      if (Number.isFinite(row?.[outlierValueKey])) {
+        return row[outlierValueKey];
+      }
+      const group = normalizeKey(colorKey ? row[colorKey] : 'all');
+      return iqrBounds.get(group) ?? null;
+    },
+    [outlierValueKey, iqrBounds, colorKey]
+  );
+
+  const getExceeds = useCallback(
+    (row) => {
+      const bound = getOutlierBound(row);
+      const value = row?.[xKey];
+      return Number.isFinite(bound) && Number.isFinite(value) && value > bound;
+    },
+    [getOutlierBound, xKey]
+  );
+
   const maxValue = useMemo(() => {
     if (!filteredData.length) return 100;
     let max = 0;
     filteredData.forEach((row) => {
       const val = row[xKey] || 0;
-      const threshold = thresholdConfig?.enabled ? row[thresholdConfig.valueKey] || 0 : 0;
-      max = Math.max(max, val, threshold);
+      const markerValue = getMarkerValue(row) || 0;
+      max = Math.max(max, val, markerValue);
     });
     return max * 1.1;
-  }, [filteredData, xKey, thresholdConfig]);
+  }, [filteredData, xKey, getMarkerValue]);
 
   // X-axis tick values
   const xTicks = useMemo(() => {
@@ -241,23 +543,17 @@ function BulletChart({
     return ticks;
   }, [maxValue]);
 
-  // Check if any rows exceed threshold
-  const hasExceededThreshold = useMemo(() => {
-    if (!thresholdConfig?.enabled) return false;
-    return filteredData.some((row) => {
-      const val = row[xKey] || 0;
-      const threshold = row[thresholdConfig.valueKey];
-      return threshold != null && val > threshold;
-    });
-  }, [filteredData, xKey, thresholdConfig]);
+  // Check if any rows exceed peer bounds
+  const hasExceededThreshold = useMemo(
+    () => filteredData.some((row) => getExceeds(row)),
+    [filteredData, getExceeds]
+  );
 
-  const handleMouseEnter = useCallback((row, { x, y, barColor, exceedsThreshold }) => {
+  const handleMouseEnter = useCallback((row, { x, y }) => {
     setTooltip({
       visible: true,
       row,
       position: { x, y },
-      barColor,
-      exceedsThreshold,
     });
   }, []);
 
@@ -265,8 +561,15 @@ function BulletChart({
     setTooltip((prev) => ({ ...prev, visible: false }));
   }, []);
 
+  const markerLabel = markerConfig.label || 'Dept average';
+  const markerColor = markerConfig.color || 'var(--radf-border-divider)';
+  const subtitle =
+    options.subtitle ||
+    options.chartSubtitle ||
+    'Bars show individual OT; marker shows dept average; highlights indicate higher-than-peer OT';
+
   return (
-    <ChartContainer>
+    <ChartContainer subtitle={subtitle}>
       <div className="radf-bullet">
         {/* Header row */}
         <div className="radf-bullet__header">
@@ -305,9 +608,14 @@ function BulletChart({
               xKey={xKey}
               yKey={yKey}
               colorKey={colorKey}
-              colorMap={colorMap}
+              dotColorKey={leftAnnotationKey}
+              barColorMap={barColorMap}
+              dotColorMap={annotationColorMap}
+              showAnnotations={showAnnotations}
               maxValue={maxValue}
-              thresholdConfig={thresholdConfig}
+              markerValue={getMarkerValue(row)}
+              markerConfig={markerConfig}
+              outlierBound={getOutlierBound(row)}
               percentKey={percentKey}
               showPercent={showPercent}
               onClick={handlers.onClick}
@@ -337,7 +645,7 @@ function BulletChart({
         </div>
 
         {/* Legend */}
-        {(legendItems.length > 0 || thresholdConfig?.enabled || hasExceededThreshold) && (
+        {(legendItems.length > 0 || markerEnabled || hasExceededThreshold) && (
           <div className="radf-bullet__legend">
             <ul className="radf-bullet__legend-list">
               {legendItems.map((item) => {
@@ -358,31 +666,31 @@ function BulletChart({
                       onClick={() => handlers.onLegendToggle?.(item.key)}
                     >
                       <span
-                        className="radf-bullet__legend-swatch"
-                        style={{ background: item.color }}
+                        className={[
+                          'radf-bullet__legend-swatch',
+                          `radf-chart-color-${item.index}`,
+                        ].join(' ')}
                       />
                       <span className="radf-bullet__legend-label">{item.label}</span>
                     </button>
                   </li>
                 );
               })}
-              {thresholdConfig?.enabled && (
+              {markerEnabled && (
                 <li className="radf-bullet__legend-item radf-bullet__legend-item--threshold">
                   <span
                     className="radf-bullet__legend-line"
                     style={{
-                      background: thresholdConfig.color || 'var(--radf-accent-warning)',
+                      background: markerColor,
                     }}
                   />
-                  <span className="radf-bullet__legend-label">
-                    {thresholdConfig.label || 'Dept Threshold (μ + 1.5σ)'}
-                  </span>
+                  <span className="radf-bullet__legend-label">{markerLabel}</span>
                 </li>
               )}
               {hasExceededThreshold && (
                 <li className="radf-bullet__legend-item radf-bullet__legend-item--exceeded">
                   <span className="radf-bullet__legend-exceeded-swatch" />
-                  <span className="radf-bullet__legend-label">Exceeds Threshold</span>
+                  <span className="radf-bullet__legend-label">Higher than most peers</span>
                 </li>
               )}
             </ul>
@@ -396,11 +704,12 @@ function BulletChart({
           valueKey={xKey}
           colorKey={colorKey}
           percentKey={percentKey}
-          thresholdConfig={thresholdConfig}
-          barColor={tooltip.barColor}
-          exceedsThreshold={tooltip.exceedsThreshold}
+          markerLabel={markerLabel}
+          colorMap={barColorMap}
           position={tooltip.position}
           visible={tooltip.visible}
+          getMarkerValue={getMarkerValue}
+          getExceeds={getExceeds}
         />
       </div>
     </ChartContainer>

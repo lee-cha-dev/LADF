@@ -1,28 +1,30 @@
 /**
  * @module core/viz/common/BulletChartTooltip
- * @description Custom tooltip for BarWithThresholdPanel bullet charts.
- * Displays a comprehensive overview of the hovered row.
+ * @description Custom tooltip for bullet charts using Recharts payloads.
  */
 import React from 'react';
 
 /**
  * @typedef {Object} BulletChartTooltipProps
- * @property {Object} row - The data row being hovered.
+ * @property {boolean} [active] - Whether tooltip is active.
+ * @property {Array<Object>} [payload] - Recharts tooltip payload.
+ * @property {Object} [row] - Row data when not using Recharts payload.
  * @property {string} nameKey - Key for the name/label field.
  * @property {string} valueKey - Key for the primary value field.
  * @property {string} [colorKey] - Key for the category/department field.
  * @property {string} [percentKey] - Key for the percentage field.
- * @property {Object} [thresholdConfig] - Threshold configuration.
- * @property {string} barColor - The color of the bar.
- * @property {boolean} exceedsThreshold - Whether the value exceeds threshold.
- * @property {Object} [position] - Position coordinates { x, y }.
- * @property {boolean} [visible] - Whether tooltip is visible.
+ * @property {Map<string, { color: string, index: number }>} [colorMap] - Color map for categories.
+ * @property {Object} [position] - Tooltip position { x, y }.
+ * @property {boolean} [visible] - Whether tooltip is visible (non-Recharts mode).
+ * @property {string} [markerLabel] - Label for the marker value.
+ * @property {function(Object): number|null} [getMarkerValue] - Resolve marker value for row.
+ * @property {function(Object): boolean} [getExceeds] - Determine if row exceeds outlier rule.
  */
 
 /**
  * Format a numeric value for display.
  * @param {number} value - The value to format.
- * @param {string} [suffix] - Optional suffix (e.g., 'h' for hours).
+ * @param {string} [suffix] - Optional suffix.
  * @returns {string} Formatted value.
  */
 const formatValue = (value, suffix = '') => {
@@ -38,55 +40,61 @@ const formatValue = (value, suffix = '') => {
  * @returns {JSX.Element|null} Tooltip content.
  */
 function BulletChartTooltip({
+  active,
+  payload,
   row,
   nameKey,
   valueKey,
   colorKey,
   percentKey,
-  thresholdConfig,
-  barColor,
-  exceedsThreshold,
+  colorMap,
   position,
   visible,
+  markerLabel,
+  getMarkerValue,
+  getExceeds,
 }) {
-  if (!visible || !row) {
+  const isRecharts = Array.isArray(payload) && payload.length > 0;
+  const show = isRecharts ? active : visible;
+  if (!show) {
     return null;
   }
 
-  const name = row[nameKey] || 'Unknown';
-  const value = row[valueKey] || 0;
-  const category = colorKey ? row[colorKey] : null;
-  const percent = percentKey ? row[percentKey] : null;
-  const threshold = thresholdConfig?.enabled ? row[thresholdConfig.valueKey] : null;
+  const resolvedRow = isRecharts ? payload[0]?.payload : row;
+  if (!resolvedRow) {
+    return null;
+  }
+
+  const name = resolvedRow[nameKey] || 'Unknown';
+  const value = resolvedRow[valueKey] || 0;
+  const category = colorKey ? resolvedRow[colorKey] : null;
+  const percent = percentKey ? resolvedRow[percentKey] : null;
+  const markerValue = getMarkerValue ? getMarkerValue(resolvedRow) : null;
+  const exceeds = getExceeds ? getExceeds(resolvedRow) : false;
 
   const categoryLabel = category
     ? category.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
     : null;
+
+  const colorEntry = category != null ? colorMap?.get(String(category)) : null;
+  const dotClass = Number.isInteger(colorEntry?.index)
+    ? `radf-chart-color-${colorEntry.index}`
+    : 'radf-chart-color-0';
 
   const style = position
     ? {
         left: `${position.x}px`,
         top: `${position.y}px`,
       }
-    : {};
+    : undefined;
 
   return (
-    <div className="radf-bullet-tooltip" style={style}>
-      {/* Header with name and status */}
+    <div className="radf-chart-tooltip radf-bullet-tooltip" style={style}>
       <div className="radf-bullet-tooltip__header">
-        <span
-          className="radf-bullet-tooltip__dot"
-          style={{ background: barColor }}
-        />
+        <span className={["radf-bullet-tooltip__dot", dotClass].join(' ')} />
         <span className="radf-bullet-tooltip__name">{name}</span>
-        {exceedsThreshold && (
-          <span className="radf-bullet-tooltip__exceeded-badge">
-            Exceeds Threshold
-          </span>
-        )}
       </div>
 
-      {/* Category/Department */}
       {categoryLabel && (
         <div className="radf-bullet-tooltip__row">
           <span className="radf-bullet-tooltip__label">Department</span>
@@ -94,7 +102,6 @@ function BulletChartTooltip({
         </div>
       )}
 
-      {/* Primary Value */}
       <div className="radf-bullet-tooltip__row radf-bullet-tooltip__row--primary">
         <span className="radf-bullet-tooltip__label">OT Hours</span>
         <span className="radf-bullet-tooltip__value radf-bullet-tooltip__value--primary">
@@ -102,54 +109,26 @@ function BulletChartTooltip({
         </span>
       </div>
 
-      {/* Threshold */}
-      {threshold != null && (
+      {markerValue != null && (
         <div className="radf-bullet-tooltip__row">
-          <span className="radf-bullet-tooltip__label">
-            {thresholdConfig.label || 'Threshold'}
-          </span>
+          <span className="radf-bullet-tooltip__label">{markerLabel || 'Dept average'}</span>
           <span className="radf-bullet-tooltip__value">
-            {formatValue(threshold, 'h')}
+            {formatValue(markerValue, 'h')}
           </span>
         </div>
       )}
 
-      {/* Variance from Threshold */}
-      {threshold != null && (
-        <div className="radf-bullet-tooltip__row">
-          <span className="radf-bullet-tooltip__label">Variance</span>
-          <span
-            className={[
-              'radf-bullet-tooltip__value',
-              exceedsThreshold
-                ? 'radf-bullet-tooltip__value--negative'
-                : 'radf-bullet-tooltip__value--positive',
-            ].join(' ')}
-          >
-            {exceedsThreshold ? '+' : ''}
-            {formatValue(value - threshold, 'h')}
-          </span>
-        </div>
-      )}
-
-      {/* Percentage of Total */}
       {percent != null && (
         <div className="radf-bullet-tooltip__row">
           <span className="radf-bullet-tooltip__label">% of Total</span>
-          <span className="radf-bullet-tooltip__value">
-            {percent.toFixed(1)}%
-          </span>
+          <span className="radf-bullet-tooltip__value">{percent.toFixed(1)}%</span>
         </div>
       )}
 
-      {/* Exceeded Threshold Warning */}
-      {exceedsThreshold && (
+      {exceeds && (
         <div className="radf-bullet-tooltip__warning">
           <span className="radf-bullet-tooltip__warning-icon">⚠</span>
-          <span className="radf-bullet-tooltip__warning-text">
-            This value exceeds the department threshold by{' '}
-            {formatValue(value - threshold, 'h')}
-          </span>
+          <span className="radf-bullet-tooltip__warning-text">Higher than most peers</span>
         </div>
       )}
     </div>

@@ -1,7 +1,7 @@
 /**
  * Bullet chart table styles
- * Three-column layout: names | bars with threshold markers | percent
- * Includes vertical grid lines and exceeded threshold legend
+ * Three-column layout: names | bars with marker lines | percent
+ * Includes vertical grid lines and exceeded peer legend
  */
 
 .radf-bullet {
@@ -176,7 +176,7 @@
     white-space: nowrap;
 }
 
-/* Threshold marker - vertical line on the bar */
+/* Marker line - vertical line on the bar */
 .radf-bullet__threshold {
     position: absolute;
     top: -2px;
@@ -296,7 +296,7 @@
     border-radius: 2px;
 }
 
-/* Exceeded Threshold Legend Item */
+/* Exceeded Peers Legend Item */
 .radf-bullet__legend-item--exceeded {
     display: inline-flex;
     align-items: center;
