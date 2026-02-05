@@ -6,7 +6,7 @@
 import React, { useMemo, useRef, useState, useCallback } from 'react';
 import ChartContainer from '../common/ChartContainer.jsx';
 import BulletChartTooltip from '../common/BulletChartTooltip.jsx';
-import { getSeriesVar } from '../common/paletteRegistry';
+import { getSeriesVar } from "../palettes/paletteRegistry.js";
 
 const SERIES_COUNT = 12;
 
