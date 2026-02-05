@@ -18,7 +18,7 @@
     grid-template-columns: minmax(140px, 2fr) 5fr minmax(80px, 1fr);
     gap: var(--radf-space-2);
     padding: var(--radf-space-2) 0;
-    border-bottom: 1px solid var(--radf-border-subtle);
+    border-bottom: 1px solid var(--radf-border-divider);
 }
 
 .radf-bullet__header .radf-bullet__bar-cell {
@@ -51,7 +51,7 @@
     flex-direction: column;
 }
 
-/* Vertical Grid Lines */
+/* Vertical Grid Lines — dashed to match Recharts CartesianGrid (strokeDasharray 3 3) */
 .radf-bullet__grid-lines {
     position: absolute;
     top: 0;
@@ -76,7 +76,13 @@
     top: 0;
     bottom: 0;
     width: 1px;
-    background: var(--radf-chart-grid, rgba(148, 163, 184, 0.2));
+    background: repeating-linear-gradient(
+            to bottom,
+            var(--radf-chart-grid, rgba(148, 163, 184, 0.2)) 0px,
+            var(--radf-chart-grid, rgba(148, 163, 184, 0.2)) 3px,
+            transparent 3px,
+            transparent 6px
+    );
     transform: translateX(-50%);
 }
 
@@ -176,7 +182,8 @@
     white-space: nowrap;
 }
 
-/* Marker line - vertical line on the bar */
+/* Marker line — vertical line on the bar (dept average) */
+.radf-bullet__marker,
 .radf-bullet__threshold {
     position: absolute;
     top: -2px;
@@ -202,7 +209,7 @@
     grid-template-columns: minmax(140px, 2fr) 5fr minmax(80px, 1fr);
     gap: var(--radf-space-2);
     padding: var(--radf-space-2) 0;
-    border-top: 1px solid var(--radf-border-subtle);
+    border-top: 1px solid var(--radf-border-divider);
 }
 
 .radf-bullet__axis-ticks {
@@ -279,6 +286,8 @@
     color: var(--radf-text-secondary);
 }
 
+/* Marker legend item (dept average line) */
+.radf-bullet__legend-item--marker,
 .radf-bullet__legend-item--threshold {
     display: inline-flex;
     align-items: center;

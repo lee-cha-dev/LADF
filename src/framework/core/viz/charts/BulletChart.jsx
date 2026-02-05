@@ -3,7 +3,7 @@
  * @description Bullet chart table with per-row marker lines, department coloring,
  * vertical grid lines, and a three-column layout (names | bars | percent).
  */
-import React, { useMemo, useState, useCallback } from 'react';
+import React, { useMemo, useRef, useState, useCallback } from 'react';
 import ChartContainer from '../common/ChartContainer.jsx';
 import BulletChartTooltip from '../common/BulletChartTooltip.jsx';
 import { getSeriesVar } from '../palettes/paletteRegistry';
@@ -126,16 +126,6 @@ const resolveNonRedSeriesIndices = () => {
 };
 
 /**
- * @typedef {Object} BarWithThresholdPanelProps
- * @property {Array<Object>} [data] - Chart data rows.
- * @property {Object} [encodings] - Encoding map (x/y/color).
- * @property {Object} [options] - Chart options.
- * @property {Object} [handlers] - Interaction handlers.
- * @property {Object|null} [colorAssignment] - Palette assignment helper.
- * @property {Set<string>} [hiddenKeys] - Keys hidden via legend toggles.
- */
-
-/**
  * Build a color map for categorical coloring using series palette.
  * Ensures each unique category gets a distinct color from the palette.
  */
@@ -144,7 +134,6 @@ const buildCategoryColorMap = (data, colorKey, seriesIndices) => {
     return new Map();
   }
 
-  // Get unique categories in order of first appearance
   const categories = [];
   const seen = new Set();
   data.forEach((row) => {
@@ -253,6 +242,18 @@ const computeGroupAverages = (data, groupKey, valueKey) => {
 };
 
 /**
+ * Sanitize legacy marker labels that contain threshold/sigma language.
+ * @param {string|undefined} raw - Raw label from config.
+ * @returns {string} Sanitized label.
+ */
+const sanitizeMarkerLabel = (raw) => {
+  if (!raw || /threshold/i.test(raw) || /[μσ]/.test(raw) || /std\s*dev/i.test(raw)) {
+    return 'Dept average';
+  }
+  return raw;
+};
+
+/**
  * Single bullet row component with tooltip support.
  */
 function BulletRow({
@@ -266,12 +267,14 @@ function BulletRow({
   showAnnotations,
   maxValue,
   markerValue,
-  markerConfig,
+  markerColor,
+  markerEnabled,
   outlierBound,
   percentKey,
   showPercent,
   onClick,
   onMouseEnter,
+  onMouseMove,
   onMouseLeave,
 }) {
   const value = row[xKey] || 0;
@@ -285,7 +288,6 @@ function BulletRow({
     : 'radf-chart-color-0';
   const dotColorClass = dotColorEntry ? `radf-chart-color-${dotColorEntry.index}` : barColorClass;
 
-  const markerEnabled = markerConfig?.enabled !== false;
   const percent = showPercent && percentKey ? row[percentKey] : null;
 
   const barWidthPercent = maxValue > 0 ? (value / maxValue) * 100 : 0;
@@ -296,13 +298,16 @@ function BulletRow({
 
   const handleMouseEnter = useCallback(
     (e) => {
-      const rect = e.currentTarget.getBoundingClientRect();
-      onMouseEnter?.(row, {
-        x: rect.left + rect.width / 2,
-        y: rect.top,
-      });
+      onMouseEnter?.(row, e);
     },
     [row, onMouseEnter]
+  );
+
+  const handleMouseMove = useCallback(
+    (e) => {
+      onMouseMove?.(row, e);
+    },
+    [row, onMouseMove]
   );
 
   return (
@@ -310,6 +315,7 @@ function BulletRow({
       className="radf-bullet__row"
       onClick={() => onClick?.(row)}
       onMouseEnter={handleMouseEnter}
+      onMouseMove={handleMouseMove}
       onMouseLeave={onMouseLeave}
       role="button"
       tabIndex={0}
@@ -350,10 +356,10 @@ function BulletRow({
           {/* Marker line */}
           {markerPercent != null && markerEnabled && (
             <div
-              className="radf-bullet__threshold"
+              className="radf-bullet__marker"
               style={{
                 left: `${markerPercent}%`,
-                background: markerConfig.color || 'var(--radf-border-divider)',
+                background: markerColor || 'var(--radf-text-muted)',
               }}
             />
           )}
@@ -374,6 +380,7 @@ function BulletRow({
  * Render a bullet chart table with per-row marker lines.
  */
 function BulletChart({ data = [], encodings = {}, options = {}, handlers = {}, hiddenKeys }) {
+  const bulletRef = useRef(null);
   const [tooltip, setTooltip] = useState({
     visible: false,
     row: null,
@@ -539,20 +546,53 @@ function BulletChart({ data = [], encodings = {}, options = {}, handlers = {}, h
     [filteredData, getExceeds]
   );
 
-  const handleMouseEnter = useCallback((row, { x, y }) => {
-    setTooltip({
-      visible: true,
-      row,
-      position: { x, y },
-    });
+  /**
+   * Compute tooltip position relative to the bullet container.
+   * @param {MouseEvent} e - Native mouse event.
+   * @returns {{x: number, y: number}|null} Container-relative coordinates.
+   */
+  const resolveTooltipPosition = useCallback((e) => {
+    const container = bulletRef.current;
+    if (!container) {
+      return null;
+    }
+    const rect = container.getBoundingClientRect();
+    return {
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top,
+    };
   }, []);
+
+  const handleMouseEnter = useCallback(
+    (row, e) => {
+      setTooltip({
+        visible: true,
+        row,
+        position: resolveTooltipPosition(e),
+      });
+    },
+    [resolveTooltipPosition]
+  );
+
+  const handleMouseMove = useCallback(
+    (row, e) => {
+      setTooltip((prev) => ({
+        ...prev,
+        row,
+        position: resolveTooltipPosition(e),
+      }));
+    },
+    [resolveTooltipPosition]
+  );
 
   const handleMouseLeave = useCallback(() => {
     setTooltip((prev) => ({ ...prev, visible: false }));
   }, []);
 
-  const markerLabel = markerConfig.label || 'Dept average';
-  const markerColor = markerConfig.color || 'var(--radf-border-divider)';
+  /* Sanitize legacy label — strip threshold / sigma language */
+  const markerLabel = sanitizeMarkerLabel(markerConfig.label);
+  /* Use explicit markerLines color, otherwise neutral token */
+  const markerColor = options.markerLines?.color || 'var(--radf-text-muted)';
   const subtitle =
     options.subtitle ||
     options.chartSubtitle ||
@@ -560,7 +600,7 @@ function BulletChart({ data = [], encodings = {}, options = {}, handlers = {}, h
 
   return (
     <ChartContainer subtitle={subtitle}>
-      <div className="radf-bullet">
+      <div className="radf-bullet" ref={bulletRef}>
         {/* Header row */}
         <div className="radf-bullet__header">
           <div className="radf-bullet__name-cell" />
@@ -604,12 +644,14 @@ function BulletChart({ data = [], encodings = {}, options = {}, handlers = {}, h
               showAnnotations={showAnnotations}
               maxValue={maxValue}
               markerValue={getMarkerValue(row)}
-              markerConfig={markerConfig}
+              markerColor={markerColor}
+              markerEnabled={markerEnabled}
               outlierBound={getOutlierBound(row)}
               percentKey={percentKey}
               showPercent={showPercent}
               onClick={handlers.onClick}
               onMouseEnter={handleMouseEnter}
+              onMouseMove={handleMouseMove}
               onMouseLeave={handleMouseLeave}
             />
           ))}
@@ -667,7 +709,7 @@ function BulletChart({ data = [], encodings = {}, options = {}, handlers = {}, h
                 );
               })}
               {markerEnabled && (
-                <li className="radf-bullet__legend-item radf-bullet__legend-item--threshold">
+                <li className="radf-bullet__legend-item radf-bullet__legend-item--marker">
                   <span
                     className="radf-bullet__legend-line"
                     style={{
