@@ -6,7 +6,7 @@
 import React, { useMemo, useRef, useState, useCallback } from 'react';
 import ChartContainer from '../common/ChartContainer.jsx';
 import BulletChartTooltip from '../common/BulletChartTooltip.jsx';
-import { getSeriesVar } from '../palettes/paletteRegistry';
+import { getSeriesVar } from '../common/paletteRegistry';
 
 const SERIES_COUNT = 12;
 
@@ -592,7 +592,7 @@ function BulletChart({ data = [], encodings = {}, options = {}, handlers = {}, h
   /* Sanitize legacy label — strip threshold / sigma language */
   const markerLabel = sanitizeMarkerLabel(markerConfig.label);
   /* Use explicit markerLines color, otherwise neutral token */
-  const markerColor = options.markerLines?.color || 'var(--radf-text-muted)';
+  const markerColor = options.markerLines?.color || '#E0E000';
   const subtitle =
     options.subtitle ||
     options.chartSubtitle ||
@@ -603,7 +603,9 @@ function BulletChart({ data = [], encodings = {}, options = {}, handlers = {}, h
       <div className="radf-bullet" ref={bulletRef}>
         {/* Header row */}
         <div className="radf-bullet__header">
-          <div className="radf-bullet__name-cell" />
+          <div className="radf-bullet__name-cell">
+            <span className="radf-bullet__axis-label radf-bullet-name-label">Employee</span>
+          </div>
           <div className="radf-bullet__bar-cell">
             <span className="radf-bullet__axis-label">OT Hours</span>
           </div>

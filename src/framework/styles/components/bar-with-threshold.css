@@ -34,6 +34,14 @@
     letter-spacing: 0.05em;
 }
 
+.radf-bullet-name-label {
+    padding-bottom: 1rem;
+    align-items: center;
+    display: flex;
+    justify-content: center;
+    align-content: center;
+}
+
 .radf-bullet__pct-header {
     font-size: 0.7rem;
     font-weight: var(--radf-font-weight-semibold);
@@ -94,6 +102,7 @@
 .radf-bullet__row {
     position: relative;
     display: grid;
+    border-radius: 6px;
     grid-template-columns: minmax(140px, 2fr) 5fr minmax(80px, 1fr);
     gap: var(--radf-space-2);
     align-items: center;
@@ -118,6 +127,7 @@
     align-items: center;
     gap: var(--radf-space-2);
     padding-right: var(--radf-space-2);
+    padding-left: var(--radf-space-4);
 }
 
 .radf-bullet__dot {
@@ -152,8 +162,13 @@
 .radf-bullet__track-bg {
     position: absolute;
     inset: 0;
-    background: var(--radf-surface-well, rgba(128, 128, 128, 0.15));
-    border-radius: 2px;
+    /*background: var(--radf-surface-well, rgba(128, 128, 128, 0.15));*/
+    /*background: #E0E0E0;*/
+    /*background: #D6D6D6;*/
+    /*background: #CCCCCC;*/
+    /* #B8B8B8 is for dark mode :: #E0E0E0 || #FFFFFF is for light mode */
+    background: #B8B8B8;
+    border-radius: 6px;
 }
 
 .radf-bullet__bar {
@@ -162,7 +177,7 @@
     left: 0;
     height: 100%;
     min-width: 2px;
-    border-radius: 2px;
+    border-radius: 6px;
     display: flex;
     align-items: center;
     justify-content: flex-end;
