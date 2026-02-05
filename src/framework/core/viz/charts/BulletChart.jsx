@@ -109,7 +109,7 @@ const isRedHue = (color) => {
 };
 
 /**
- * Resolve non-red series indices based on computed palette colors.
+ * Resolve non-red series indices based on computed palettes colors.
  * @returns {number[]} Series indices that avoid red hues.
  */
 const resolveNonRedSeriesIndices = () => {
@@ -126,8 +126,8 @@ const resolveNonRedSeriesIndices = () => {
 };
 
 /**
- * Build a color map for categorical coloring using series palette.
- * Ensures each unique category gets a distinct color from the palette.
+ * Build a color map for categorical coloring using series palettes.
+ * Ensures each unique category gets a distinct color from the palettes.
  */
 const buildCategoryColorMap = (data, colorKey, seriesIndices) => {
   if (!colorKey || !data?.length) {
@@ -593,13 +593,12 @@ function BulletChart({ data = [], encodings = {}, options = {}, handlers = {}, h
   const markerLabel = sanitizeMarkerLabel(markerConfig.label);
   /* Use explicit markerLines color, otherwise neutral token */
   const markerColor = options.markerLines?.color || '#E0E000';
-  const subtitle = options.subtitle || options.chartSubtitle || '';
   const xTitle = options.headerTitles.xTitle || '';
   const yTitle = options.headerTitles.yTitle || '';
   const percentTitle = options.headerTitles.percentTitle || '';
 
   return (
-    <ChartContainer subtitle={subtitle}>
+    <ChartContainer>
       <div className="radf-bullet" ref={bulletRef}>
         {/* Header row */}
         <div className="radf-bullet__header">
