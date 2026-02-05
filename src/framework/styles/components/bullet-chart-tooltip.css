@@ -1,143 +1,69 @@
 /**
- * Bullet Chart Tooltip Styles
- * Custom tooltip for BarWithThresholdPanel showing row overview
+ * Bullet chart tooltip styles.
  */
 
 .radf-bullet-tooltip {
-  position: absolute;
-  z-index: 1000;
-  min-width: 220px;
-  max-width: 300px;
-  padding: var(--radf-space-3);
-  background: var(--radf-surface-overlay, var(--radf-color-surface));
-  border: 1px solid var(--radf-border-subtle, var(--radf-color-border));
-  border-radius: var(--radf-radius-md);
-  box-shadow: var(--radf-shadow-high);
-  font-family: var(--radf-font-family);
-  font-size: 0.85rem;
-  pointer-events: none;
-  transform: translate(-50%, -100%);
-  margin-top: -12px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--radf-space-2);
 }
 
 .radf-bullet-tooltip__header {
   display: flex;
   align-items: center;
   gap: var(--radf-space-2);
-  padding-bottom: var(--radf-space-2);
-  border-bottom: 1px solid var(--radf-border-divider, var(--radf-color-border));
-  margin-bottom: var(--radf-space-2);
 }
 
 .radf-bullet-tooltip__dot {
-  flex-shrink: 0;
-  width: 12px;
-  height: 12px;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  flex-shrink: 0;
 }
 
 .radf-bullet-tooltip__name {
-  flex: 1;
   font-weight: var(--radf-font-weight-semibold);
-  color: var(--radf-text-primary, var(--radf-color-text));
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.radf-bullet-tooltip__exceeded-badge {
-  flex-shrink: 0;
-  padding: 2px 6px;
-  background: color-mix(in srgb, var(--radf-accent-danger) 15%, transparent);
-  border: 1px solid var(--radf-accent-danger);
-  border-radius: var(--radf-radius-sm);
-  font-size: 0.7rem;
-  font-weight: var(--radf-font-weight-semibold);
-  color: var(--radf-accent-danger);
-  text-transform: uppercase;
-  letter-spacing: 0.02em;
+  color: var(--radf-text-primary);
 }
 
 .radf-bullet-tooltip__row {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  padding: var(--radf-space-1) 0;
+  gap: var(--radf-space-4);
+  font-size: 0.85rem;
 }
 
 .radf-bullet-tooltip__row--primary {
-  background: var(--radf-surface-muted, rgba(128, 128, 128, 0.1));
-  margin: var(--radf-space-1) calc(var(--radf-space-3) * -1);
-  padding: var(--radf-space-2) var(--radf-space-3);
-  border-radius: var(--radf-radius-sm);
+  font-weight: var(--radf-font-weight-semibold);
 }
 
 .radf-bullet-tooltip__label {
-  color: var(--radf-text-muted, var(--radf-color-muted));
-  font-size: 0.8rem;
+  color: var(--radf-text-muted);
 }
 
 .radf-bullet-tooltip__value {
+  color: var(--radf-text-primary);
   font-weight: 500;
-  color: var(--radf-text-secondary, var(--radf-color-text));
 }
 
 .radf-bullet-tooltip__value--primary {
-  font-size: 1.1rem;
-  font-weight: var(--radf-font-weight-bold);
-  color: var(--radf-text-primary, var(--radf-color-text));
-}
-
-.radf-bullet-tooltip__value--positive {
-  color: var(--radf-accent-success);
-}
-
-.radf-bullet-tooltip__value--negative {
-  color: var(--radf-accent-danger);
+  color: var(--radf-text-primary);
+  font-weight: var(--radf-font-weight-semibold);
 }
 
 .radf-bullet-tooltip__warning {
-  display: flex;
-  align-items: flex-start;
+  display: inline-flex;
+  align-items: center;
   gap: var(--radf-space-2);
-  margin-top: var(--radf-space-2);
-  padding: var(--radf-space-2);
-  background: color-mix(in srgb, var(--radf-accent-danger) 10%, transparent);
-  border: 1px solid color-mix(in srgb, var(--radf-accent-danger) 30%, transparent);
-  border-radius: var(--radf-radius-sm);
+  font-size: 0.8rem;
+  color: var(--radf-accent-danger);
 }
 
 .radf-bullet-tooltip__warning-icon {
-  flex-shrink: 0;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
 }
 
 .radf-bullet-tooltip__warning-text {
-  font-size: 0.75rem;
-  color: var(--radf-accent-danger);
-  line-height: 1.4;
-}
-
-/* Arrow pointer */
-.radf-bullet-tooltip::after {
-  content: '';
-  position: absolute;
-  bottom: -8px;
-  left: 50%;
-  transform: translateX(-50%);
-  border-left: 8px solid transparent;
-  border-right: 8px solid transparent;
-  border-top: 8px solid var(--radf-surface-overlay, var(--radf-color-surface));
-}
-
-.radf-bullet-tooltip::before {
-  content: '';
-  position: absolute;
-  bottom: -10px;
-  left: 50%;
-  transform: translateX(-50%);
-  border-left: 9px solid transparent;
-  border-right: 9px solid transparent;
-  border-top: 9px solid var(--radf-border-subtle, var(--radf-color-border));
+  font-weight: var(--radf-font-weight-semibold);
 }
