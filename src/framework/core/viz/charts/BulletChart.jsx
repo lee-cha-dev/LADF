@@ -162,7 +162,7 @@ function BulletRow({
 /**
  * Render a bullet chart table with per-row threshold markers.
  */
-function BarWithThresholdPanel({
+function BulletChart({
   data = [],
   encodings = {},
   options = {},
@@ -407,4 +407,4 @@ function BarWithThresholdPanel({
   );
 }
 
-export default BarWithThresholdPanel;
+export default BulletChart;
