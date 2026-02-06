@@ -324,11 +324,7 @@ function BulletRow({
       <div className="radf-bullet__name-cell">
         {showAnnotations ? (
           <span
-            className={[
-              'radf-bullet__dot',
-              dotColorClass,
-              'slide-from-left-strong'
-            ].join(' ')}
+            className={['radf-bullet__dot', dotColorClass, 'slide-from-left-strong'].join(' ')}
           />
         ) : null}
         <span className="radf-bullet__name slide-from-left">{label}</span>
@@ -364,16 +360,10 @@ function BulletRow({
           {markerPercent != null && markerEnabled && (
             <div
               className="radf-bullet__marker fade-in"
-              style={
-                markerColor
-                  ? {
-                      left: `${markerPercent}%`,
-                      background: markerColor,
-                    }
-                  : {
-                      left: `${markerPercent}%`,
-                    }
-              }
+              style={{
+                left: `${markerPercent}%`,
+                background: markerColor || 'var(--radf-text-muted)',
+              }}
             />
           )}
         </div>
@@ -394,6 +384,7 @@ function BulletRow({
  */
 function BulletChart({ data = [], encodings = {}, options = {}, handlers = {}, hiddenKeys }) {
   const bulletRef = useRef(null);
+  const tooltipRef = useRef(null);
   const [tooltip, setTooltip] = useState({
     visible: false,
     row: null,
@@ -564,16 +555,46 @@ function BulletChart({ data = [], encodings = {}, options = {}, handlers = {}, h
    * @param {MouseEvent} e - Native mouse event.
    * @returns {{x: number, y: number}|null} Container-relative coordinates.
    */
+  /**
+   * Recharts-style tooltip positioning:
+   *  - Offsets AWAY from cursor (toward chart center on both axes)
+   *  - Flips below cursor when near top edge
+   *  - Clamps to container bounds so it never clips
+   */
+  const GAP = 12; // distance from cursor
+  const EDGE_PAD = 8; // keep off the container edges
+
   const resolveTooltipPosition = useCallback((e) => {
     const container = bulletRef.current;
-    if (!container) {
-      return null;
-    }
+    if (!container) return null;
+
     const rect = container.getBoundingClientRect();
-    return {
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top,
-    };
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+
+    // Measure real tooltip size (fallback to something sane before first paint)
+    const tRect = tooltipRef.current?.getBoundingClientRect();
+    const tW = tRect?.width ?? 220;
+    const tH = tRect?.height ?? 140;
+
+    const spaceRight = rect.width - mouseX;
+    const spaceLeft = mouseX;
+    const spaceAbove = mouseY;
+    const spaceBelow = rect.height - mouseY;
+
+    // Prefer right + above (Recharts-y), but flip if we’d clip
+    const placeRight = spaceRight >= tW + GAP + EDGE_PAD || spaceRight >= spaceLeft;
+    const placeAbove = spaceAbove >= tH + GAP + EDGE_PAD || spaceAbove >= spaceBelow;
+
+    // Compute TOP-LEFT coordinates (much easier than center + transforms)
+    let x = placeRight ? mouseX + GAP * 3 : mouseX - GAP * 3.25 - tW;
+    let y = placeAbove ? mouseY - GAP - tH : mouseY * 1.3 + GAP;
+
+    // Clamp top-left into container bounds
+    x = Math.max(EDGE_PAD, Math.min(x, rect.width - tW - EDGE_PAD));
+    y = Math.max(EDGE_PAD, Math.min(y, rect.height - tH - EDGE_PAD));
+
+    return { x, y };
   }, []);
 
   const handleMouseEnter = useCallback(
@@ -587,13 +608,18 @@ function BulletChart({ data = [], encodings = {}, options = {}, handlers = {}, h
     [resolveTooltipPosition]
   );
 
+  const rafRef = useRef(null);
+
   const handleMouseMove = useCallback(
     (row, e) => {
-      setTooltip((prev) => ({
-        ...prev,
-        row,
-        position: resolveTooltipPosition(e),
-      }));
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      rafRef.current = requestAnimationFrame(() => {
+        setTooltip((prev) => ({
+          ...prev,
+          row,
+          position: resolveTooltipPosition(e),
+        }));
+      });
     },
     [resolveTooltipPosition]
   );
@@ -604,8 +630,8 @@ function BulletChart({ data = [], encodings = {}, options = {}, handlers = {}, h
 
   /* Sanitize legacy label — strip threshold / sigma language */
   const markerLabel = sanitizeMarkerLabel(markerConfig.label);
-  /* Use explicit markerLines color, otherwise theme token */
-  const markerColor = options.markerLines?.color ?? null;
+  /* Use explicit markerLines color, otherwise neutral token */
+  const markerColor = options.markerLines?.color || '#E0E000';
   const xTitle = options.headerTitles.xTitle || '';
   const yTitle = options.headerTitles.yTitle || '';
   const percentTitle = options.headerTitles.percentTitle || '';
@@ -729,7 +755,9 @@ function BulletChart({ data = [], encodings = {}, options = {}, handlers = {}, h
                 <li className="radf-bullet__legend-item radf-bullet__legend-item--marker">
                   <span
                     className="radf-bullet__legend-line slide-from-bottom"
-                    style={markerColor ? { background: markerColor } : undefined}
+                    style={{
+                      background: markerColor,
+                    }}
                   />
                   <span className="radf-bullet__legend-label slide-from-bottom">{markerLabel}</span>
                 </li>
@@ -759,6 +787,7 @@ function BulletChart({ data = [], encodings = {}, options = {}, handlers = {}, h
           visible={tooltip.visible}
           getMarkerValue={getMarkerValue}
           getExceeds={getExceeds}
+          ref={tooltipRef}
         />
       </div>
     </ChartContainer>
