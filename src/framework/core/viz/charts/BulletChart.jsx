@@ -567,39 +567,46 @@ function BulletChart({ data = [], encodings = {}, options = {}, handlers = {}, h
 
     const rect = container.getBoundingClientRect();
 
-    console.log(
-      `e.clientX: ${e.clientX},\n` +
-        `e.clientY: ${e.clientY},\n` +
-        `e.clientWidth = ${e.clientWidth},\n` +
-        `e.clientHeight = ${e.clientHeight},\n` +
-        `rect.x: ${rect.x},\n` +
-        `rect.y: ${rect.y},\n` +
-        `rect.width: ${rect.width},\n` +
-        `rect.height: ${rect.height},\n` +
-        `rect.top: ${rect.top},\n` +
-        `rect.bottom: ${rect.bottom},\n` +
-        `rect.right: ${rect.right},\n` +
-        `rect.left: ${rect.left},\n`
-    );
+    // Mouse position relative to the container (resolution-independent)
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
 
-    const mouseXOffset = -50;
-    const mouseYOffset = -25;
+    // Determine quadrant by comparing to the container's midpoint
+    const inRightHalf = mouseX > rect.width / 2;
+    const inBottomHalf = mouseY > rect.height / 2;
 
-    const tipWidth = 250;
-    const tipHeight = 250;
+    // Measure actual tooltip size if available, otherwise use estimates
+    const tip = tooltipRef.current;
+    const tipWidth = tip ? tip.offsetWidth : 250;
+    const tipHeight = tip ? tip.offsetHeight : 150;
 
-    let x = e.clientX + mouseXOffset;
-    let y = e.clientY + mouseYOffset;
+    const gap = 25;
 
-    if (e.clientX * 1.5 + tipWidth >= rect.right) {
-      console.log('OUT OF BOUNDS! X');
-      // MOVE THE CARD TO THE LEFT
-      x = e.clientX - tipWidth + mouseXOffset;
+    let x;
+    let y;
+
+    if (inRightHalf && inBottomHalf) {
+      // Bottom-right quadrant: tooltip to the upper-left of the cursor
+      x = mouseX - tipWidth - gap;
+      y = mouseY - tipHeight - gap;
+    } else if (inRightHalf) {
+      // Upper-right quadrant: tooltip to the bottom-left of the cursor
+      x = mouseX - tipWidth - gap;
+      y = mouseY + gap * 2;
+    } else if (inBottomHalf) {
+      // Bottom-left quadrant: tooltip to the upper-right of the cursor
+      x = mouseX + gap;
+      y = mouseY - tipHeight - gap;
+    } else {
+      // Upper-left quadrant: tooltip to the bottom-right of the cursor
+      x = mouseX + gap;
+      y = mouseY + gap * 2;
     }
-    if (e.clientY * 1.5 + tipHeight >= rect.bottom) {
-      console.log('OUT OF BOUNDS! Y');
-      y = e.clientY - tipHeight;
-    }
+
+    // Clamp to container bounds so the tooltip never clips outside
+    x = Math.max(0, Math.min(x, rect.width - tipWidth));
+    y = Math.max(0, Math.min(y, rect.height - tipHeight));
+
     return { x, y };
   }, []);
 
