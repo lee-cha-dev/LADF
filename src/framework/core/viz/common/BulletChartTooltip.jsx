@@ -55,7 +55,6 @@ const BulletChartTooltip = forwardRef(function BulletChartTooltip(
 
   return (
     <div ref={tooltipRef} className="radf-chart-tooltip radf-bullet-tooltip" style={style}>
-      {/* ...rest unchanged... */}
       <div className="radf-bullet-tooltip__header">
         <span className={['radf-bullet-tooltip__dot', dotClass].join(' ')} />
         <span className="radf-bullet-tooltip__name">{name}</span>
