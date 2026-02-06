@@ -561,38 +561,86 @@ function BulletChart({ data = [], encodings = {}, options = {}, handlers = {}, h
    *  - Flips below cursor when near top edge
    *  - Clamps to container bounds so it never clips
    */
-  const GAP = 12; // distance from cursor
-  const EDGE_PAD = 8; // keep off the container edges
+  const EDGE_PAD = 8;
+  const OFFSET_X = 12; // horizontal gap from cursor
+  const OFFSET_ABOVE = 12; // vertical gap when tooltip is above
+
+  const clamp = (v, min, max) => Math.max(min, Math.min(v, max));
 
   const resolveTooltipPosition = useCallback((e) => {
     const container = bulletRef.current;
     if (!container) return null;
 
     const rect = container.getBoundingClientRect();
-    const mouseX = e.clientX - rect.left;
-    const mouseY = e.clientY - rect.top;
 
-    // Measure real tooltip size (fallback to something sane before first paint)
-    const tRect = tooltipRef.current?.getBoundingClientRect();
-    const tW = tRect?.width ?? 220;
-    const tH = tRect?.height ?? 140;
+    // vertical gap when tooltip is below (calc real time)
+    const OFFSET_BELOW = Math.min(48, Math.max(12, rect.height * 0.12));
 
-    const spaceRight = rect.width - mouseX;
-    const spaceLeft = mouseX;
-    const spaceAbove = mouseY;
-    const spaceBelow = rect.height - mouseY;
+    const cx = e.clientX - rect.left;
+    const cy = e.clientY - rect.top;
 
-    // Prefer right + above (Recharts-y), but flip if we’d clip
-    const placeRight = spaceRight >= tW + GAP + EDGE_PAD || spaceRight >= spaceLeft;
-    const placeAbove = spaceAbove >= tH + GAP + EDGE_PAD || spaceAbove >= spaceBelow;
+    const tipEl = tooltipRef.current;
+    const tW = tipEl?.offsetWidth ?? 220;
+    const tH = tipEl?.offsetHeight ?? 140;
 
-    // Compute TOP-LEFT coordinates (much easier than center + transforms)
-    let x = placeRight ? mouseX + GAP * 3 : mouseX - GAP * 3.25 - tW;
-    let y = placeAbove ? mouseY - GAP - tH : mouseY * 1.3 + GAP;
+    // Prefer right/below; flip if not enough room
+    const canRight = cx + OFFSET_X + tW + EDGE_PAD <= rect.width;
+    const canLeft = cx - OFFSET_X - tW - EDGE_PAD >= 0;
+    const canBelow = cy + OFFSET_BELOW + tH + EDGE_PAD <= rect.height;
+    const canAbove = cy - OFFSET_ABOVE - tH - EDGE_PAD >= 0;
 
-    // Clamp top-left into container bounds
-    x = Math.max(EDGE_PAD, Math.min(x, rect.width - tW - EDGE_PAD));
-    y = Math.max(EDGE_PAD, Math.min(y, rect.height - tH - EDGE_PAD));
+    const placeRight = canRight || !canLeft;
+    const placeBelow = canBelow || !canAbove;
+
+    // Desired position (top-left)
+    let x = placeRight ? cx + OFFSET_X : cx - OFFSET_X - tW;
+    let y = placeBelow ? cy + OFFSET_BELOW : cy - OFFSET_ABOVE - tH;
+
+    // ---- Cursor-aware clamping (this is the key) ----
+    // Normal container bounds:
+    const xMin = EDGE_PAD;
+    const xMax = rect.width - tW - EDGE_PAD;
+    const yMin = EDGE_PAD;
+    const yMax = rect.height - tH - EDGE_PAD;
+
+    // Exclusion zone around cursor to preserve offset:
+    // If tooltip is above cursor, its bottom edge must be <= (cy - OFFSET_ABOVE)
+    // => y + tH <= cy - OFFSET_ABOVE  => y <= cy - OFFSET_ABOVE - tH
+    // If tooltip is below cursor, its top edge must be >= (cy + OFFSET_BELOW)
+    // => y >= cy + OFFSET_BELOW
+    //
+    // Same idea horizontally:
+    // If right of cursor: x >= cx + OFFSET_X
+    // If left of cursor:  x + tW <= cx - OFFSET_X  => x <= cx - OFFSET_X - tW
+    let yMin2 = yMin;
+    let yMax2 = yMax;
+    if (placeBelow) {
+      yMin2 = Math.max(yMin2, cy + OFFSET_BELOW);
+    } else {
+      yMax2 = Math.min(yMax2, cy - OFFSET_ABOVE - tH);
+    }
+
+    let xMin2 = xMin;
+    let xMax2 = xMax;
+    if (placeRight) {
+      xMin2 = Math.max(xMin2, cx + OFFSET_X);
+    } else {
+      xMax2 = Math.min(xMax2, cx - OFFSET_X - tW);
+    }
+
+    // If the exclusion zone makes it impossible (e.g., near edges),
+    // fall back to normal clamping rather than snapping on top of cursor.
+    if (xMin2 > xMax2) {
+      xMin2 = xMin;
+      xMax2 = xMax;
+    }
+    if (yMin2 > yMax2) {
+      yMin2 = yMin;
+      yMax2 = yMax;
+    }
+
+    x = clamp(x, xMin2, xMax2);
+    y = clamp(y, yMin2, yMax2);
 
     return { x, y };
   }, []);
