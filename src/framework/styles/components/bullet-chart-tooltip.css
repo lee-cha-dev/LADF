@@ -1,16 +1,13 @@
-/**
- * Bullet chart tooltip styles.
- */
-
 .radf-bullet-tooltip {
   position: absolute;
   z-index: 1000;
-  pointer-events: none;
-  transform: translate(-50%, -100%);
+  transform: none; /* important */
+  pointer-events: none; /* prevents hover “jitter” */
   margin-top: -12px;
   display: flex;
   flex-direction: column;
   gap: var(--radf-space-2);
+  transition: left 300ms ease, top 300ms ease;
 }
 
 .radf-bullet-tooltip__header {
@@ -53,7 +50,6 @@
 }
 
 .radf-bullet-tooltip__value--primary {
-  color: var(--radf-text-primary);
   font-weight: var(--radf-font-weight-semibold);
 }
 
