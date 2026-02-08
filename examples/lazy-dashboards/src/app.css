@@ -504,6 +504,227 @@ a {
   gap: 8px;
 }
 
+.lazy-dataset {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 12px;
+}
+
+.lazy-dropzone {
+  border: 1px dashed var(--radf-border-strong);
+  border-radius: 16px;
+  padding: 18px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), transparent),
+    var(--radf-surface-2);
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease,
+    transform 0.2s ease;
+}
+
+.lazy-dropzone.is-active {
+  border-color: var(--radf-border-focus);
+  background: var(--radf-surface-1);
+  transform: translateY(-1px);
+}
+
+.lazy-dropzone__input {
+  display: none;
+}
+
+.lazy-dropzone__content {
+  display: grid;
+  gap: 8px;
+  place-items: center;
+}
+
+.lazy-dropzone__title {
+  margin: 0;
+  font-weight: 600;
+}
+
+.lazy-dropzone__subtitle {
+  margin: 0;
+  color: var(--radf-text-secondary);
+}
+
+.lazy-alert {
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--radf-surface-2);
+  border: 1px solid var(--radf-border-subtle);
+  color: var(--radf-text-secondary);
+  display: grid;
+  gap: 6px;
+  font-size: 0.85rem;
+}
+
+.lazy-alert.warning {
+  border-color: var(--radf-border-strong);
+  background: var(--radf-accent-secondary-soft);
+  color: var(--radf-text-primary);
+}
+
+.lazy-alert.danger {
+  border-color: var(--radf-accent-danger);
+  background: rgba(255, 71, 71, 0.12);
+  color: var(--radf-text-primary);
+}
+
+.lazy-dataset__details {
+  display: grid;
+  gap: 16px;
+}
+
+.lazy-dataset__meta {
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.lazy-dataset__label {
+  margin: 0;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--radf-text-muted);
+}
+
+.lazy-dataset__name {
+  margin: 4px 0 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.lazy-dataset__info {
+  margin: 6px 0 0;
+  color: var(--radf-text-secondary);
+  font-size: 0.85rem;
+}
+
+.lazy-dataset__preview {
+  display: grid;
+  gap: 8px;
+}
+
+.lazy-table {
+  border: 1px solid var(--radf-border-subtle);
+  border-radius: 12px;
+  overflow-x: auto;
+  background: var(--radf-surface-2);
+}
+
+.lazy-table__row {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(120px, 1fr);
+  border-top: 1px solid var(--radf-border-subtle);
+}
+
+.lazy-table__row:first-child {
+  border-top: none;
+}
+
+.lazy-table__head {
+  background: var(--radf-surface-1);
+  font-weight: 600;
+}
+
+.lazy-table__cell {
+  padding: 8px 10px;
+  font-size: 0.85rem;
+  border-right: 1px solid var(--radf-border-subtle);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lazy-table__cell:last-child {
+  border-right: none;
+}
+
+.lazy-dataset__note {
+  margin: 0;
+  color: var(--radf-text-muted);
+  font-size: 0.8rem;
+}
+
+.lazy-fields {
+  display: grid;
+  gap: 16px;
+}
+
+.lazy-fields__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.lazy-fields__hint {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--radf-text-secondary);
+}
+
+.lazy-fields__list {
+  display: grid;
+  gap: 14px;
+}
+
+.lazy-field {
+  padding: 16px;
+  border-radius: 14px;
+  border: 1px solid var(--radf-border-subtle);
+  background: var(--radf-surface-2);
+  display: grid;
+  gap: 12px;
+}
+
+.lazy-field__header {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.lazy-field__badges {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.lazy-field__controls {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.lazy-field__stats {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  font-size: 0.85rem;
+  color: var(--radf-text-secondary);
+}
+
+.lazy-field__samples {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--radf-text-secondary);
+}
+
+.lazy-field__hint {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--radf-text-muted);
+}
+
 .lazy-canvas {
   padding: 22px;
   border-radius: var(--lazy-radius);

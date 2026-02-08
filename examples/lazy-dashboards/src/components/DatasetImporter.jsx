@@ -1,0 +1,694 @@
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import * as XLSX from 'xlsx';
+import {
+  buildDatasetBinding,
+  collectDatasetWarnings,
+  formatBytes,
+  parseCsvText,
+  parseRowMatrix,
+  sanitizeFieldId,
+} from '../data/datasetImport.js';
+import { inferSchemaForTable } from '../data/schemaInference.js';
+
+const MAX_FILE_BYTES = 15 * 1024 * 1024;
+const WARN_FILE_BYTES = 5 * 1024 * 1024;
+const DEFAULT_PREVIEW_ROWS = 10;
+const DEFAULT_MAX_ROWS = 5000;
+
+const getFileType = (file) => {
+  const name = file?.name?.toLowerCase() || '';
+  if (name.endsWith('.csv')) {
+    return 'csv';
+  }
+  if (name.endsWith('.xlsx') || name.endsWith('.xls')) {
+    return 'xlsx';
+  }
+  return '';
+};
+
+const DatasetImporter = ({ datasetBinding, onUpdate }) => {
+  const inputRef = useRef(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [isParsing, setIsParsing] = useState(false);
+  const [error, setError] = useState('');
+  const [warnings, setWarnings] = useState(
+    datasetBinding?.warnings || []
+  );
+  const [pendingWorkbook, setPendingWorkbook] = useState(null);
+
+  const datasetSummary = useMemo(() => {
+    if (!datasetBinding) {
+      return null;
+    }
+    return {
+      name: datasetBinding.source?.fileName || 'Dataset',
+      size: datasetBinding.source?.fileSize || 0,
+      rows: datasetBinding.rowCount || 0,
+      columns: datasetBinding.columns?.length || 0,
+      sheetName: datasetBinding.source?.sheetName,
+      sheetNames: datasetBinding.source?.sheetNames || [],
+      truncated: datasetBinding.truncated,
+    };
+  }, [datasetBinding]);
+  const datasetColumns = datasetBinding?.columns || [];
+  const previewRows = datasetBinding?.previewRows || [];
+
+  const applyDataset = useCallback(
+    (dataset) => {
+      onUpdate?.(dataset);
+      setWarnings(dataset?.warnings || []);
+    },
+    [onUpdate]
+  );
+
+  const buildFieldProfiles = useCallback(
+    (columns) =>
+      columns.map(
+        ({
+          id,
+          label,
+          inferredType,
+          type,
+          inferredRole,
+          role,
+          stats,
+          sampleValues,
+          coercion,
+        }) => ({
+          id,
+          label,
+          inferredType,
+          type,
+          inferredRole,
+          role,
+          stats,
+          sampleValues,
+          coercion,
+        })
+      ),
+    []
+  );
+
+  const applyInference = useCallback(
+    (table) => {
+      const inferred = inferSchemaForTable(table);
+      return {
+        columns: inferred.columns,
+        fieldProfiles: buildFieldProfiles(inferred.columns),
+      };
+    },
+    [buildFieldProfiles]
+  );
+
+  const parseCsvFile = useCallback(
+    async (file, extraWarnings = []) => {
+      const text = await file.text();
+      const table = parseCsvText(text, {
+        maxRows: DEFAULT_MAX_ROWS,
+        previewRows: DEFAULT_PREVIEW_ROWS,
+      });
+      table.warnings = [...extraWarnings, ...collectDatasetWarnings(table)];
+      const inference = applyInference(table);
+      const dataset = buildDatasetBinding({
+        fileName: file.name,
+        fileSize: file.size,
+        fileType: 'csv',
+        table: { ...table, columns: inference.columns },
+        fieldProfiles: inference.fieldProfiles,
+      });
+      setPendingWorkbook(null);
+      applyDataset(dataset);
+    },
+    [applyDataset, applyInference]
+  );
+
+  const parseWorkbook = useCallback(
+    (arrayBuffer, sheetName) => {
+      const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+      const targetSheetName = sheetName || workbook.SheetNames?.[0];
+      if (!targetSheetName) {
+        return { error: 'No sheets were found in this workbook.' };
+      }
+      const sheet = workbook.Sheets[targetSheetName];
+      const rows = XLSX.utils.sheet_to_json(sheet, {
+        header: 1,
+        raw: false,
+        blankrows: false,
+      });
+      const table = parseRowMatrix(rows, {
+        maxRows: DEFAULT_MAX_ROWS,
+        previewRows: DEFAULT_PREVIEW_ROWS,
+      });
+      table.warnings = collectDatasetWarnings(table);
+      const inference = applyInference(table);
+      return {
+        table: { ...table, columns: inference.columns },
+        fieldProfiles: inference.fieldProfiles,
+        sheetNames: workbook.SheetNames || [],
+        sheetName: targetSheetName,
+      };
+    },
+    [applyInference]
+  );
+
+  const parseXlsxFile = useCallback(
+    async (file, extraWarnings = []) => {
+      const arrayBuffer = await file.arrayBuffer();
+      const parsed = parseWorkbook(arrayBuffer);
+      if (parsed.error) {
+        setError(parsed.error);
+        return;
+      }
+      parsed.table.warnings = [
+        ...extraWarnings,
+        ...collectDatasetWarnings(parsed.table),
+      ];
+      const dataset = buildDatasetBinding({
+        fileName: file.name,
+        fileSize: file.size,
+        fileType: 'xlsx',
+        sheetName: parsed.sheetName,
+        sheetNames: parsed.sheetNames,
+        table: parsed.table,
+        fieldProfiles: parsed.fieldProfiles,
+      });
+      setPendingWorkbook({
+        arrayBuffer,
+        fileName: file.name,
+        fileSize: file.size,
+        sheetNames: parsed.sheetNames,
+        sheetName: parsed.sheetName,
+      });
+      applyDataset(dataset);
+    },
+    [applyDataset, parseWorkbook]
+  );
+
+  const handleFile = useCallback(
+    async (file) => {
+      if (!file) {
+        return;
+      }
+      setError('');
+      setWarnings([]);
+      const sizeWarnings = [];
+      if (file.size > MAX_FILE_BYTES) {
+        setError(
+          `This file is ${formatBytes(
+            file.size
+          )}. Please import a file smaller than ${formatBytes(
+            MAX_FILE_BYTES
+          )}.`
+        );
+        return;
+      }
+      if (file.size > WARN_FILE_BYTES) {
+        sizeWarnings.push(
+          'Large file detected. Import may take a moment and will sample rows if needed.',
+        );
+      }
+      const fileType = getFileType(file);
+      try {
+        setIsParsing(true);
+        if (fileType === 'csv') {
+          await parseCsvFile(file, sizeWarnings);
+        } else if (fileType === 'xlsx') {
+          await parseXlsxFile(file, sizeWarnings);
+        } else {
+          setError('Unsupported file type. Please use CSV or XLSX.');
+        }
+      } catch {
+        setError('Unable to parse this file. Please check the format.');
+      } finally {
+        setIsParsing(false);
+      }
+    },
+    [parseCsvFile, parseXlsxFile]
+  );
+
+  const handleFileChange = useCallback(
+    (event) => {
+      const file = event.target.files?.[0];
+      if (file) {
+        handleFile(file);
+      }
+      event.target.value = null;
+    },
+    [handleFile]
+  );
+
+  const handleDrop = useCallback(
+    (event) => {
+      event.preventDefault();
+      setIsDragging(false);
+      const file = event.dataTransfer.files?.[0];
+      if (file) {
+        handleFile(file);
+      }
+    },
+    [handleFile]
+  );
+
+  const handleDragOver = useCallback((event) => {
+    event.preventDefault();
+    setIsDragging(true);
+  }, []);
+
+  const handleDragLeave = useCallback(() => {
+    setIsDragging(false);
+  }, []);
+
+  const handlePickFile = useCallback(() => {
+    inputRef.current?.click();
+  }, []);
+
+  const handleSheetChange = useCallback(
+    (event) => {
+      const nextSheet = event.target.value;
+      if (!pendingWorkbook || !nextSheet) {
+        return;
+      }
+      const parsed = parseWorkbook(
+        pendingWorkbook.arrayBuffer,
+        nextSheet
+      );
+      if (parsed.error) {
+        setError(parsed.error);
+        return;
+      }
+      const dataset = buildDatasetBinding({
+        fileName: pendingWorkbook.fileName,
+        fileSize: pendingWorkbook.fileSize,
+        fileType: 'xlsx',
+        sheetName: parsed.sheetName,
+        sheetNames: pendingWorkbook.sheetNames,
+        table: parsed.table,
+        fieldProfiles: parsed.fieldProfiles,
+      });
+      setPendingWorkbook((current) =>
+        current
+          ? {
+              ...current,
+              sheetName: parsed.sheetName,
+            }
+          : current
+      );
+      applyDataset(dataset);
+    },
+    [applyDataset, parseWorkbook, pendingWorkbook]
+  );
+
+  useEffect(() => {
+    if (!datasetBinding?.columns?.length) {
+      return;
+    }
+    const needsInference = datasetBinding.columns.some(
+      (column) => !column.type || !column.stats
+    );
+    if (!needsInference) {
+      return;
+    }
+    const inference = applyInference({
+      columns: datasetBinding.columns,
+      rows: datasetBinding.rows || [],
+    });
+    applyDataset({
+      ...datasetBinding,
+      columns: inference.columns,
+      fieldProfiles: inference.fieldProfiles,
+    });
+  }, [datasetBinding, applyDataset, applyInference]);
+
+  const updateDataset = useCallback(
+    (updater) => {
+      if (!datasetBinding) {
+        return;
+      }
+      const next = updater(datasetBinding);
+      if (next) {
+        applyDataset(next);
+      }
+    },
+    [datasetBinding, applyDataset]
+  );
+
+  const handleFieldRename = useCallback(
+    (fieldId, nextLabel) => {
+      updateDataset((current) => {
+        let resolvedId = fieldId;
+        const nextColumns = current.columns.map((column, index) => {
+          if (column.id !== fieldId) {
+            return column;
+          }
+          const used = new Set(
+            current.columns
+              .filter((col) => col.id !== fieldId)
+              .map((col) => col.id)
+          );
+          const labelValue = nextLabel.trim();
+          const { id: nextId } = sanitizeFieldId(
+            labelValue || column.label || column.id,
+            index,
+            used
+          );
+          resolvedId = nextId;
+          return {
+            ...column,
+            id: nextId,
+            label: labelValue || column.label || nextId,
+          };
+        });
+        if (resolvedId === fieldId) {
+          return {
+            ...current,
+            columns: nextColumns,
+            fieldProfiles: buildFieldProfiles(nextColumns),
+          };
+        }
+
+        const nextRows = (current.rows || []).map((row) => {
+          if (!Object.prototype.hasOwnProperty.call(row, fieldId)) {
+            return row;
+          }
+          const nextRow = { ...row };
+          nextRow[resolvedId] = row[fieldId];
+          delete nextRow[fieldId];
+          return nextRow;
+        });
+        const previewCount = current.previewRows?.length || 0;
+        return {
+          ...current,
+          columns: nextColumns,
+          rows: nextRows,
+          previewRows: nextRows.slice(0, previewCount),
+          fieldProfiles: buildFieldProfiles(nextColumns),
+        };
+      });
+    },
+    [updateDataset, buildFieldProfiles]
+  );
+
+  const handleFieldTypeChange = useCallback(
+    (fieldId, nextType) => {
+      updateDataset((current) => {
+        const nextColumns = current.columns.map((column) =>
+          column.id === fieldId ? { ...column, type: nextType } : column
+        );
+        return {
+          ...current,
+          columns: nextColumns,
+          fieldProfiles: buildFieldProfiles(nextColumns),
+        };
+      });
+    },
+    [updateDataset, buildFieldProfiles]
+  );
+
+  const handleFieldRoleChange = useCallback(
+    (fieldId, nextRole) => {
+      updateDataset((current) => {
+        const nextColumns = current.columns.map((column) =>
+          column.id === fieldId ? { ...column, role: nextRole } : column
+        );
+        return {
+          ...current,
+          columns: nextColumns,
+          fieldProfiles: buildFieldProfiles(nextColumns),
+        };
+      });
+    },
+    [updateDataset, buildFieldProfiles]
+  );
+
+  const formatStatValue = useCallback((value, type) => {
+    if (value === null || value === undefined) {
+      return 'N/A';
+    }
+    if (type === 'date') {
+      const parsed = new Date(value);
+      if (!Number.isNaN(parsed.getTime())) {
+        return parsed.toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric',
+        });
+      }
+    }
+    if (typeof value === 'number') {
+      return value.toLocaleString('en-US');
+    }
+    return String(value);
+  }, []);
+
+  return (
+    <div className="lazy-dataset">
+      <div
+        className={`lazy-dropzone ${
+          isDragging ? 'is-active' : ''
+        }`}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+        role="button"
+        tabIndex={0}
+        onClick={handlePickFile}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            handlePickFile();
+          }
+        }}
+      >
+        <input
+          ref={inputRef}
+          className="lazy-dropzone__input"
+          type="file"
+          accept=".csv,.xlsx,.xls"
+          onChange={handleFileChange}
+        />
+        <div className="lazy-dropzone__content">
+          <p className="lazy-dropzone__title">
+            Drop a CSV or XLSX here
+          </p>
+          <p className="lazy-dropzone__subtitle">
+            Or click to browse from your computer.
+          </p>
+          <button className="lazy-button ghost" type="button">
+            Choose File
+          </button>
+        </div>
+      </div>
+
+      {isParsing && (
+        <div className="lazy-alert">
+          Parsing dataset, please wait…
+        </div>
+      )}
+      {error && (
+        <div className="lazy-alert danger">{error}</div>
+      )}
+      {warnings.length > 0 && (
+        <div className="lazy-alert warning">
+          {warnings.map((warning) => (
+            <span key={warning}>{warning}</span>
+          ))}
+        </div>
+      )}
+
+      {datasetSummary && (
+        <div className="lazy-dataset__details">
+          <div className="lazy-dataset__meta">
+            <div>
+              <p className="lazy-dataset__label">Current dataset</p>
+              <p className="lazy-dataset__name">
+                {datasetSummary.name}
+              </p>
+              <p className="lazy-dataset__info">
+                {datasetSummary.columns} columns{' · '}
+                {datasetSummary.rows} rows{' · '}
+                {formatBytes(datasetSummary.size)}
+                {datasetSummary.sheetName
+                  ? ` · Sheet: ${datasetSummary.sheetName}`
+                  : ''}
+              </p>
+            </div>
+            <button
+              className="lazy-button ghost"
+              type="button"
+              onClick={handlePickFile}
+            >
+              Replace Dataset
+            </button>
+          </div>
+
+          {pendingWorkbook?.sheetNames?.length > 1 && (
+            <label className="lazy-input">
+              <span className="lazy-input__label">Sheet</span>
+              <select
+                className="lazy-input__field"
+                value={pendingWorkbook.sheetName || ''}
+                onChange={handleSheetChange}
+              >
+                {pendingWorkbook.sheetNames.map((sheet) => (
+                  <option key={sheet} value={sheet}>
+                    {sheet}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
+
+          <div className="lazy-dataset__preview">
+            <p className="lazy-dataset__label">Preview</p>
+            <div className="lazy-table">
+              <div className="lazy-table__row lazy-table__head">
+                {datasetColumns.map((column) => (
+                  <span key={column.id} className="lazy-table__cell">
+                    {column.label || column.id}
+                  </span>
+                ))}
+              </div>
+              {previewRows.map((row, index) => (
+                <div
+                  key={`row-${index}`}
+                  className="lazy-table__row"
+                >
+                  {datasetColumns.map((column) => (
+                    <span
+                      key={`${index}-${column.id}`}
+                      className="lazy-table__cell"
+                    >
+                      {row[column.id]}
+                    </span>
+                  ))}
+                </div>
+              ))}
+            </div>
+            {datasetSummary.truncated && (
+              <p className="lazy-dataset__note">
+                Showing sample rows. The dataset was truncated for performance.
+              </p>
+            )}
+          </div>
+
+          {datasetColumns.length > 0 && (
+            <div className="lazy-fields">
+              <div className="lazy-fields__header">
+                <p className="lazy-dataset__label">Fields</p>
+                <p className="lazy-fields__hint">
+                  Adjust inferred types, roles, and export-ready names.
+                </p>
+              </div>
+              <div className="lazy-fields__list">
+                {datasetColumns.map((column) => (
+                  <div key={column.id} className="lazy-field">
+                    <div className="lazy-field__header">
+                      <label className="lazy-input">
+                        <span className="lazy-input__label">
+                          Field name
+                        </span>
+                        <input
+                          className="lazy-input__field"
+                          type="text"
+                          value={column.label || column.id}
+                          onChange={(event) =>
+                            handleFieldRename(
+                              column.id,
+                              event.target.value
+                            )
+                          }
+                        />
+                      </label>
+                      <div className="lazy-field__badges">
+                        <span className="lazy-pill">
+                          Type: {column.type || 'string'}
+                        </span>
+                        <span className="lazy-pill">
+                          Role: {column.role || 'dimension'}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="lazy-field__controls">
+                      <label className="lazy-input">
+                        <span className="lazy-input__label">
+                          Field type
+                        </span>
+                        <select
+                          className="lazy-input__field"
+                          value={column.type || 'string'}
+                          onChange={(event) =>
+                            handleFieldTypeChange(
+                              column.id,
+                              event.target.value
+                            )
+                          }
+                        >
+                          <option value="number">Number</option>
+                          <option value="date">Date</option>
+                          <option value="string">String</option>
+                          <option value="bool">Boolean</option>
+                        </select>
+                      </label>
+                      <label className="lazy-input">
+                        <span className="lazy-input__label">
+                          Field role
+                        </span>
+                        <select
+                          className="lazy-input__field"
+                          value={column.role || 'dimension'}
+                          onChange={(event) =>
+                            handleFieldRoleChange(
+                              column.id,
+                              event.target.value
+                            )
+                          }
+                        >
+                          <option value="metric">Metric</option>
+                          <option value="dimension">Dimension</option>
+                        </select>
+                      </label>
+                    </div>
+                    <div className="lazy-field__stats">
+                      <span>
+                        Nulls: {column.stats?.nullRate ?? 0}%
+                      </span>
+                      <span>
+                        Distinct: {column.stats?.distinctCount ?? 0}
+                      </span>
+                      <span>
+                        Min:{' '}
+                        {formatStatValue(
+                          column.stats?.min,
+                          column.type
+                        )}
+                      </span>
+                      <span>
+                        Max:{' '}
+                        {formatStatValue(
+                          column.stats?.max,
+                          column.type
+                        )}
+                      </span>
+                    </div>
+                    {column.sampleValues?.length > 0 && (
+                      <p className="lazy-field__samples">
+                        Samples: {column.sampleValues.join(', ')}
+                      </p>
+                    )}
+                    {(column.inferredType || column.inferredRole) && (
+                      <p className="lazy-field__hint">
+                        Inferred as {column.inferredType || 'string'} /{' '}
+                        {column.inferredRole || 'dimension'}.
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default DatasetImporter;
