@@ -1,19 +1,30 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import * as XLSX from 'xlsx';
 import {
+  buildApiDatasetBinding,
   buildDatasetBinding,
+  buildTableFromObjectRows,
   collectDatasetWarnings,
   formatBytes,
   parseCsvText,
   parseRowMatrix,
   sanitizeFieldId,
 } from '../data/datasetImport.js';
+import { fetchApiRows } from '../data/externalApiProvider.js';
 import { inferSchemaForTable } from '../data/schemaInference.js';
 
 const MAX_FILE_BYTES = 15 * 1024 * 1024;
 const WARN_FILE_BYTES = 5 * 1024 * 1024;
 const DEFAULT_PREVIEW_ROWS = 10;
 const DEFAULT_MAX_ROWS = 5000;
+const DEFAULT_API_CONFIG = {
+  baseUrl: '',
+  method: 'GET',
+  headers: [{ key: '', value: '' }],
+  queryParams: [{ key: '', value: '' }],
+  responsePath: '',
+  refreshInterval: '',
+};
 
 const getFileType = (file) => {
   const name = file?.name?.toLowerCase() || '';
@@ -26,11 +37,67 @@ const getFileType = (file) => {
   return '';
 };
 
+const normalizeApiConfig = (source) => {
+  if (!source) {
+    return DEFAULT_API_CONFIG;
+  }
+  return {
+    baseUrl: source.baseUrl || '',
+    method: source.method || 'GET',
+    headers:
+      source.headers && source.headers.length > 0
+        ? source.headers
+        : DEFAULT_API_CONFIG.headers,
+    queryParams:
+      source.queryParams && source.queryParams.length > 0
+        ? source.queryParams
+        : DEFAULT_API_CONFIG.queryParams,
+    responsePath: source.responsePath || '',
+    refreshInterval:
+      source.refreshInterval === null || source.refreshInterval === undefined
+        ? ''
+        : String(source.refreshInterval),
+  };
+};
+
+const normalizeApiConfigForSave = (config) => {
+  const refresh =
+    config.refreshInterval === '' ? null : Number(config.refreshInterval);
+  return {
+    baseUrl: config.baseUrl.trim(),
+    method: 'GET',
+    headers: (config.headers || []).filter((pair) => pair?.key),
+    queryParams: (config.queryParams || []).filter((pair) => pair?.key),
+    responsePath: config.responsePath.trim(),
+    refreshInterval:
+      Number.isFinite(refresh) && refresh > 0 ? refresh : null,
+  };
+};
+
+const buildEmptyApiTable = () => ({
+  columns: [],
+  rows: [],
+  preview: [],
+  warnings: [],
+  rowCount: 0,
+  rawRowCount: 0,
+  truncated: false,
+  sanitizedHeaders: false,
+});
+
 const DatasetImporter = ({ datasetBinding, onUpdate }) => {
   const inputRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isParsing, setIsParsing] = useState(false);
   const [error, setError] = useState('');
+  const [apiError, setApiError] = useState('');
+  const [isApiLoading, setIsApiLoading] = useState(false);
+  const [datasetMode, setDatasetMode] = useState(
+    datasetBinding?.source?.type === 'api' ? 'api' : 'file'
+  );
+  const [apiConfig, setApiConfig] = useState(() =>
+    normalizeApiConfig(datasetBinding?.source)
+  );
   const [warnings, setWarnings] = useState(
     datasetBinding?.warnings || []
   );
@@ -40,18 +107,39 @@ const DatasetImporter = ({ datasetBinding, onUpdate }) => {
     if (!datasetBinding) {
       return null;
     }
+    const isApi = datasetBinding.source?.type === 'api';
     return {
-      name: datasetBinding.source?.fileName || 'Dataset',
-      size: datasetBinding.source?.fileSize || 0,
+      name: isApi
+        ? 'External API'
+        : datasetBinding.source?.fileName || 'Dataset',
+      size: isApi ? 0 : datasetBinding.source?.fileSize || 0,
       rows: datasetBinding.rowCount || 0,
       columns: datasetBinding.columns?.length || 0,
-      sheetName: datasetBinding.source?.sheetName,
-      sheetNames: datasetBinding.source?.sheetNames || [],
+      sheetName: isApi ? null : datasetBinding.source?.sheetName,
+      sheetNames: isApi ? [] : datasetBinding.source?.sheetNames || [],
       truncated: datasetBinding.truncated,
+      sourceType: isApi ? 'api' : 'file',
+      endpoint: isApi ? datasetBinding.source?.baseUrl : null,
     };
   }, [datasetBinding]);
   const datasetColumns = datasetBinding?.columns || [];
   const previewRows = datasetBinding?.previewRows || [];
+
+  useEffect(() => {
+    const nextMode =
+      datasetBinding?.source?.type === 'api' ? 'api' : 'file';
+    setDatasetMode(nextMode);
+    if (nextMode === 'api') {
+      setApiConfig(normalizeApiConfig(datasetBinding?.source));
+    }
+  }, [datasetBinding]);
+
+  useEffect(() => {
+    if (datasetMode === 'file') {
+      setApiError('');
+      setIsApiLoading(false);
+    }
+  }, [datasetMode]);
 
   const applyDataset = useCallback(
     (dataset) => {
@@ -298,6 +386,99 @@ const DatasetImporter = ({ datasetBinding, onUpdate }) => {
     [applyDataset, parseWorkbook, pendingWorkbook]
   );
 
+  const updateApiConfigField = useCallback((field, value) => {
+    setApiConfig((current) => ({
+      ...current,
+      [field]: value,
+    }));
+  }, []);
+
+  const updateApiConfigPair = useCallback((listKey, index, field, value) => {
+    setApiConfig((current) => {
+      const nextList = [...(current[listKey] || [])];
+      nextList[index] = {
+        ...nextList[index],
+        [field]: value,
+      };
+      return {
+        ...current,
+        [listKey]: nextList,
+      };
+    });
+  }, []);
+
+  const addApiConfigPair = useCallback((listKey) => {
+    setApiConfig((current) => ({
+      ...current,
+      [listKey]: [...(current[listKey] || []), { key: '', value: '' }],
+    }));
+  }, []);
+
+  const removeApiConfigPair = useCallback((listKey, index) => {
+    setApiConfig((current) => ({
+      ...current,
+      [listKey]: (current[listKey] || []).filter(
+        (_, itemIndex) => itemIndex !== index
+      ),
+    }));
+  }, []);
+
+  const handleApiSave = useCallback(() => {
+    const normalized = normalizeApiConfigForSave(apiConfig);
+    const table =
+      datasetBinding?.source?.type === 'api'
+        ? {
+            columns: datasetBinding.columns || [],
+            rows: datasetBinding.rows || [],
+            preview: datasetBinding.previewRows || [],
+            warnings: datasetBinding.warnings || [],
+            rowCount: datasetBinding.rowCount || 0,
+            rawRowCount: datasetBinding.rawRowCount || 0,
+            truncated: datasetBinding.truncated || false,
+            sanitizedHeaders: datasetBinding.sanitizedHeaders || false,
+          }
+        : buildEmptyApiTable();
+    const dataset = buildApiDatasetBinding({
+      apiConfig: normalized,
+      table,
+      fieldProfiles: datasetBinding?.fieldProfiles || [],
+    });
+    applyDataset(dataset);
+    setApiError('');
+  }, [apiConfig, applyDataset, datasetBinding]);
+
+  const handleApiFetchSample = useCallback(async () => {
+    const normalized = normalizeApiConfigForSave(apiConfig);
+    setApiError('');
+    setIsApiLoading(true);
+    try {
+      const rows = await fetchApiRows(normalized);
+      const table = buildTableFromObjectRows(rows, {
+        maxRows: DEFAULT_MAX_ROWS,
+        previewRows: DEFAULT_PREVIEW_ROWS,
+      });
+      const inference = inferSchemaForTable({
+        columns: table.columns,
+        rows: table.rows,
+      });
+      const dataset = buildApiDatasetBinding({
+        apiConfig: normalized,
+        table: { ...table, columns: inference.columns },
+        fieldProfiles: buildFieldProfiles(inference.columns),
+      });
+      applyDataset(dataset);
+      setWarnings(dataset.warnings || []);
+    } catch (err) {
+      setApiError(
+        err instanceof Error
+          ? err.message
+          : 'Unable to reach this API.'
+      );
+    } finally {
+      setIsApiLoading(false);
+    }
+  }, [apiConfig, applyDataset, buildFieldProfiles]);
+
   useEffect(() => {
     if (!datasetBinding?.columns?.length) {
       return;
@@ -442,50 +623,267 @@ const DatasetImporter = ({ datasetBinding, onUpdate }) => {
 
   return (
     <div className="lazy-dataset">
-      <div
-        className={`lazy-dropzone ${
-          isDragging ? 'is-active' : ''
-        }`}
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
-        onDrop={handleDrop}
-        role="button"
-        tabIndex={0}
-        onClick={handlePickFile}
-        onKeyDown={(event) => {
-          if (event.key === 'Enter' || event.key === ' ') {
-            handlePickFile();
-          }
-        }}
-      >
-        <input
-          ref={inputRef}
-          className="lazy-dropzone__input"
-          type="file"
-          accept=".csv,.xlsx,.xls"
-          onChange={handleFileChange}
-        />
-        <div className="lazy-dropzone__content">
-          <p className="lazy-dropzone__title">
-            Drop a CSV or XLSX here
-          </p>
-          <p className="lazy-dropzone__subtitle">
-            Or click to browse from your computer.
-          </p>
-          <button className="lazy-button ghost" type="button">
-            Choose File
+      <div className="lazy-source-toggle">
+        <p className="lazy-dataset__label">Data source</p>
+        <div className="lazy-toggle">
+          <button
+            className={`lazy-toggle__button${
+              datasetMode === 'file' ? ' active' : ''
+            }`}
+            type="button"
+            onClick={() => setDatasetMode('file')}
+          >
+            File upload
+          </button>
+          <button
+            className={`lazy-toggle__button${
+              datasetMode === 'api' ? ' active' : ''
+            }`}
+            type="button"
+            onClick={() => setDatasetMode('api')}
+          >
+            External API
           </button>
         </div>
       </div>
 
-      {isParsing && (
-        <div className="lazy-alert">
-          Parsing dataset, please wait…
+      {datasetMode === 'file' ? (
+        <>
+          <div
+            className={`lazy-dropzone ${
+              isDragging ? 'is-active' : ''
+            }`}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            role="button"
+            tabIndex={0}
+            onClick={handlePickFile}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter' || event.key === ' ') {
+                handlePickFile();
+              }
+            }}
+          >
+            <input
+              ref={inputRef}
+              className="lazy-dropzone__input"
+              type="file"
+              accept=".csv,.xlsx,.xls"
+              onChange={handleFileChange}
+            />
+            <div className="lazy-dropzone__content">
+              <p className="lazy-dropzone__title">
+                Drop a CSV or XLSX here
+              </p>
+              <p className="lazy-dropzone__subtitle">
+                Or click to browse from your computer.
+              </p>
+              <button className="lazy-button ghost" type="button">
+                Choose File
+              </button>
+            </div>
+          </div>
+
+          {isParsing && (
+            <div className="lazy-alert">
+              Parsing dataset, please wait…
+            </div>
+          )}
+          {error && (
+            <div className="lazy-alert danger">{error}</div>
+          )}
+        </>
+      ) : (
+        <div className="lazy-api">
+          <div className="lazy-api__intro">
+            <p className="lazy-panel__body">
+              Configure a GET endpoint and preview the response shape. Use the
+              response path to target the array of rows (for example,
+              data.items).
+            </p>
+            <div className="lazy-alert warning">
+              <strong>CORS matters.</strong>
+              <span>
+                The browser must be allowed to call the API. Secret headers are
+                visible to anyone using this dashboard.
+              </span>
+            </div>
+          </div>
+          <div className="lazy-api__form">
+            <label className="lazy-input">
+              <span className="lazy-input__label">Base URL</span>
+              <input
+                className="lazy-input__field"
+                type="text"
+                value={apiConfig.baseUrl}
+                onChange={(event) =>
+                  updateApiConfigField('baseUrl', event.target.value)
+                }
+                placeholder="https://api.example.com/v1/data"
+              />
+            </label>
+            <label className="lazy-input">
+              <span className="lazy-input__label">Method</span>
+              <select className="lazy-input__field" value="GET" disabled>
+                <option value="GET">GET</option>
+              </select>
+            </label>
+            <label className="lazy-input">
+              <span className="lazy-input__label">Response path</span>
+              <input
+                className="lazy-input__field"
+                type="text"
+                value={apiConfig.responsePath}
+                onChange={(event) =>
+                  updateApiConfigField('responsePath', event.target.value)
+                }
+                placeholder="data.items"
+              />
+            </label>
+            <label className="lazy-input">
+              <span className="lazy-input__label">
+                Refresh interval (seconds)
+              </span>
+              <input
+                className="lazy-input__field"
+                type="number"
+                min="0"
+                value={apiConfig.refreshInterval}
+                onChange={(event) =>
+                  updateApiConfigField('refreshInterval', event.target.value)
+                }
+                placeholder="60"
+              />
+            </label>
+          </div>
+
+          <div className="lazy-api__list">
+            <div className="lazy-api__list-header">
+              <p className="lazy-dataset__label">Query params</p>
+              <button
+                className="lazy-button ghost"
+                type="button"
+                onClick={() => addApiConfigPair('queryParams')}
+              >
+                Add param
+              </button>
+            </div>
+            {(apiConfig.queryParams || []).map((param, index) => (
+              <div key={`param-${index}`} className="lazy-api__row">
+                <input
+                  className="lazy-input__field"
+                  type="text"
+                  value={param.key}
+                  onChange={(event) =>
+                    updateApiConfigPair(
+                      'queryParams',
+                      index,
+                      'key',
+                      event.target.value
+                    )
+                  }
+                  placeholder="param"
+                />
+                <input
+                  className="lazy-input__field"
+                  type="text"
+                  value={param.value}
+                  onChange={(event) =>
+                    updateApiConfigPair(
+                      'queryParams',
+                      index,
+                      'value',
+                      event.target.value
+                    )
+                  }
+                  placeholder="value"
+                />
+                <button
+                  className="lazy-button ghost"
+                  type="button"
+                  onClick={() => removeApiConfigPair('queryParams', index)}
+                >
+                  Remove
+                </button>
+              </div>
+            ))}
+          </div>
+
+          <div className="lazy-api__list">
+            <div className="lazy-api__list-header">
+              <p className="lazy-dataset__label">Headers</p>
+              <button
+                className="lazy-button ghost"
+                type="button"
+                onClick={() => addApiConfigPair('headers')}
+              >
+                Add header
+              </button>
+            </div>
+            {(apiConfig.headers || []).map((header, index) => (
+              <div key={`header-${index}`} className="lazy-api__row">
+                <input
+                  className="lazy-input__field"
+                  type="text"
+                  value={header.key}
+                  onChange={(event) =>
+                    updateApiConfigPair(
+                      'headers',
+                      index,
+                      'key',
+                      event.target.value
+                    )
+                  }
+                  placeholder="Header-Name"
+                />
+                <input
+                  className="lazy-input__field"
+                  type="text"
+                  value={header.value}
+                  onChange={(event) =>
+                    updateApiConfigPair(
+                      'headers',
+                      index,
+                      'value',
+                      event.target.value
+                    )
+                  }
+                  placeholder="value"
+                />
+                <button
+                  className="lazy-button ghost"
+                  type="button"
+                  onClick={() => removeApiConfigPair('headers', index)}
+                >
+                  Remove
+                </button>
+              </div>
+            ))}
+          </div>
+
+          <div className="lazy-api__actions">
+            <button
+              className="lazy-button ghost"
+              type="button"
+              onClick={handleApiSave}
+            >
+              Save API source
+            </button>
+            <button
+              className="lazy-button"
+              type="button"
+              onClick={handleApiFetchSample}
+              disabled={isApiLoading}
+            >
+              {isApiLoading ? 'Fetching...' : 'Fetch sample'}
+            </button>
+          </div>
+
+          {apiError && <div className="lazy-alert danger">{apiError}</div>}
         </div>
       )}
-      {error && (
-        <div className="lazy-alert danger">{error}</div>
-      )}
+
       {warnings.length > 0 && (
         <div className="lazy-alert warning">
           {warnings.map((warning) => (
@@ -505,22 +903,30 @@ const DatasetImporter = ({ datasetBinding, onUpdate }) => {
               <p className="lazy-dataset__info">
                 {datasetSummary.columns} columns{' · '}
                 {datasetSummary.rows} rows{' · '}
-                {formatBytes(datasetSummary.size)}
+                {datasetSummary.sourceType === 'file'
+                  ? formatBytes(datasetSummary.size)
+                  : 'External API'}
+                {datasetSummary.endpoint
+                  ? ` · Endpoint: ${datasetSummary.endpoint}`
+                  : ''}
                 {datasetSummary.sheetName
                   ? ` · Sheet: ${datasetSummary.sheetName}`
                   : ''}
               </p>
             </div>
-            <button
-              className="lazy-button ghost"
-              type="button"
-              onClick={handlePickFile}
-            >
-              Replace Dataset
-            </button>
+            {datasetSummary.sourceType === 'file' ? (
+              <button
+                className="lazy-button ghost"
+                type="button"
+                onClick={handlePickFile}
+              >
+                Replace Dataset
+              </button>
+            ) : null}
           </div>
 
-          {pendingWorkbook?.sheetNames?.length > 1 && (
+          {datasetSummary.sourceType === 'file' &&
+            pendingWorkbook?.sheetNames?.length > 1 ? (
             <label className="lazy-input">
               <span className="lazy-input__label">Sheet</span>
               <select
@@ -535,7 +941,7 @@ const DatasetImporter = ({ datasetBinding, onUpdate }) => {
                 ))}
               </select>
             </label>
-          )}
+          ) : null}
 
           <div className="lazy-dataset__preview">
             <p className="lazy-dataset__label">Preview</p>

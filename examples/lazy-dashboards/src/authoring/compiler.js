@@ -1,4 +1,5 @@
 import { normalizeAuthoringModel } from './authoringModel.js';
+import { generateExternalApiProviderModule } from '../data/externalApiProvider.js';
 
 const uniq = (values) => Array.from(new Set(values.filter(Boolean)));
 
@@ -110,6 +111,10 @@ export const compileAuthoringModel = ({ dashboard, authoringModel }) => {
     dimensions: normalized.semanticLayer?.enabled
       ? generateDimensionsModule(normalized.semanticLayer.dimensions)
       : null,
+    dataProvider:
+      normalized.datasetBinding?.source?.type === 'api'
+        ? generateExternalApiProviderModule(normalized.datasetBinding.source)
+        : null,
   };
   return { config, modules };
 };

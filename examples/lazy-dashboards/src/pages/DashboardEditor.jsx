@@ -21,6 +21,7 @@ import {
 import DatasetImporter from '../components/DatasetImporter.jsx';
 import LivePreviewPanel from '../components/LivePreviewPanel.jsx';
 import { createLocalDataProvider } from '../data/localDataProvider.js';
+import { createExternalApiDataProvider } from '../data/externalApiProvider.js';
 import {
   buildDefaultSemanticLayer,
   buildDimensionSuggestions,
@@ -134,6 +135,12 @@ const DashboardEditor = () => {
     [compiledPreview]
   );
   const previewProvider = useMemo(() => {
+    if (
+      datasetBinding?.source?.type === 'api' &&
+      datasetBinding.source?.baseUrl
+    ) {
+      return createExternalApiDataProvider(datasetBinding.source);
+    }
     if (datasetBinding?.rows?.length) {
       return createLocalDataProvider({
         rows: datasetBinding.rows,

@@ -538,6 +538,57 @@ a {
   margin-top: 12px;
 }
 
+.lazy-source-toggle {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.lazy-api {
+  display: grid;
+  gap: 16px;
+}
+
+.lazy-api__intro {
+  display: grid;
+  gap: 10px;
+}
+
+.lazy-api__form {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+.lazy-api__list {
+  display: grid;
+  gap: 10px;
+}
+
+.lazy-api__list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.lazy-api__row {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 10px;
+  align-items: center;
+}
+
+.lazy-api__actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
 .lazy-semantic {
   display: grid;
   gap: 16px;
@@ -1331,5 +1382,13 @@ a {
   .lazy-card.is-list {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .lazy-api__row {
+    grid-template-columns: 1fr;
+  }
+
+  .lazy-api__actions {
+    justify-content: stretch;
   }
 }

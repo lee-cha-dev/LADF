@@ -146,6 +146,85 @@ export const parseCsvText = (text, options = {}) => {
 export const parseRowMatrix = (rows, options = {}) =>
   normalizeTable(rows, options);
 
+export const buildTableFromObjectRows = (rows = [], options = {}) => {
+  const maxRows = options.maxRows ?? DEFAULT_MAX_ROWS;
+  const previewRows = options.previewRows ?? DEFAULT_PREVIEW_ROWS;
+  const rawRows = Array.isArray(rows) ? rows : [];
+  const objectRows = rawRows.filter(
+    (row) => row && typeof row === 'object' && !Array.isArray(row)
+  );
+  if (objectRows.length === 0) {
+    return {
+      columns: [],
+      rows: [],
+      preview: [],
+      warnings: ['No rows found in the API response.'],
+      rowCount: 0,
+      rawRowCount: rawRows.length,
+      truncated: false,
+      sanitizedHeaders: false,
+    };
+  }
+
+  const truncated = objectRows.length > maxRows;
+  const limitedRows = truncated ? objectRows.slice(0, maxRows) : objectRows;
+  const keys = new Set();
+  limitedRows.forEach((row) => {
+    Object.keys(row).forEach((key) => keys.add(key));
+  });
+
+  const used = new Set();
+  let sanitizedHeaders = false;
+  const columns = Array.from(keys).map((key, index) => {
+    const { id, original, wasSanitized } = sanitizeFieldId(
+      key,
+      index,
+      used
+    );
+    if (wasSanitized) {
+      sanitizedHeaders = true;
+    }
+    return {
+      id,
+      label: original || id,
+      originalKey: key,
+    };
+  });
+
+  const formattedRows = limitedRows.map((row) => {
+    const record = {};
+    columns.forEach((column) => {
+      const rawValue = row[column.originalKey];
+      record[column.id] =
+        typeof rawValue === 'string' ? rawValue.trim() : rawValue;
+    });
+    return record;
+  });
+
+  const warnings = [];
+  if (sanitizedHeaders) {
+    warnings.push(
+      'Some API fields were renamed to keep column names consistent.'
+    );
+  }
+  if (truncated) {
+    warnings.push(
+      `Loaded the first ${formattedRows.length} rows to keep editing responsive.`
+    );
+  }
+
+  return {
+    columns,
+    rows: formattedRows,
+    preview: formattedRows.slice(0, previewRows),
+    warnings,
+    rowCount: formattedRows.length,
+    rawRowCount: objectRows.length,
+    truncated,
+    sanitizedHeaders,
+  };
+};
+
 export const formatBytes = (bytes) => {
   if (bytes < 1024) {
     return `${bytes} B`;
@@ -170,6 +249,7 @@ export const buildDatasetBinding = ({
   id: `dataset_${Date.now().toString(36)}`,
   importedAt: new Date().toISOString(),
   source: {
+    type: 'file',
     fileName,
     fileSize,
     fileType,
@@ -184,6 +264,33 @@ export const buildDatasetBinding = ({
   truncated: table.truncated,
   warnings: table.warnings,
   sanitizedHeaders: table.sanitizedHeaders,
+  fieldProfiles: fieldProfiles || [],
+});
+
+export const buildApiDatasetBinding = ({
+  apiConfig,
+  table,
+  fieldProfiles,
+} = {}) => ({
+  id: `dataset_${Date.now().toString(36)}`,
+  importedAt: new Date().toISOString(),
+  source: {
+    type: 'api',
+    baseUrl: apiConfig?.baseUrl || '',
+    method: apiConfig?.method || 'GET',
+    headers: apiConfig?.headers || [],
+    queryParams: apiConfig?.queryParams || [],
+    responsePath: apiConfig?.responsePath || '',
+    refreshInterval: apiConfig?.refreshInterval || null,
+  },
+  columns: table?.columns || [],
+  rows: table?.rows || [],
+  previewRows: table?.preview || [],
+  rowCount: table?.rowCount || 0,
+  rawRowCount: table?.rawRowCount || 0,
+  truncated: table?.truncated || false,
+  warnings: table?.warnings || [],
+  sanitizedHeaders: table?.sanitizedHeaders || false,
   fieldProfiles: fieldProfiles || [],
 });
 
