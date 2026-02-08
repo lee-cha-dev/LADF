@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import useDashboardRegistry from '../hooks/useDashboardRegistry.js';
 import {
@@ -28,6 +28,9 @@ const DashboardEditor = () => {
   const { dashboardId } = useParams();
   const { getDashboardById, updateDashboard } = useDashboardRegistry();
   const dashboard = getDashboardById(dashboardId);
+  const gridRef = useRef(null);
+  const interactionRef = useRef(null);
+  const lastSavedModelRef = useRef('');
   const [lastSavedAt, setLastSavedAt] = useState(
     dashboard?.updatedAt || null
   );
@@ -41,6 +44,13 @@ const DashboardEditor = () => {
     dashboard?.authoringModel?.widgets?.[0]?.id || null
   );
   const [showAdvancedOptions, setShowAdvancedOptions] = useState(false);
+  const [isAddWidgetOpen, setIsAddWidgetOpen] = useState(false);
+  const [selectedVizType, setSelectedVizType] = useState('kpi');
+  const [pendingRemoveWidgetId, setPendingRemoveWidgetId] = useState(null);
+  const GRID_COLUMNS = 12;
+  const GRID_ROWS = 24;
+  const GRID_GAP = 12;
+  const GRID_ROW_HEIGHT = 48;
 
   useEffect(() => {
     setLastSavedAt(dashboard?.updatedAt || null);
@@ -57,6 +67,7 @@ const DashboardEditor = () => {
       normalized.datasetBinding = dashboard.datasetBinding;
     }
     setAuthoringModel(normalized);
+    lastSavedModelRef.current = JSON.stringify(normalized);
     if (!activeWidgetId && normalized.widgets.length > 0) {
       setActiveWidgetId(normalized.widgets[0].id);
     }
@@ -156,6 +167,7 @@ const DashboardEditor = () => {
     if (updated?.updatedAt) {
       setLastSavedAt(updated.updatedAt);
     }
+    lastSavedModelRef.current = JSON.stringify(authoringModel);
   };
 
   const handleDatasetUpdate = useCallback((nextDataset) => {
@@ -166,23 +178,14 @@ const DashboardEditor = () => {
   }, []);
 
   const handleAddWidget = () => {
-    const vizChoices = vizManifests.map((manifest) => manifest.id).join(', ');
-    const vizType =
-      window
-        .prompt(
-          `Viz type (${vizChoices})`,
-          vizManifests[0]?.id || 'kpi'
-        )
-        ?.trim() || '';
-    if (!vizType) {
-      return;
-    }
+    const vizType = selectedVizType || vizManifests[0]?.id || 'kpi';
     setAuthoringModel((current) => {
       const widget = createWidgetDraft(current, { vizType });
       const next = addWidgetToModel(current, widget);
       setActiveWidgetId(widget.id);
       return next;
     });
+    setIsAddWidgetOpen(false);
   };
 
   const handleRemoveWidget = (widgetId) => {
@@ -193,6 +196,7 @@ const DashboardEditor = () => {
       }
       return next;
     });
+    setPendingRemoveWidgetId(null);
   };
 
   const handleWidgetFieldChange = (widgetId, key, value) => {
@@ -491,6 +495,211 @@ const DashboardEditor = () => {
     return Array.from(options);
   }, [datasetColumns, semanticLayer]);
   const fieldOptionsListId = 'lazy-field-options';
+  const openAddWidgetModal = () => {
+    setSelectedVizType(vizManifests[0]?.id || 'kpi');
+    setIsAddWidgetOpen(true);
+  };
+  const closeAddWidgetModal = () => {
+    setIsAddWidgetOpen(false);
+  };
+  const handleRequestRemoveWidget = (widgetId) => {
+    setPendingRemoveWidgetId(widgetId);
+  };
+  const pendingRemoveWidget = pendingRemoveWidgetId
+    ? authoringModel.widgets.find(
+        (widget) => widget.id === pendingRemoveWidgetId
+      )
+    : null;
+  const getVizPrereqs = (manifest) => {
+    const prereqs = [];
+    if (!datasetBinding) {
+      prereqs.push('Dataset binding required');
+    }
+    const required =
+      manifest?.encodings?.required?.map(
+        (encoding) => encoding.label || encoding.id
+      ) || [];
+    if (required.length > 0) {
+      prereqs.push(`Required encodings: ${required.join(', ')}`);
+    } else {
+      prereqs.push('No required encodings');
+    }
+    return prereqs;
+  };
+  const gridClasses = (layout) => {
+    const safeLayout = layout || { x: 1, y: 1, w: 4, h: 2 };
+    const width = Math.min(Math.max(safeLayout.w, 1), GRID_COLUMNS);
+    const height = Math.min(Math.max(safeLayout.h, 1), GRID_ROWS);
+    const maxX = GRID_COLUMNS - width + 1;
+    const maxY = GRID_ROWS - height + 1;
+    const x = Math.min(Math.max(safeLayout.x, 1), Math.max(maxX, 1));
+    const y = Math.min(Math.max(safeLayout.y, 1), Math.max(maxY, 1));
+    return `lazy-grid-x-${x} lazy-grid-y-${y} lazy-grid-w-${width} lazy-grid-h-${height}`;
+  };
+  const overlaps = (a, b) =>
+    a.x < b.x + b.w &&
+    a.x + a.w > b.x &&
+    a.y < b.y + b.h &&
+    a.y + a.h > b.y;
+  const resolveCollision = (widgetId, nextLayout, widgets) => {
+    let candidate = { ...nextLayout };
+    let guard = 0;
+    while (
+      widgets.some(
+        (widget) =>
+          widget.id !== widgetId &&
+          widget.layout &&
+          overlaps(candidate, widget.layout)
+      )
+    ) {
+      candidate.y += 1;
+      if (candidate.y > GRID_ROWS) {
+        break;
+      }
+      guard += 1;
+      if (guard > GRID_ROWS) {
+        break;
+      }
+    }
+    return candidate;
+  };
+  const getGridMetrics = () => {
+    const grid = gridRef.current;
+    if (!grid) {
+      return null;
+    }
+    const rect = grid.getBoundingClientRect();
+    const styles = window.getComputedStyle(grid);
+    const paddingLeft = parseFloat(styles.paddingLeft) || 0;
+    const paddingRight = parseFloat(styles.paddingRight) || 0;
+    const innerWidth = rect.width - paddingLeft - paddingRight;
+    const totalGap = GRID_GAP * (GRID_COLUMNS - 1);
+    const colWidth =
+      GRID_COLUMNS > 0 ? (innerWidth - totalGap) / GRID_COLUMNS : 0;
+    return {
+      rect,
+      colWidth,
+      rowStep: GRID_ROW_HEIGHT + GRID_GAP,
+    };
+  };
+  const getDeltaFromPointer = (origin, event) => {
+    const metrics = getGridMetrics();
+    if (!metrics) {
+      return { dx: 0, dy: 0 };
+    }
+    const { colWidth, rowStep } = metrics;
+    const colStep = colWidth + GRID_GAP;
+    return {
+      dx: Math.round((event.clientX - origin.x) / colStep),
+      dy: Math.round((event.clientY - origin.y) / rowStep),
+    };
+  };
+  const updateLayoutForInteraction = useCallback((event) => {
+    const interaction = interactionRef.current;
+    if (!interaction) {
+      return;
+    }
+    const { widgetId, origin, startLayout, type } = interaction;
+    const { dx, dy } = getDeltaFromPointer(origin, event);
+    setAuthoringModel((current) => {
+      const target = current.widgets.find((widget) => widget.id === widgetId);
+      if (!target) {
+        return current;
+      }
+      let nextLayout = { ...startLayout };
+      if (type === 'move') {
+        const maxX = GRID_COLUMNS - startLayout.w + 1;
+        const maxY = GRID_ROWS - startLayout.h + 1;
+        nextLayout = {
+          ...startLayout,
+          x: Math.min(Math.max(startLayout.x + dx, 1), Math.max(maxX, 1)),
+          y: Math.min(Math.max(startLayout.y + dy, 1), Math.max(maxY, 1)),
+        };
+      }
+      if (type === 'resize') {
+        const maxW = GRID_COLUMNS - startLayout.x + 1;
+        const maxH = GRID_ROWS - startLayout.y + 1;
+        nextLayout = {
+          ...startLayout,
+          w: Math.min(Math.max(startLayout.w + dx, 1), Math.max(maxW, 1)),
+          h: Math.min(Math.max(startLayout.h + dy, 1), Math.max(maxH, 1)),
+        };
+      }
+      nextLayout = resolveCollision(widgetId, nextLayout, current.widgets);
+      return updateWidgetInModel(current, widgetId, {
+        layout: nextLayout,
+        draft: false,
+      });
+    });
+  }, []);
+  const handlePointerMove = useCallback(
+    (event) => {
+      if (!interactionRef.current) {
+        return;
+      }
+      updateLayoutForInteraction(event);
+    },
+    [updateLayoutForInteraction]
+  );
+  const handlePointerUp = useCallback(() => {
+    if (!interactionRef.current) {
+      return;
+    }
+    interactionRef.current = null;
+    window.removeEventListener('pointermove', handlePointerMove);
+    window.removeEventListener('pointerup', handlePointerUp);
+    document.body.classList.remove('lazy-dragging');
+  }, [handlePointerMove]);
+  const beginInteraction = (event, widget, type) => {
+    event.preventDefault();
+    event.stopPropagation();
+    interactionRef.current = {
+      widgetId: widget.id,
+      origin: { x: event.clientX, y: event.clientY },
+      startLayout: widget.layout,
+      type,
+    };
+    window.addEventListener('pointermove', handlePointerMove);
+    window.addEventListener('pointerup', handlePointerUp);
+    document.body.classList.add('lazy-dragging');
+  };
+
+  useEffect(
+    () => () => {
+      window.removeEventListener('pointermove', handlePointerMove);
+      window.removeEventListener('pointerup', handlePointerUp);
+      document.body.classList.remove('lazy-dragging');
+    },
+    [handlePointerMove, handlePointerUp]
+  );
+
+  useEffect(() => {
+    if (!dashboard) {
+      return undefined;
+    }
+    const serialized = JSON.stringify(authoringModel);
+    if (serialized === lastSavedModelRef.current) {
+      return undefined;
+    }
+    const timeout = setTimeout(() => {
+      const updated = updateDashboard(dashboardId, {
+        authoringModel,
+        compiledConfig: compiled.config,
+        datasetBinding: authoringModel.datasetBinding || null,
+      });
+      if (updated?.updatedAt) {
+        setLastSavedAt(updated.updatedAt);
+      }
+      lastSavedModelRef.current = serialized;
+    }, 900);
+    return () => clearTimeout(timeout);
+  }, [
+    authoringModel,
+    compiled.config,
+    dashboard,
+    dashboardId,
+    updateDashboard,
+  ]);
 
   if (!dashboard) {
     return (
@@ -752,6 +961,7 @@ const DashboardEditor = () => {
               ) : (
                 authoringModel.widgets.map((widget) => {
                   const status = validation.widgets[widget.id]?.status || 'draft';
+                  const issues = validation.widgets[widget.id]?.errors?.length || 0;
                   return (
                     <div
                       key={widget.id}
@@ -762,9 +972,16 @@ const DashboardEditor = () => {
                     >
                       <div className="lazy-widget-item__header">
                         <strong>{widget.title}</strong>
-                        <span className={`lazy-widget-status ${status}`}>
-                          {status}
-                        </span>
+                        <div className="lazy-widget-item__meta">
+                          {issues > 0 ? (
+                            <span className="lazy-widget-issues">
+                              {issues} issues
+                            </span>
+                          ) : null}
+                          <span className={`lazy-widget-status ${status}`}>
+                            {status}
+                          </span>
+                        </div>
                       </div>
                       <span className="lazy-widget-meta">
                         {widget.vizType} • {widget.layout.w}x{widget.layout.h}
@@ -775,7 +992,7 @@ const DashboardEditor = () => {
                           type="button"
                           onClick={(event) => {
                             event.stopPropagation();
-                            handleRemoveWidget(widget.id);
+                            handleRequestRemoveWidget(widget.id);
                           }}
                         >
                           Remove
@@ -786,7 +1003,11 @@ const DashboardEditor = () => {
                 })
               )}
             </div>
-            <button className="lazy-button ghost" type="button" onClick={handleAddWidget}>
+            <button
+              className="lazy-button ghost"
+              type="button"
+              onClick={openAddWidgetModal}
+            >
               Add Widget
             </button>
           </section>
@@ -794,20 +1015,73 @@ const DashboardEditor = () => {
         <section className="lazy-canvas">
           <div className="lazy-canvas__header">
             <h2 className="lazy-panel__title">Live Preview</h2>
-            <button className="lazy-button ghost" type="button" onClick={handleAddWidget}>
+            <button
+              className="lazy-button ghost"
+              type="button"
+              onClick={openAddWidgetModal}
+            >
               Add Widget
             </button>
           </div>
           <div className="lazy-canvas__stage">
-            {authoringModel.widgets.length === 0 ? (
-              <p className="lazy-canvas__empty">
-                Panels render here once widgets are configured.
-              </p>
-            ) : (
-              <pre className="lazy-code-block">
-                {JSON.stringify(compiled.config, null, 2)}
-              </pre>
-            )}
+            <div className="lazy-canvas__grid" ref={gridRef}>
+              {authoringModel.widgets.length === 0 ? (
+                <p className="lazy-canvas__empty">
+                  Panels render here once widgets are configured.
+                </p>
+              ) : (
+                authoringModel.widgets.map((widget) => {
+                  const status =
+                    validation.widgets[widget.id]?.status || 'draft';
+                  const issues =
+                    validation.widgets[widget.id]?.errors?.length || 0;
+                  return (
+                    <div
+                      key={widget.id}
+                      className={`lazy-canvas-item ${gridClasses(widget.layout)}${
+                        widget.id === activeWidgetId ? ' active' : ''
+                      }`}
+                      onClick={() => setActiveWidgetId(widget.id)}
+                    >
+                      <div
+                        className="lazy-canvas-item__header"
+                        onPointerDown={(event) => {
+                          setActiveWidgetId(widget.id);
+                          beginInteraction(event, widget, 'move');
+                        }}
+                      >
+                        <span className="lazy-canvas-item__title">
+                          {widget.title}
+                        </span>
+                        <div className="lazy-canvas-item__meta">
+                          {issues > 0 ? (
+                            <span className="lazy-widget-issues">
+                              {issues} issues
+                            </span>
+                          ) : null}
+                          <span className={`lazy-widget-status ${status}`}>
+                            {status}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="lazy-canvas-item__body">
+                        <span>{widget.vizType}</span>
+                        <span>{widget.layout.w}x{widget.layout.h}</span>
+                      </div>
+                      <button
+                        className="lazy-canvas-item__resize"
+                        type="button"
+                        aria-label="Resize widget"
+                        onPointerDown={(event) => {
+                          setActiveWidgetId(widget.id);
+                          beginInteraction(event, widget, 'resize');
+                        }}
+                      />
+                    </div>
+                  );
+                })
+              )}
+            </div>
           </div>
         </section>
         <section className="lazy-panel">
@@ -967,10 +1241,127 @@ const DashboardEditor = () => {
                   </ul>
                 </div>
               ) : null}
+              <div className="lazy-form__actions">
+                <button
+                  className="lazy-button danger"
+                  type="button"
+                  onClick={() => handleRequestRemoveWidget(activeWidget.id)}
+                >
+                  Remove widget
+                </button>
+              </div>
             </div>
           )}
         </section>
       </div>
+      {isAddWidgetOpen ? (
+        <div className="lazy-modal__backdrop" role="dialog" aria-modal="true">
+          <div className="lazy-modal">
+            <div className="lazy-modal__header">
+              <div>
+                <p className="lazy-modal__eyebrow">Widget library</p>
+                <h2 className="lazy-modal__title">Add widget</h2>
+              </div>
+              <button
+                className="lazy-button ghost"
+                type="button"
+                onClick={closeAddWidgetModal}
+              >
+                Close
+              </button>
+            </div>
+            <div className="lazy-modal__body">
+              <div className="lazy-viz-grid">
+                {vizManifests.map((manifest) => {
+                  const prereqs = getVizPrereqs(manifest);
+                  return (
+                    <button
+                      key={manifest.id}
+                      className={`lazy-viz-card${
+                        selectedVizType === manifest.id ? ' active' : ''
+                      }`}
+                      type="button"
+                      onClick={() => setSelectedVizType(manifest.id)}
+                    >
+                      <div className="lazy-viz-card__header">
+                        <span className="lazy-viz-card__title">
+                          {manifest.label}
+                        </span>
+                        <span className="lazy-viz-card__type">
+                          {manifest.id}
+                        </span>
+                      </div>
+                      <p className="lazy-viz-card__description">
+                        {manifest.description}
+                      </p>
+                      <div className="lazy-viz-card__prereqs">
+                        {prereqs.map((item) => (
+                          <span key={item} className="lazy-viz-card__prereq">
+                            {item}
+                          </span>
+                        ))}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+              {!datasetBinding ? (
+                <div className="lazy-alert warning">
+                  <strong>Dataset missing.</strong>
+                  <span>
+                    Import a dataset to unlock field suggestions and previews.
+                  </span>
+                </div>
+              ) : null}
+            </div>
+            <div className="lazy-modal__footer">
+              <button
+                className="lazy-button ghost"
+                type="button"
+                onClick={closeAddWidgetModal}
+              >
+                Cancel
+              </button>
+              <button className="lazy-button" type="button" onClick={handleAddWidget}>
+                Add widget
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+      {pendingRemoveWidget ? (
+        <div className="lazy-modal__backdrop" role="dialog" aria-modal="true">
+          <div className="lazy-modal">
+            <div className="lazy-modal__header">
+              <div>
+                <p className="lazy-modal__eyebrow">Confirm removal</p>
+                <h2 className="lazy-modal__title">Remove widget</h2>
+              </div>
+            </div>
+            <div className="lazy-modal__body">
+              <p className="lazy-panel__body">
+                Remove "{pendingRemoveWidget.title}" from the dashboard?
+              </p>
+            </div>
+            <div className="lazy-modal__footer">
+              <button
+                className="lazy-button ghost"
+                type="button"
+                onClick={() => setPendingRemoveWidgetId(null)}
+              >
+                Cancel
+              </button>
+              <button
+                className="lazy-button danger"
+                type="button"
+                onClick={() => handleRemoveWidget(pendingRemoveWidget.id)}
+              >
+                Remove widget
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </section>
   );
 };
