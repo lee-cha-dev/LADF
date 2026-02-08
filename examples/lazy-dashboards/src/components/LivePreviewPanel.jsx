@@ -6,16 +6,24 @@ import {
   useDashboardState,
   useQuery,
 } from 'radf';
+import LazyFilterBar from './LazyFilterBar.jsx';
 
-const LivePreviewPanel = ({ panel, dataProvider }) => {
+const LivePreviewPanel = ({
+  panel,
+  dataProvider,
+  datasetBinding,
+  semanticLayer,
+}) => {
   const dashboardState = useDashboardState();
+  const isFilterBar = panel?.panelType === 'viz' && panel?.vizType === 'filterBar';
+  const shouldQuery = Boolean(panel) && !isFilterBar;
   const querySpec = useMemo(
-    () => (panel ? buildQuerySpec(panel, dashboardState) : {}),
-    [panel, dashboardState]
+    () => (shouldQuery ? buildQuerySpec(panel, dashboardState) : {}),
+    [panel, dashboardState, shouldQuery]
   );
   const { data, loading, error } = useQuery(querySpec, {
     provider: dataProvider,
-    enabled: Boolean(panel),
+    enabled: shouldQuery,
   });
   const isEmpty = !loading && !error && (!data || data.length === 0);
   const status = loading ? 'loading' : error ? 'error' : 'ready';
@@ -26,6 +34,19 @@ const LivePreviewPanel = ({ panel, dataProvider }) => {
         status="empty"
         emptyMessage="Configure this panel to see a preview."
       />
+    );
+  }
+
+  if (isFilterBar) {
+    return (
+      <PanelBody status="ready">
+        <LazyFilterBar
+          fields={panel.encodings?.fields}
+          options={panel.options}
+          datasetBinding={datasetBinding}
+          semanticLayer={semanticLayer}
+        />
+      </PanelBody>
     );
   }
 

@@ -1114,6 +1114,8 @@ const DashboardEditor = () => {
                             <LivePreviewPanel
                               panel={previewPanel}
                               dataProvider={previewProvider}
+                              datasetBinding={datasetBinding}
+                              semanticLayer={semanticLayer}
                             />
                           </div>
                           <button

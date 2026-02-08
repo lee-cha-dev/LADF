@@ -948,6 +948,30 @@ a {
   color: var(--radf-text-muted);
 }
 
+.lazy-filter-bar {
+  display: grid;
+  gap: 12px;
+}
+
+.lazy-filter-bar.stacked .radf-filter-bar__inputs {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.lazy-filter-bar__select {
+  min-width: 180px;
+}
+
+.lazy-filter-bar__select[multiple] {
+  min-height: 96px;
+}
+
+.lazy-filter-bar__empty {
+  padding: 10px 12px;
+  font-size: 0.85rem;
+  color: var(--radf-text-muted);
+}
+
 .lazy-canvas-item__resize {
   position: absolute;
   right: 6px;
