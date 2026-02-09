@@ -519,7 +519,7 @@ const DatasetImporter = ({ datasetBinding, onUpdate }) => {
   const handleApiSave = useCallback(() => {
     const normalized = normalizeApiConfigForSave(apiConfig);
     const table =
-      datasetBinding?.source?.type === 'api'
+      datasetBinding?.columns?.length || datasetBinding?.rows?.length
         ? {
             columns: datasetBinding.columns || [],
             rows: datasetBinding.rows || [],
@@ -1111,7 +1111,7 @@ const DatasetImporter = ({ datasetBinding, onUpdate }) => {
       )}
       {isFieldEditorOpen ? (
         <div className="lazy-modal__backdrop" role="dialog" aria-modal="true">
-          <div className="lazy-modal lazy-modal--compact lazy-modal--fields">
+          <div className="lazy-modal">
             <div className="lazy-modal__header">
               <div>
                 <p className="lazy-modal__eyebrow">Dataset fields</p>
@@ -1125,7 +1125,7 @@ const DatasetImporter = ({ datasetBinding, onUpdate }) => {
                 Close
               </button>
             </div>
-            <div className="lazy-modal__body">
+            <div className="lazy-modal__body lazy-modal__body-expanded">
               <div className="lazy-field-modal__controls">
                 <label className="lazy-input">
                   <span className="lazy-input__label">Search</span>
