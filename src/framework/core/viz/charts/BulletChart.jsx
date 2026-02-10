@@ -242,18 +242,6 @@ const computeGroupAverages = (data, groupKey, valueKey) => {
 };
 
 /**
- * Sanitize legacy marker labels that contain threshold/sigma language.
- * @param {string|undefined} raw - Raw label from config.
- * @returns {string} Sanitized label.
- */
-const sanitizeMarkerLabel = (raw) => {
-  if (!raw || /threshold/i.test(raw) || /[μσ]/.test(raw) || /std\s*dev/i.test(raw)) {
-    return 'Dept average';
-  }
-  return raw;
-};
-
-/**
  * Single bullet row component with tooltip support.
  */
 function BulletRow({
@@ -641,13 +629,12 @@ function BulletChart({ data = [], encodings = {}, options = {}, handlers = {}, h
     setTooltip((prev) => ({ ...prev, visible: false }));
   }, []);
 
-  /* Sanitize legacy label — strip threshold / sigma language */
-  const markerLabel = sanitizeMarkerLabel(markerConfig.label);
-  /* Use explicit markerLines color, otherwise neutral token */
-  const markerColor = options.markerLines?.color || '#E0E000';
-  const xTitle = options.headerTitles.xTitle || '';
-  const yTitle = options.headerTitles.yTitle || '';
-  const percentTitle = options.headerTitles.percentTitle || '';
+  const markerLabel = markerConfig.label || 'Dept average';
+  const markerColor = markerConfig.color || 'var(--radf-accent-warning, var(--radf-viz-marker))';
+  const headerTitles = options.headerTitles || {};
+  const xTitle = headerTitles.xTitle || '';
+  const yTitle = headerTitles.yTitle || '';
+  const percentTitle = headerTitles.percentTitle || '';
 
   return (
     <ChartContainer>
