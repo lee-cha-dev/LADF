@@ -15,6 +15,7 @@ export { createDataProvider as DataProvider } from './framework/core/query/DataP
 export {
   assertDataProvider,
   createDataProvider,
+  createMultiDataProvider,
   isDataProvider,
 } from './framework/core/query/DataProvider.js';
 /** Mock data provider for local development. */

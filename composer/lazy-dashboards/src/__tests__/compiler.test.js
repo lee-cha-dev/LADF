@@ -93,6 +93,7 @@ describe('compileAuthoringModel', () => {
         "panels": [
           {
             "datasetId": "dataset-1",
+            "datasourceId": "dataset-1",
             "encodings": {
               "comparison": "",
               "trend": "",
@@ -124,6 +125,7 @@ describe('compileAuthoringModel', () => {
           },
           {
             "datasetId": "dataset-1",
+            "datasourceId": "dataset-1",
             "encodings": {
               "fields": [
                 "region",
@@ -175,5 +177,61 @@ describe('compileAuthoringModel', () => {
     expect(compiled.modules.metrics).toBeNull();
     expect(compiled.modules.dimensions).toBeNull();
     expect(compiled.modules.dataProvider).not.toBeNull();
+  });
+
+  it('respects per-widget datasource ids', () => {
+    const compiled = compileAuthoringModel({
+      dashboard: baseDashboard,
+      authoringModel: {
+        ...baseModel,
+        datasources: [
+          {
+            id: 'sales',
+            name: 'Sales',
+            datasetBinding: baseModel.datasetBinding,
+            semanticLayer: baseModel.semanticLayer,
+          },
+          {
+            id: 'inventory',
+            name: 'Inventory',
+            datasetBinding: {
+              id: 'inventory-1',
+              source: {
+                type: 'api',
+                baseUrl: 'https://example.com/inventory',
+                method: 'GET',
+                headers: [],
+                queryParams: [],
+                responsePath: 'data.items',
+                refreshInterval: null,
+              },
+            },
+            semanticLayer: {
+              enabled: true,
+              metrics: [],
+              dimensions: [],
+            },
+          },
+        ],
+        activeDatasourceId: 'sales',
+        widgets: [
+          {
+            id: 'kpi-2',
+            panelType: 'viz',
+            vizType: 'kpi',
+            title: 'Inventory',
+            subtitle: '',
+            datasourceId: 'inventory',
+            encodings: { value: 'stock' },
+            options: {},
+            layout: { x: 1, y: 1, w: 3, h: 1 },
+          },
+        ],
+        layout: [{ id: 'kpi-2', x: 1, y: 1, w: 3, h: 1 }],
+      },
+    });
+
+    expect(compiled.config.panels[0].datasetId).toBe('inventory');
+    expect(compiled.modules.datasets.inventory).toBeTruthy();
   });
 });

@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { MockDataProvider } from 'radf';
+import { MockDataProvider, createMultiDataProvider } from 'radf';
 import useDashboardRegistry from '../hooks/useDashboardRegistry.js';
 import {
   addWidgetToModel,
+  createDatasourceId,
   createAuthoringModel,
   createWidgetDraft,
   normalizeAuthoringModel,
@@ -94,6 +95,8 @@ import { trackTelemetryEvent } from '../data/telemetry.js';
  * @property {Object} [meta]
  * @property {WidgetSummary[]} [widgets]
  * @property {Object[]} [layout]
+ * @property {Object[]} [datasources]
+ * @property {string|null} [activeDatasourceId]
  * @property {DatasetBinding} [datasetBinding]
  * @property {SemanticLayer} [semanticLayer]
  */
@@ -261,8 +264,33 @@ const DashboardEditor = () => {
     const normalized = normalizeAuthoringModel(dashboard.authoringModel, {
       title: dashboard.name,
     });
-    if (!normalized.datasetBinding && dashboard.datasetBinding) {
-      normalized.datasetBinding = dashboard.datasetBinding;
+    if (dashboard.datasetBinding) {
+      const hasBinding = (normalized.datasources || []).some(
+        (datasource) => datasource?.datasetBinding
+      );
+      if (!hasBinding) {
+        const nextDatasources = [...(normalized.datasources || [])];
+        if (nextDatasources.length === 0) {
+          nextDatasources.push({
+            id: dashboard.datasetBinding.id || 'datasource',
+            name: dashboard.name || 'Primary datasource',
+            datasetBinding: dashboard.datasetBinding,
+            semanticLayer: normalized.semanticLayer,
+          });
+        } else {
+          nextDatasources[0] = {
+            ...nextDatasources[0],
+            datasetBinding: dashboard.datasetBinding,
+          };
+        }
+        normalized.datasources = nextDatasources;
+        if (!nextDatasources.some((item) => item.id === normalized.activeDatasourceId)) {
+          normalized.activeDatasourceId = nextDatasources[0]?.id || null;
+        }
+      }
+      if (!normalized.datasetBinding) {
+        normalized.datasetBinding = dashboard.datasetBinding;
+      }
     }
     setAuthoringModel(normalized);
     lastSavedModelRef.current = JSON.stringify(normalized);
@@ -376,9 +404,24 @@ const DashboardEditor = () => {
       if (!model) {
         return model;
       }
+      const datasources = (model.datasources || []).map((datasource) => ({
+        ...datasource,
+        datasetBinding: buildPersistedDatasetBinding(
+          datasource.datasetBinding
+        ),
+      }));
+      const activeDatasource =
+        datasources.find((item) => item.id === model.activeDatasourceId) ||
+        datasources[0] ||
+        null;
       return {
         ...model,
-        datasetBinding: buildPersistedDatasetBinding(model.datasetBinding),
+        datasources,
+        datasetBinding: buildPersistedDatasetBinding(
+          activeDatasource?.datasetBinding || model.datasetBinding
+        ),
+        semanticLayer:
+          activeDatasource?.semanticLayer || model.semanticLayer,
       };
     },
     [buildPersistedDatasetBinding]
@@ -409,6 +452,26 @@ const DashboardEditor = () => {
     leftTools.find((tool) => tool.id === leftActiveTool)?.label || 'Tools';
   const rightPanelTitle =
     rightTools.find((tool) => tool.id === rightActiveTool)?.label || 'Tools';
+  const slugifyDatasourceId = (value) =>
+    String(value || '')
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)+/g, '');
+  const resolveUniqueDatasourceId = (value, currentId, existingIds) => {
+    const usedIds = new Set(existingIds);
+    if (currentId) {
+      usedIds.delete(currentId);
+    }
+    const base = slugifyDatasourceId(value) || 'datasource';
+    let nextId = base;
+    let counter = 2;
+    while (usedIds.has(nextId)) {
+      nextId = `${base}-${counter}`;
+      counter += 1;
+    }
+    return nextId;
+  };
 
   const validation = useMemo(
     () => validateAuthoringModel(authoringModel),
@@ -435,28 +498,42 @@ const DashboardEditor = () => {
     [selectedTemplateId]
   );
   const manifestCoverage = useMemo(() => validateManifestCoverage(), []);
-  const datasetBinding = authoringModel.datasetBinding || null;
+  const datasources = authoringModel.datasources || [];
+  const activeDatasourceId =
+    authoringModel.activeDatasourceId || datasources[0]?.id || null;
+  const activeDatasource =
+    datasources.find((item) => item.id === activeDatasourceId) ||
+    datasources[0] ||
+    null;
+  const datasetBinding = activeDatasource?.datasetBinding || null;
   const datasetColumns = datasetBinding?.columns || [];
-  const semanticLayer = authoringModel.semanticLayer || {
+  const semanticLayer = activeDatasource?.semanticLayer || {
     enabled: false,
     metrics: [],
     dimensions: [],
   };
-  const previewDatasetBinding = useMemo(() => {
-    if (!datasetBinding) {
-      return null;
-    }
-    if (datasetBinding.rows?.length) {
-      return datasetBinding;
-    }
-    if (datasetBinding.previewRows?.length) {
-      return {
-        ...datasetBinding,
-        rows: datasetBinding.previewRows,
-      };
-    }
-    return datasetBinding;
-  }, [datasetBinding]);
+  const previewDatasourceBindings = useMemo(() => {
+    const next = new Map();
+    datasources.forEach((datasource) => {
+      const binding = datasource?.datasetBinding;
+      if (!binding) {
+        return;
+      }
+      if (binding.rows?.length) {
+        next.set(datasource.id, binding);
+        return;
+      }
+      if (binding.previewRows?.length) {
+        next.set(datasource.id, {
+          ...binding,
+          rows: binding.previewRows,
+        });
+        return;
+      }
+      next.set(datasource.id, binding);
+    });
+    return next;
+  }, [datasources]);
   const compiledPanelMap = useMemo(
     () =>
       new Map(
@@ -468,15 +545,24 @@ const DashboardEditor = () => {
     [compiledPreview]
   );
   const previewProvider = useMemo(() => {
-    if (previewDatasetBinding?.rows?.length) {
-      return createLocalDataProvider({
-        rows: previewDatasetBinding.rows,
-        columns: previewDatasetBinding.columns || [],
-        semanticLayer: semanticLayer.enabled ? semanticLayer : null,
+    const providersById = {};
+    datasources.forEach((datasource) => {
+      const binding = previewDatasourceBindings.get(datasource.id);
+      if (!binding?.rows?.length) {
+        return;
+      }
+      providersById[datasource.id] = createLocalDataProvider({
+        rows: binding.rows,
+        columns: binding.columns || [],
+        semanticLayer: datasource.semanticLayer?.enabled
+          ? datasource.semanticLayer
+          : null,
       });
-    }
-    return MockDataProvider;
-  }, [previewDatasetBinding, semanticLayer]);
+    });
+    return createMultiDataProvider(providersById, {
+      defaultProvider: MockDataProvider,
+    });
+  }, [datasources, previewDatasourceBindings]);
 
   const dimensionSuggestions = useMemo(
     () => buildDimensionSuggestions(datasetColumns),
@@ -494,7 +580,7 @@ const DashboardEditor = () => {
   const handleSave = () => {
     const persistedModel = buildPersistedAuthoringModel(authoringModel);
     const persistedBinding = buildPersistedDatasetBinding(
-      authoringModel.datasetBinding
+      activeDatasource?.datasetBinding || authoringModel.datasetBinding
     );
     const updated = updateDashboard(dashboardId, {
       authoringModel: persistedModel,
@@ -580,17 +666,190 @@ const DashboardEditor = () => {
     }));
   };
 
-  const handleDatasetUpdate = useCallback((nextDataset) => {
-    setAuthoringModel((current) => ({
-      ...current,
-      datasetBinding: nextDataset || null,
-    }));
+  const handleDatasetUpdate = useCallback(
+    (nextDataset) => {
+      setAuthoringModel((current) => {
+        const nextDatasources = (current.datasources || []).map((datasource) =>
+          datasource.id === activeDatasourceId
+            ? { ...datasource, datasetBinding: nextDataset || null }
+            : datasource
+        );
+        return {
+          ...current,
+          datasources: nextDatasources,
+          datasetBinding: nextDataset || null,
+        };
+      });
+    },
+    [activeDatasourceId]
+  );
+
+  const handleActiveDatasourceChange = useCallback((nextId) => {
+    setAuthoringModel((current) => {
+      const nextDatasource = (current.datasources || []).find(
+        (datasource) => datasource.id === nextId
+      );
+      return {
+        ...current,
+        activeDatasourceId: nextId,
+        datasetBinding: nextDatasource?.datasetBinding || null,
+        semanticLayer: nextDatasource?.semanticLayer || current.semanticLayer,
+      };
+    });
   }, []);
+
+  const handleAddDatasource = useCallback(() => {
+    setAuthoringModel((current) => {
+      const existingIds = new Set(
+        (current.datasources || []).map((datasource) => datasource.id)
+      );
+      const name = `Datasource ${existingIds.size + 1}`;
+      const id = createDatasourceId(name, existingIds);
+      const nextDatasource = {
+        id,
+        name,
+        datasetBinding: null,
+        semanticLayer: { enabled: false, metrics: [], dimensions: [] },
+      };
+      return {
+        ...current,
+        datasources: [...(current.datasources || []), nextDatasource],
+        activeDatasourceId: id,
+      };
+    });
+  }, []);
+
+  const handleRemoveDatasource = useCallback((datasourceId) => {
+    setAuthoringModel((current) => {
+      const remaining = (current.datasources || []).filter(
+        (datasource) => datasource.id !== datasourceId
+      );
+      if (remaining.length === (current.datasources || []).length) {
+        return current;
+      }
+      const nextActiveId =
+        current.activeDatasourceId === datasourceId
+          ? remaining[0]?.id || null
+          : current.activeDatasourceId;
+      const nextWidgets = (current.widgets || []).map((widget) => {
+        if (widget.datasourceId === datasourceId) {
+          return {
+            ...widget,
+            datasourceId: nextActiveId,
+          };
+        }
+        return widget;
+      });
+      return {
+        ...current,
+        datasources: remaining.length > 0 ? remaining : current.datasources,
+        activeDatasourceId:
+          remaining.length > 0 ? nextActiveId : current.activeDatasourceId,
+        widgets: nextWidgets,
+      };
+    });
+  }, []);
+
+  const handleDatasourceNameChange = useCallback(
+    (datasourceId, nextName) => {
+      setAuthoringModel((current) => {
+        const existingIds = (current.datasources || []).map(
+          (datasource) => datasource.id
+        );
+        let remappedId = datasourceId;
+        const nextDatasources = (current.datasources || []).map(
+          (datasource) => {
+            if (datasource.id !== datasourceId) {
+              return datasource;
+            }
+            const trimmedName = nextName?.trim() || '';
+            const autoId = slugifyDatasourceId(datasource.name);
+            const shouldAutoRename = autoId === datasource.id;
+            const nextId = shouldAutoRename
+              ? resolveUniqueDatasourceId(
+                  trimmedName,
+                  datasource.id,
+                  existingIds
+                )
+              : datasource.id;
+            remappedId = nextId;
+            return {
+              ...datasource,
+              id: nextId,
+              name: trimmedName,
+            };
+          }
+        );
+        const activeId =
+          current.activeDatasourceId === datasourceId
+            ? remappedId
+            : current.activeDatasourceId;
+        const nextWidgets = (current.widgets || []).map((widget) => {
+          if (widget.datasourceId !== datasourceId) {
+            return widget;
+          }
+          return {
+            ...widget,
+            datasourceId: remappedId,
+          };
+        });
+        return {
+          ...current,
+          datasources: nextDatasources,
+          activeDatasourceId: activeId,
+          widgets: nextWidgets,
+        };
+      });
+    },
+    [resolveUniqueDatasourceId, slugifyDatasourceId]
+  );
+
+  const handleDatasourceIdChange = useCallback(
+    (datasourceId, nextId) => {
+      setAuthoringModel((current) => {
+        const existingIds = (current.datasources || []).map(
+          (datasource) => datasource.id
+        );
+        const resolvedId = resolveUniqueDatasourceId(
+          nextId,
+          datasourceId,
+          existingIds
+        );
+        if (resolvedId === datasourceId) {
+          return current;
+        }
+        const nextDatasources = (current.datasources || []).map(
+          (datasource) =>
+            datasource.id === datasourceId
+              ? { ...datasource, id: resolvedId }
+              : datasource
+        );
+        const nextWidgets = (current.widgets || []).map((widget) =>
+          widget.datasourceId === datasourceId
+            ? { ...widget, datasourceId: resolvedId }
+            : widget
+        );
+        return {
+          ...current,
+          datasources: nextDatasources,
+          activeDatasourceId:
+            current.activeDatasourceId === datasourceId
+              ? resolvedId
+              : current.activeDatasourceId,
+          widgets: nextWidgets,
+        };
+      });
+    },
+    [resolveUniqueDatasourceId]
+  );
 
   const handleAddWidget = () => {
     const vizType = selectedVizType || vizManifests[0]?.id || 'kpi';
     setAuthoringModel((current) => {
-      const widget = createWidgetDraft(current, { vizType });
+      const widget = createWidgetDraft(current, {
+        vizType,
+        datasourceId: activeDatasourceId,
+      });
       const next = addWidgetToModel(current, widget);
       setActiveWidgetId(widget.id);
       return next;
@@ -666,6 +925,8 @@ const DashboardEditor = () => {
         const nextModel = normalizeAuthoringModel(
           {
             ...boundTemplate,
+            datasources: current.datasources,
+            activeDatasourceId: current.activeDatasourceId,
             datasetBinding: current.datasetBinding,
             semanticLayer: current.semanticLayer,
             meta: {
@@ -721,17 +982,27 @@ const DashboardEditor = () => {
    */
   const updateSemanticLayer = useCallback((updater) => {
     setAuthoringModel((current) => {
-      const nextLayer = updater(current.semanticLayer || {
-        enabled: false,
-        metrics: [],
-        dimensions: [],
-      });
+      const nextLayer = updater(
+        (current.datasources || []).find(
+          (datasource) => datasource.id === activeDatasourceId
+        )?.semanticLayer || {
+          enabled: false,
+          metrics: [],
+          dimensions: [],
+        }
+      );
+      const nextDatasources = (current.datasources || []).map((datasource) =>
+        datasource.id === activeDatasourceId
+          ? { ...datasource, semanticLayer: nextLayer }
+          : datasource
+      );
       return {
         ...current,
+        datasources: nextDatasources,
         semanticLayer: nextLayer,
       };
     });
-  }, []);
+  }, [activeDatasourceId]);
 
   const handleSemanticModeChange = useCallback(
     (enabled) => {
@@ -925,7 +1196,7 @@ const DashboardEditor = () => {
       setAutoSaveState('saving');
       const persistedModel = buildPersistedAuthoringModel(authoringModel);
       const persistedBinding = buildPersistedDatasetBinding(
-        authoringModel.datasetBinding
+        activeDatasource?.datasetBinding || authoringModel.datasetBinding
       );
       const updated = updateDashboard(dashboardId, {
         authoringModel: persistedModel,
@@ -941,6 +1212,7 @@ const DashboardEditor = () => {
     return () => clearTimeout(timeout);
   }, [
     authoringModel,
+    activeDatasource,
     autoSaveEnabled,
     buildPersistedAuthoringModel,
     buildPersistedDatasetBinding,
@@ -1081,8 +1353,37 @@ const DashboardEditor = () => {
               maxWidth={9999}
               onResize={setLeftPanelWidth}
             >
+              <div className="lazy-panel">
+                <h2 className="lazy-panel__title">Active datasource</h2>
+                <div className="lazy-form">
+                  <label className="lazy-form__field">
+                    <span className="lazy-input__label">Datasource</span>
+                    <select
+                      className="lazy-input__field"
+                      value={activeDatasourceId || ''}
+                      onChange={(event) =>
+                        handleActiveDatasourceChange(event.target.value)
+                      }
+                      disabled={datasources.length <= 1}
+                    >
+                      {datasources.map((datasource) => (
+                        <option key={datasource.id} value={datasource.id}>
+                          {datasource.name || datasource.id}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                </div>
+              </div>
               {leftActiveTool === 'dataset' ? (
                 <DatasetPanel
+                  datasources={datasources}
+                  activeDatasourceId={activeDatasourceId}
+                  onActiveDatasourceChange={handleActiveDatasourceChange}
+                  onAddDatasource={handleAddDatasource}
+                  onRemoveDatasource={handleRemoveDatasource}
+                  onDatasourceNameChange={handleDatasourceNameChange}
+                  onDatasourceIdChange={handleDatasourceIdChange}
                   datasetBinding={datasetBinding}
                   onDatasetUpdate={handleDatasetUpdate}
                 />
@@ -1128,8 +1429,8 @@ const DashboardEditor = () => {
             onWidgetSelect={setActiveWidgetId}
             onUpdateAuthoringModel={setAuthoringModel}
             previewProvider={previewProvider}
-            datasetBinding={previewDatasetBinding}
-            semanticLayer={semanticLayer}
+            datasources={datasources}
+            previewDatasourceBindings={previewDatasourceBindings}
             onAddWidget={openAddWidgetModal}
             viewMode={canvasMode}
             onViewModeChange={setCanvasMode}
@@ -1152,8 +1453,8 @@ const DashboardEditor = () => {
                   authoringModel={authoringModel}
                   activeWidgetId={activeWidgetId}
                   vizManifests={vizManifests}
-                  datasetColumns={datasetColumns}
-                  semanticLayer={semanticLayer}
+                  datasources={datasources}
+                  activeDatasourceId={activeDatasourceId}
                   validation={validation}
                   manifestCoverage={manifestCoverage}
                   compiledPanelMap={compiledPanelMap}

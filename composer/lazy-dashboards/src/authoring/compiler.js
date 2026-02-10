@@ -1,5 +1,8 @@
 import { normalizeAuthoringModel } from './authoringModel.js';
-import { generateExternalApiProviderModule } from '../data/externalApiProvider.js';
+import {
+  generateExternalApiProviderModule,
+  generateExternalApiProvidersModule,
+} from '../data/externalApiProvider.js';
 
 /**
  * @typedef {Object} CompileInput
@@ -82,13 +85,15 @@ const compileWidget = (widget, datasetId) => {
   const panelType = widget.panelType || 'viz';
   const vizType = widget.vizType || widget.type || 'kpi';
   const query = widget.query || buildQueryFromEncodings(widget.encodings, vizType);
+  const resolvedDatasourceId = widget.datasourceId || widget.datasetId || datasetId;
   const panel = {
     id: widget.id,
     panelType,
     title: widget.title,
     subtitle: widget.subtitle,
     layout,
-    datasetId: widget.datasetId || datasetId,
+    datasetId: resolvedDatasourceId,
+    datasourceId: resolvedDatasourceId,
     query,
   };
   if (panelType === 'viz') {
@@ -119,16 +124,17 @@ const generateModule = (name, payload, options = {}) => {
  * Builds a dataset config module from the authoring model.
  *
  * @param {string} datasetId
+ * @param {Object} datasource
  * @param {Object} model
  * @returns {string} The dataset module source.
  */
-const generateDatasetModule = (datasetId, model) => {
+const generateDatasetModule = (datasetId, datasource, model) => {
   const dataset = {
     id: datasetId,
-    label: model.meta?.title || 'Dataset',
+    label: datasource?.name || model.meta?.title || 'Dataset',
     description: model.meta?.description || '',
-    dimensions: model.semanticLayer?.dimensions || [],
-    metrics: model.semanticLayer?.metrics || [],
+    dimensions: datasource?.semanticLayer?.dimensions || [],
+    metrics: datasource?.semanticLayer?.metrics || [],
   };
   return generateModule('datasetConfig', dataset, {
     doc: `/**
@@ -184,7 +190,11 @@ export const compileAuthoringModel = ({ dashboard, authoringModel }) => {
   const normalized = normalizeAuthoringModel(authoringModel, {
     title: dashboard?.name,
   });
+  const datasources = normalized.datasources || [];
+  const activeDatasourceId =
+    normalized.activeDatasourceId || datasources[0]?.id || null;
   const datasetId =
+    activeDatasourceId ||
     normalized.datasetBinding?.datasetId ||
     normalized.datasetBinding?.id ||
     `${dashboard?.id || 'dashboard'}_dataset`;
@@ -197,6 +207,40 @@ export const compileAuthoringModel = ({ dashboard, authoringModel }) => {
       compileWidget(widget, datasetId)
     ),
   };
+  const datasetsById = {};
+  const metricsById = {};
+  const dimensionsById = {};
+  datasources.forEach((datasource) => {
+    if (!datasource?.id) {
+      return;
+    }
+    if (datasource.semanticLayer?.enabled) {
+      datasetsById[datasource.id] = generateDatasetModule(
+        datasource.id,
+        datasource,
+        normalized
+      );
+      metricsById[datasource.id] = generateMetricsModule(
+        datasource.semanticLayer.metrics
+      );
+      dimensionsById[datasource.id] = generateDimensionsModule(
+        datasource.semanticLayer.dimensions
+      );
+    }
+  });
+  const apiDatasources = datasources.filter(
+    (datasource) => datasource?.datasetBinding?.source?.type === 'api'
+  );
+  const dataProviderModule =
+    apiDatasources.length === 1
+      ? generateExternalApiProviderModule(
+          apiDatasources[0].datasetBinding.source
+        )
+      : apiDatasources.length > 1
+        ? generateExternalApiProvidersModule(apiDatasources)
+        : null;
+  const fallbackDatasource =
+    datasources.find((item) => item.id === datasetId) || datasources[0];
   const modules = {
     dashboard: generateModule('dashboardConfig', config, {
       doc: `/**
@@ -212,19 +256,22 @@ export const compileAuthoringModel = ({ dashboard, authoringModel }) => {
  * @type {DashboardConfig}
  */`,
     }),
-    dataset: normalized.semanticLayer?.enabled
-      ? generateDatasetModule(datasetId, normalized)
-      : null,
-    metrics: normalized.semanticLayer?.enabled
-      ? generateMetricsModule(normalized.semanticLayer.metrics)
-      : null,
-    dimensions: normalized.semanticLayer?.enabled
-      ? generateDimensionsModule(normalized.semanticLayer.dimensions)
-      : null,
-    dataProvider:
-      normalized.datasetBinding?.source?.type === 'api'
-        ? generateExternalApiProviderModule(normalized.datasetBinding.source)
+    dataset:
+      fallbackDatasource?.semanticLayer?.enabled
+        ? generateDatasetModule(datasetId, fallbackDatasource, normalized)
         : null,
+    metrics:
+      fallbackDatasource?.semanticLayer?.enabled
+        ? generateMetricsModule(fallbackDatasource.semanticLayer.metrics)
+        : null,
+    dimensions:
+      fallbackDatasource?.semanticLayer?.enabled
+        ? generateDimensionsModule(fallbackDatasource.semanticLayer.dimensions)
+        : null,
+    datasets: datasetsById,
+    metricsById,
+    dimensionsById,
+    dataProvider: dataProviderModule,
   };
   return { config, modules };
 };
