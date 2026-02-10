@@ -1118,20 +1118,32 @@ const ${componentName} = ({
       defaultProvider: fallbackProvider,
     });
   }, [dataProvider, resolvedProviderMap, fallbackProvider]);
+  
+  const handleResetApp = () => {
+    window.location.reload();
+  };
 
   return (
-    <DashboardProvider
-      initialState={{
-        dashboardId: dashboardConfig.id,
-        datasetId: dashboardConfig.datasetId,
-      }}
-    >
-      <DashboardContent
-        dataProvider={resolvedProvider}
-        datasourcesById={datasourcesById}
-        defaultDatasource={defaultDatasource}
-      />
-    </DashboardProvider>
+    <main className="radf-app__content">
+      <ErrorBoundary
+          title="Dashboard failed to load"
+          message="The dashboard encountered an unexpected error. Reload the page to retry."
+          onReset={handleResetApp}
+      >
+        <DashboardProvider
+          initialState={{
+            dashboardId: dashboardConfig.id,
+            datasetId: dashboardConfig.datasetId,
+          }}
+        >
+          <DashboardContent
+            dataProvider={resolvedProvider}
+            datasourcesById={datasourcesById}
+            defaultDatasource={defaultDatasource}
+          />
+        </DashboardProvider>
+        </ErrorBoundary>
+      </main>
   );
 };
 

@@ -8,12 +8,7 @@
       "type": "enum",
       "default": "number",
       "required": false,
-      "enum": [
-        "number",
-        "currency",
-        "percent",
-        "integer"
-      ],
+      "enum": ["number", "currency", "percent", "integer"],
       "control": "select",
       "status": "supported",
       "notes": "Formats KPI value output.",
@@ -109,10 +104,7 @@
       "type": "enum",
       "default": "series",
       "required": false,
-      "enum": [
-        "series",
-        "category"
-      ],
+      "enum": ["series", "category"],
       "control": "select",
       "status": "supported",
       "notes": "Force category coloring for single-series bars.",
@@ -148,11 +140,7 @@
       "type": "enum",
       "default": "auto",
       "required": false,
-      "enum": [
-        "auto",
-        "series",
-        "category"
-      ],
+      "enum": ["auto", "series", "category"],
       "control": "select",
       "status": "supported",
       "notes": "Legend visibility logic and palette mode.",
@@ -164,11 +152,7 @@
       "type": "enum",
       "default": "bottom",
       "required": false,
-      "enum": [
-        "bottom",
-        "top",
-        "right"
-      ],
+      "enum": ["bottom", "top", "right"],
       "control": "select",
       "status": "supported",
       "notes": "Legend placement around the chart.",
@@ -252,11 +236,7 @@
       "type": "enum",
       "default": "auto",
       "required": false,
-      "enum": [
-        "auto",
-        "series",
-        "category"
-      ],
+      "enum": ["auto", "series", "category"],
       "control": "select",
       "status": "supported",
       "notes": "Legend visibility logic.",
@@ -268,11 +248,7 @@
       "type": "enum",
       "default": "bottom",
       "required": false,
-      "enum": [
-        "bottom",
-        "top",
-        "right"
-      ],
+      "enum": ["bottom", "top", "right"],
       "control": "select",
       "status": "supported",
       "notes": "Legend placement around the chart.",
@@ -320,10 +296,7 @@
       "type": "enum",
       "default": "horizontal",
       "required": false,
-      "enum": [
-        "horizontal",
-        "vertical"
-      ],
+      "enum": ["horizontal", "vertical"],
       "control": "select",
       "status": "supported",
       "notes": "Switches axes between horizontal/vertical.",
@@ -355,6 +328,42 @@
     },
     {
       "vizType": "bulletChart",
+      "optionPath": "options.showMarkers",
+      "type": "boolean",
+      "default": true,
+      "required": false,
+      "enum": [],
+      "control": "toggle",
+      "status": "supported",
+      "notes": "Show per-row marker line at group average (by color) or overall average.",
+      "source": "src/framework/core/viz/charts/BulletChart.jsx"
+    },
+    {
+      "vizType": "bulletChart",
+      "optionPath": "options.markerLabel",
+      "type": "string",
+      "default": "Average",
+      "required": false,
+      "enum": [],
+      "control": "text",
+      "status": "supported",
+      "notes": "Legend and tooltip label for the marker line.",
+      "source": "src/framework/core/viz/charts/BulletChart.jsx"
+    },
+    {
+      "vizType": "bulletChart",
+      "optionPath": "options.markerColor",
+      "type": "color",
+      "default": "var(--radf-accent-warning)",
+      "required": false,
+      "enum": [],
+      "control": "color",
+      "status": "supported",
+      "notes": "Color of the per-row marker line.",
+      "source": "src/framework/core/viz/charts/BulletChart.jsx"
+    },
+    {
+      "vizType": "bulletChart",
       "optionPath": "options.leftAnnotations.enabled",
       "type": "boolean",
       "default": true,
@@ -362,7 +371,7 @@
       "enum": [],
       "control": "toggle",
       "status": "supported",
-      "notes": "Show dots beside labels.",
+      "notes": "Show colored dots beside row labels.",
       "source": "src/framework/core/viz/charts/BulletChart.jsx"
     },
     {
@@ -371,10 +380,7 @@
       "type": "enum",
       "default": "dot",
       "required": false,
-      "enum": [
-        "dot",
-        "none"
-      ],
+      "enum": ["dot", "none"],
       "control": "select",
       "status": "supported",
       "notes": "Annotation display style.",
@@ -389,19 +395,19 @@
       "enum": [],
       "control": "text",
       "status": "supported",
-      "notes": "Field to color left annotations.",
+      "notes": "Field to color left annotations. Falls back to color encoding.",
       "source": "src/framework/core/viz/charts/BulletChart.jsx"
     },
     {
       "vizType": "bulletChart",
       "optionPath": "options.showPercentColumn",
       "type": "boolean",
-      "default": true,
+      "default": false,
       "required": false,
       "enum": [],
       "control": "toggle",
       "status": "supported",
-      "notes": "Show percent column.",
+      "notes": "Show the right-side percent column.",
       "source": "src/framework/core/viz/charts/BulletChart.jsx"
     },
     {
@@ -413,151 +419,55 @@
       "enum": [],
       "control": "text",
       "status": "supported",
-      "notes": "Percent field for the right column.",
+      "notes": "Data field for the percent column. Required when showPercentColumn is true.",
       "source": "src/framework/core/viz/charts/BulletChart.jsx"
     },
     {
       "vizType": "bulletChart",
-      "optionPath": "options.thresholdMarkers.enabled",
-      "type": "boolean",
-      "default": true,
-      "required": false,
-      "enum": [],
-      "control": "toggle",
-      "status": "supported",
-      "notes": "Enable threshold marker overlay.",
-      "source": "src/framework/core/viz/charts/BulletChart.jsx"
-    },
-    {
-      "vizType": "bulletChart",
-      "optionPath": "options.thresholdMarkers.valueKey",
-      "type": "string",
-      "default": "dept_threshold",
-      "required": false,
-      "enum": [],
-      "control": "text",
-      "status": "supported",
-      "notes": "Field used for threshold marker values.",
-      "source": "src/framework/core/viz/charts/BulletChart.jsx"
-    },
-    {
-      "vizType": "bulletChart",
-      "optionPath": "options.thresholdMarkers.label",
-      "type": "string",
-      "default": "Dept Threshold (\u03bc + 1.5\u03c3)",
-      "required": false,
-      "enum": [],
-      "control": "text",
-      "status": "supported",
-      "notes": "Label for threshold marker legend entry.",
-      "source": "src/framework/core/viz/charts/BulletChart.jsx"
-    },
-    {
-      "vizType": "bulletChart",
-      "optionPath": "options.thresholdMarkers.color",
-      "type": "color",
-      "default": "var(--radf-accent-warning)",
-      "required": false,
-      "enum": [],
-      "control": "color",
-      "status": "supported",
-      "notes": "Threshold marker color.",
-      "source": "src/framework/core/viz/charts/BulletChart.jsx"
-    },
-    {
-      "vizType": "bulletChart",
-      "optionPath": "options.markerLines.enabled",
-      "type": "boolean",
-      "default": true,
-      "required": false,
-      "enum": [],
-      "control": "toggle",
-      "status": "supported",
-      "notes": "Legacy alias: enable marker line overlay.",
-      "source": "src/framework/core/viz/charts/BulletChart.jsx"
-    },
-    {
-      "vizType": "bulletChart",
-      "optionPath": "options.markerLines.valueKey",
+      "optionPath": "options.valueSuffix",
       "type": "string",
       "default": "",
       "required": false,
       "enum": [],
       "control": "text",
       "status": "supported",
-      "notes": "Legacy alias for marker value field.",
+      "notes": "Text appended to bar value labels (e.g. 'h', '%').",
       "source": "src/framework/core/viz/charts/BulletChart.jsx"
     },
     {
       "vizType": "bulletChart",
-      "optionPath": "options.markerLines.label",
-      "type": "string",
-      "default": "Reference",
-      "required": false,
-      "enum": [],
-      "control": "text",
-      "status": "supported",
-      "notes": "Legacy alias for marker legend label.",
-      "source": "src/framework/core/viz/charts/BulletChart.jsx"
-    },
-    {
-      "vizType": "bulletChart",
-      "optionPath": "options.markerLines.color",
-      "type": "color",
-      "default": "var(--radf-accent-warning)",
-      "required": false,
-      "enum": [],
-      "control": "color",
-      "status": "supported",
-      "notes": "Legacy alias for marker line color.",
-      "source": "src/framework/core/viz/charts/BulletChart.jsx"
-    },
-    {
-      "vizType": "bulletChart",
-      "optionPath": "options.outlierRule.valueKey",
+      "optionPath": "options.headerTitles.xTitle",
       "type": "string",
       "default": "",
       "required": false,
       "enum": [],
       "control": "text",
       "status": "supported",
-      "notes": "Optional field for explicit outlier bounds.",
+      "notes": "Header label above the name column.",
       "source": "src/framework/core/viz/charts/BulletChart.jsx"
     },
     {
       "vizType": "bulletChart",
-      "optionPath": "options.iqrValueKey",
+      "optionPath": "options.headerTitles.yTitle",
       "type": "string",
       "default": "",
       "required": false,
       "enum": [],
       "control": "text",
       "status": "supported",
-      "notes": "Legacy IQR value key override.",
+      "notes": "Header label above the bar column.",
       "source": "src/framework/core/viz/charts/BulletChart.jsx"
     },
     {
       "vizType": "bulletChart",
-      "optionPath": "options.outlierValueKey",
+      "optionPath": "options.headerTitles.percentTitle",
       "type": "string",
       "default": "",
       "required": false,
       "enum": [],
       "control": "text",
       "status": "supported",
-      "notes": "Legacy outlier value key override.",
-      "source": "src/framework/core/viz/charts/BulletChart.jsx"
-    },
-    {
-      "vizType": "bulletChart",
-      "optionPath": "options.averageKey",
-      "type": "string",
-      "default": "",
-      "required": false,
-      "enum": [],
-      "control": "text",
-      "status": "supported",
-      "notes": "Fallback average key for marker lines.",
+      "notes": "Header label above the percent column.",
       "source": "src/framework/core/viz/charts/BulletChart.jsx"
     },
     {
@@ -602,10 +512,7 @@
       "type": "enum",
       "default": "inline",
       "required": false,
-      "enum": [
-        "inline",
-        "stacked"
-      ],
+      "enum": ["inline", "stacked"],
       "control": "select",
       "status": "supported",
       "notes": "Layout of filter bar controls.",
@@ -689,11 +596,7 @@
       "type": "enum",
       "default": "auto",
       "required": false,
-      "enum": [
-        "auto",
-        "series",
-        "category"
-      ],
+      "enum": ["auto", "series", "category"],
       "control": "select",
       "status": "supported",
       "notes": "Legend visibility logic.",
@@ -705,11 +608,7 @@
       "type": "enum",
       "default": "bottom",
       "required": false,
-      "enum": [
-        "bottom",
-        "top",
-        "right"
-      ],
+      "enum": ["bottom", "top", "right"],
       "control": "select",
       "status": "supported",
       "notes": "Legend placement around the chart.",
@@ -937,11 +836,7 @@
       "type": "enum",
       "default": "auto",
       "required": false,
-      "enum": [
-        "auto",
-        "series",
-        "category"
-      ],
+      "enum": ["auto", "series", "category"],
       "control": "select",
       "status": "supported",
       "notes": "Legend visibility logic.",
@@ -953,11 +848,7 @@
       "type": "enum",
       "default": "bottom",
       "required": false,
-      "enum": [
-        "bottom",
-        "top",
-        "right"
-      ],
+      "enum": ["bottom", "top", "right"],
       "control": "select",
       "status": "supported",
       "notes": "Legend placement around the chart.",
@@ -1017,11 +908,7 @@
       "type": "enum",
       "default": "auto",
       "required": false,
-      "enum": [
-        "auto",
-        "series",
-        "category"
-      ],
+      "enum": ["auto", "series", "category"],
       "control": "select",
       "status": "supported",
       "notes": "Legend visibility logic.",
@@ -1033,11 +920,7 @@
       "type": "enum",
       "default": "bottom",
       "required": false,
-      "enum": [
-        "bottom",
-        "top",
-        "right"
-      ],
+      "enum": ["bottom", "top", "right"],
       "control": "select",
       "status": "supported",
       "notes": "Legend placement around the chart.",
@@ -1145,11 +1028,7 @@
       "type": "enum",
       "default": "auto",
       "required": false,
-      "enum": [
-        "auto",
-        "series",
-        "category"
-      ],
+      "enum": ["auto", "series", "category"],
       "control": "select",
       "status": "supported",
       "notes": "Legend visibility logic.",
@@ -1161,11 +1040,7 @@
       "type": "enum",
       "default": "bottom",
       "required": false,
-      "enum": [
-        "bottom",
-        "top",
-        "right"
-      ],
+      "enum": ["bottom", "top", "right"],
       "control": "select",
       "status": "supported",
       "notes": "Legend placement around the chart.",
@@ -1285,11 +1160,7 @@
       "type": "enum",
       "default": "auto",
       "required": false,
-      "enum": [
-        "auto",
-        "series",
-        "category"
-      ],
+      "enum": ["auto", "series", "category"],
       "control": "select",
       "status": "supported",
       "notes": "Legend visibility logic.",
@@ -1301,11 +1172,7 @@
       "type": "enum",
       "default": "bottom",
       "required": false,
-      "enum": [
-        "bottom",
-        "top",
-        "right"
-      ],
+      "enum": ["bottom", "top", "right"],
       "control": "select",
       "status": "supported",
       "notes": "Legend placement around the chart.",
@@ -1365,11 +1232,7 @@
       "type": "enum",
       "default": "auto",
       "required": false,
-      "enum": [
-        "auto",
-        "series",
-        "category"
-      ],
+      "enum": ["auto", "series", "category"],
       "control": "select",
       "status": "supported",
       "notes": "Legend visibility logic.",
@@ -1381,11 +1244,7 @@
       "type": "enum",
       "default": "bottom",
       "required": false,
-      "enum": [
-        "bottom",
-        "top",
-        "right"
-      ],
+      "enum": ["bottom", "top", "right"],
       "control": "select",
       "status": "supported",
       "notes": "Legend placement around the chart.",
@@ -1397,10 +1256,7 @@
       "type": "enum",
       "default": "category",
       "required": false,
-      "enum": [
-        "category",
-        "depth"
-      ],
+      "enum": ["category", "depth"],
       "control": "select",
       "status": "supported",
       "notes": "Color by category or hierarchy depth.",
@@ -1448,11 +1304,7 @@
       "type": "enum",
       "default": "auto",
       "required": false,
-      "enum": [
-        "auto",
-        "series",
-        "category"
-      ],
+      "enum": ["auto", "series", "category"],
       "control": "select",
       "status": "supported",
       "notes": "Legend visibility logic.",
@@ -1464,11 +1316,7 @@
       "type": "enum",
       "default": "bottom",
       "required": false,
-      "enum": [
-        "bottom",
-        "top",
-        "right"
-      ],
+      "enum": ["bottom", "top", "right"],
       "control": "select",
       "status": "supported",
       "notes": "Legend placement around the chart.",
@@ -1480,12 +1328,7 @@
       "type": "enum",
       "default": "name",
       "required": false,
-      "enum": [
-        "name",
-        "value",
-        "percent",
-        "none"
-      ],
+      "enum": ["name", "value", "percent", "none"],
       "control": "select",
       "status": "supported",
       "notes": "Label display mode for stages.",
@@ -1497,11 +1340,7 @@
       "type": "enum",
       "default": "input",
       "required": false,
-      "enum": [
-        "input",
-        "desc",
-        "asc"
-      ],
+      "enum": ["input", "desc", "asc"],
       "control": "select",
       "status": "supported",
       "notes": "Stage ordering behavior.",
@@ -1537,11 +1376,7 @@
       "type": "enum",
       "default": "auto",
       "required": false,
-      "enum": [
-        "auto",
-        "series",
-        "category"
-      ],
+      "enum": ["auto", "series", "category"],
       "control": "select",
       "status": "supported",
       "notes": "Legend visibility logic.",
@@ -1553,11 +1388,7 @@
       "type": "enum",
       "default": "bottom",
       "required": false,
-      "enum": [
-        "bottom",
-        "top",
-        "right"
-      ],
+      "enum": ["bottom", "top", "right"],
       "control": "select",
       "status": "supported",
       "notes": "Legend placement around the chart.",
@@ -1569,11 +1400,7 @@
       "type": "enum",
       "default": "node",
       "required": false,
-      "enum": [
-        "source",
-        "target",
-        "node"
-      ],
+      "enum": ["source", "target", "node"],
       "control": "select",
       "status": "supported",
       "notes": "Coloring mode for nodes and links.",
@@ -1609,11 +1436,7 @@
       "type": "enum",
       "default": "auto",
       "required": false,
-      "enum": [
-        "auto",
-        "series",
-        "category"
-      ],
+      "enum": ["auto", "series", "category"],
       "control": "select",
       "status": "supported",
       "notes": "Legend visibility logic.",
@@ -1625,11 +1448,7 @@
       "type": "enum",
       "default": "bottom",
       "required": false,
-      "enum": [
-        "bottom",
-        "top",
-        "right"
-      ],
+      "enum": ["bottom", "top", "right"],
       "control": "select",
       "status": "supported",
       "notes": "Legend placement around the chart.",

@@ -1806,6 +1806,7 @@ a {
   display: flex;
   justify-content: center;
   margin-top: 8px;
+  gap: 8px;
 }
 
 .lazy-form__field {

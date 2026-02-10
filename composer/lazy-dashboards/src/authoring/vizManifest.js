@@ -696,18 +696,19 @@ const VIZ_CAPABILITIES = {
       label: 'Bullet',
       panelType: 'viz',
       supportLevel: 'supported',
-      description: 'Progress toward a target.',
+      description:
+        'General-purpose bullet chart with optional average markers and categorical coloring.',
       encodings: {
         required: [
-          { id: 'x', label: 'Value', role: 'metric' },
-          { id: 'y', label: 'Category', role: 'dimension' },
+          { id: 'x', label: 'X Axis', role: 'metric' },
+          { id: 'y', label: 'Y Axis', role: 'dimension' },
         ],
         optional: [
           {
             id: 'color',
             label: 'Color',
             role: 'dimension',
-            help: 'Categorical field to color bars.',
+            help: 'Categorical field to color bars. Markers show per-group averages when set.',
           },
         ],
       },
@@ -730,6 +731,27 @@ const VIZ_CAPABILITIES = {
           default: '',
           advanced: true,
           suggestFrom: 'fields',
+        },
+        showMarkers: {
+          type: 'boolean',
+          label: 'Show average markers',
+          help: 'Per-row marker line at the group average (by color) or overall average.',
+          default: true,
+        },
+        markerLabel: {
+          type: 'string',
+          label: 'Marker label',
+          help: 'Legend and tooltip label for the marker line.',
+          default: 'Average',
+          advanced: true,
+          visibleWhen: { option: 'showMarkers', equals: true },
+        },
+        markerColor: {
+          type: 'color',
+          label: 'Marker color',
+          default: 'var(--radf-accent-warning)',
+          advanced: true,
+          visibleWhen: { option: 'showMarkers', equals: true },
         },
         leftAnnotationsEnabled: {
           type: 'boolean',
@@ -759,7 +781,7 @@ const VIZ_CAPABILITIES = {
         showPercentColumn: {
           type: 'boolean',
           label: 'Show percent column',
-          default: true,
+          default: false,
         },
         percentKey: {
           type: 'string',
@@ -769,90 +791,33 @@ const VIZ_CAPABILITIES = {
           suggestFrom: 'fields',
           visibleWhen: { option: 'showPercentColumn', equals: true },
         },
-        thresholdMarkersEnabled: {
-          type: 'boolean',
-          label: 'Show threshold markers',
-          default: true,
-          advanced: true,
-          path: 'thresholdMarkers.enabled',
-        },
-        thresholdMarkersValueKey: {
+        valueSuffix: {
           type: 'string',
-          label: 'Threshold value field',
-          default: 'dept_threshold',
-          advanced: true,
-          path: 'thresholdMarkers.valueKey',
-          suggestFrom: 'fields',
-          visibleWhen: { option: 'thresholdMarkers.enabled', equals: true },
-        },
-        thresholdMarkersLabel: {
-          type: 'string',
-          label: 'Threshold label',
-          default: 'Dept Threshold (μ + 1.5σ)',
-          advanced: true,
-          path: 'thresholdMarkers.label',
-          visibleWhen: { option: 'thresholdMarkers.enabled', equals: true },
-        },
-        thresholdMarkersColor: {
-          type: 'color',
-          label: 'Threshold color',
-          default: 'var(--radf-accent-warning)',
-          advanced: true,
-          path: 'thresholdMarkers.color',
-          visibleWhen: { option: 'thresholdMarkers.enabled', equals: true },
-        },
-        outlierRuleValueKey: {
-          type: 'string',
-          label: 'Outlier value field',
+          label: 'Value suffix',
+          help: 'Text appended to bar value labels (e.g. "h", "%", " units").',
           default: '',
-          advanced: true,
-          path: 'outlierRule.valueKey',
-          suggestFrom: 'fields',
-        },
-        iqrValueKey: {
-          type: 'string',
-          label: 'IQR value field',
-          default: '',
-          advanced: true,
-          path: 'iqrValueKey',
-          suggestFrom: 'fields',
-        },
-        outlierValueKey: {
-          type: 'string',
-          label: 'Outlier value key',
-          default: '',
-          advanced: true,
-          path: 'outlierValueKey',
-          suggestFrom: 'fields',
-        },
-        averageKey: {
-          type: 'string',
-          label: 'Average value key',
-          default: '',
-          advanced: true,
-          path: 'averageKey',
-          suggestFrom: 'fields',
         },
         headerTitleX: {
           type: 'string',
-          label: 'Header title (value)',
+          label: 'X header title',
           default: '',
           advanced: true,
           path: 'headerTitles.xTitle',
         },
         headerTitleY: {
           type: 'string',
-          label: 'Header title (category)',
+          label: 'Y header title',
           default: '',
           advanced: true,
           path: 'headerTitles.yTitle',
         },
         headerTitlePercent: {
           type: 'string',
-          label: 'Header title (percent)',
+          label: 'Percent header title',
           default: '',
           advanced: true,
           path: 'headerTitles.percentTitle',
+          visibleWhen: { option: 'showPercentColumn', equals: true },
         },
       },
     },
@@ -908,8 +873,7 @@ const VIZ_CAPABILITIES = {
  *
  * @returns {VizManifest[]} The available viz manifests.
  */
-export const listVizManifests = () =>
-  Object.values(VIZ_CAPABILITIES.viz);
+export const listVizManifests = () => Object.values(VIZ_CAPABILITIES.viz);
 
 /**
  * Gets a specific viz manifest by id.
@@ -917,8 +881,7 @@ export const listVizManifests = () =>
  * @param {string} vizType
  * @returns {VizManifest|null} The manifest, if available.
  */
-export const getVizManifest = (vizType) =>
-  VIZ_CAPABILITIES.viz[vizType] || null;
+export const getVizManifest = (vizType) => VIZ_CAPABILITIES.viz[vizType] || null;
 
 /**
  * Builds default encodings for a viz type.
