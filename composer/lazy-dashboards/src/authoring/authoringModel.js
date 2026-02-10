@@ -15,6 +15,14 @@ import { mergeDeep } from './optionUtils.js';
  */
 
 /**
+ * @typedef {Object} DatasourceModel
+ * @property {string} id
+ * @property {string} name
+ * @property {Object|null} datasetBinding
+ * @property {SemanticLayer} semanticLayer
+ */
+
+/**
  * @typedef {Object} WidgetLayout
  * @property {number} x
  * @property {number} y
@@ -35,12 +43,15 @@ import { mergeDeep } from './optionUtils.js';
  * @property {boolean} [draft]
  * @property {Object} [query]
  * @property {string} [type]
+ * @property {string} [datasourceId]
  */
 
 /**
  * @typedef {Object} AuthoringModel
  * @property {number} schemaVersion
  * @property {DashboardMeta} meta
+ * @property {DatasourceModel[]} datasources
+ * @property {string|null} activeDatasourceId
  * @property {Object|null} datasetBinding
  * @property {SemanticLayer} semanticLayer
  * @property {WidgetModel[]} widgets
@@ -57,11 +68,66 @@ import { mergeDeep } from './optionUtils.js';
  */
 
 const DEFAULT_SCHEMA_VERSION = 1;
+const DEFAULT_DATASOURCE_NAME = 'Primary datasource';
 
 const DEFAULT_SEMANTIC_LAYER = {
   enabled: false,
   metrics: [],
   dimensions: [],
+};
+
+const slugifyId = (value) =>
+  String(value || '')
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)+/g, '');
+
+const ensureUniqueId = (baseId, usedIds) => {
+  if (!usedIds.has(baseId)) {
+    usedIds.add(baseId);
+    return baseId;
+  }
+  let counter = 2;
+  let nextId = `${baseId}-${counter}`;
+  while (usedIds.has(nextId)) {
+    counter += 1;
+    nextId = `${baseId}-${counter}`;
+  }
+  usedIds.add(nextId);
+  return nextId;
+};
+
+/**
+ * Generates a datasource id from a display name.
+ *
+ * @param {string} name
+ * @param {Set<string>} [usedIds]
+ * @returns {string} The generated datasource id.
+ */
+export const createDatasourceId = (name, usedIds = new Set()) => {
+  const base = slugifyId(name) || 'datasource';
+  return ensureUniqueId(base, usedIds);
+};
+
+const normalizeDatasourceName = (name) =>
+  name?.trim() || DEFAULT_DATASOURCE_NAME;
+
+const normalizeSemanticLayer = (semanticLayer) => ({
+  ...DEFAULT_SEMANTIC_LAYER,
+  ...(semanticLayer || {}),
+});
+
+const normalizeDatasourceEntry = (entry, usedIds) => {
+  const name = normalizeDatasourceName(entry?.name);
+  const baseId = entry?.id?.trim() || slugifyId(name) || 'datasource';
+  const id = ensureUniqueId(baseId, usedIds);
+  return {
+    id,
+    name,
+    datasetBinding: entry?.datasetBinding ?? null,
+    semanticLayer: normalizeSemanticLayer(entry?.semanticLayer),
+  };
 };
 
 /**
@@ -121,17 +187,26 @@ const getWidgetLayout = (widgets, vizType) => {
  * @param {string} [meta.description]
  * @returns {AuthoringModel} The initialized model.
  */
-export const createAuthoringModel = ({ title, description } = {}) => ({
-  schemaVersion: DEFAULT_SCHEMA_VERSION,
-  meta: {
-    title: title || 'Untitled Dashboard',
-    description: description || '',
-  },
-  datasetBinding: null,
-  semanticLayer: { ...DEFAULT_SEMANTIC_LAYER },
-  widgets: [],
-  layout: [],
-});
+export const createAuthoringModel = ({ title, description } = {}) => {
+  const usedIds = new Set();
+  const datasource = normalizeDatasourceEntry(
+    { name: DEFAULT_DATASOURCE_NAME },
+    usedIds
+  );
+  return {
+    schemaVersion: DEFAULT_SCHEMA_VERSION,
+    meta: {
+      title: title || 'Untitled Dashboard',
+      description: description || '',
+    },
+    datasources: [datasource],
+    activeDatasourceId: datasource.id,
+    datasetBinding: null,
+    semanticLayer: { ...DEFAULT_SEMANTIC_LAYER },
+    widgets: [],
+    layout: [],
+  };
+};
 
 /**
  * Normalizes a stored model into the current schema with defaults applied.
@@ -144,6 +219,25 @@ export const createAuthoringModel = ({ title, description } = {}) => ({
  */
 export const normalizeAuthoringModel = (model = {}, { title, description } = {}) => {
   const meta = model.meta || {};
+  const usedIds = new Set();
+  const legacyDatasource = model.datasetBinding || model.semanticLayer
+    ? normalizeDatasourceEntry({
+        id: model.datasetBinding?.id,
+        name: meta.title || DEFAULT_DATASOURCE_NAME,
+        datasetBinding:
+          model.datasetBinding === undefined ? null : model.datasetBinding,
+        semanticLayer: model.semanticLayer,
+      }, usedIds)
+    : null;
+  const datasources = Array.isArray(model.datasources) && model.datasources.length > 0
+    ? model.datasources.map((entry) => normalizeDatasourceEntry(entry, usedIds))
+    : legacyDatasource
+      ? [legacyDatasource]
+      : [normalizeDatasourceEntry({ name: DEFAULT_DATASOURCE_NAME }, usedIds)];
+  const activeDatasourceId =
+    datasources.find((item) => item.id === model.activeDatasourceId)?.id ||
+    datasources[0]?.id ||
+    null;
   const widgets = Array.isArray(model.widgets) ? model.widgets : [];
   const normalizedWidgets = widgets.map((widget) => {
     const vizType = widget.vizType || widget.type || 'kpi';
@@ -160,6 +254,10 @@ export const normalizeAuthoringModel = (model = {}, { title, description } = {})
     return {
       ...widget,
       id: widget.id || createWidgetId(),
+      datasourceId:
+        widget.datasourceId ||
+        widget.datasetId ||
+        activeDatasourceId,
       panelType: widget.panelType || 'viz',
       vizType,
       title: widget.title || 'Untitled Panel',
@@ -178,12 +276,11 @@ export const normalizeAuthoringModel = (model = {}, { title, description } = {})
       title: meta.title || title || 'Untitled Dashboard',
       description: meta.description || description || '',
     },
+    datasources,
+    activeDatasourceId,
     datasetBinding:
       model.datasetBinding === undefined ? null : model.datasetBinding,
-    semanticLayer: {
-      ...DEFAULT_SEMANTIC_LAYER,
-      ...(model.semanticLayer || {}),
-    },
+    semanticLayer: normalizeSemanticLayer(model.semanticLayer),
     widgets: normalizedWidgets,
     layout: Array.isArray(model.layout) ? model.layout : [],
   };
@@ -198,14 +295,23 @@ export const normalizeAuthoringModel = (model = {}, { title, description } = {})
  * @param {string} [options.panelType]
  * @returns {WidgetModel} The draft widget.
  */
-export const createWidgetDraft = (model, { vizType, panelType } = {}) => {
+export const createWidgetDraft = (
+  model,
+  { vizType, panelType, datasourceId } = {}
+) => {
   const resolvedVizType = vizType || 'kpi';
   const widgets = Array.isArray(model?.widgets) ? model.widgets : [];
+  const defaultDatasourceId =
+    datasourceId ||
+    model?.activeDatasourceId ||
+    model?.datasources?.[0]?.id ||
+    null;
   const layout = getWidgetLayout(widgets, resolvedVizType);
   const encodingDefaults = getVizEncodingDefaults(resolvedVizType);
   const optionDefaults = getVizOptionDefaults(resolvedVizType);
   return {
     id: createWidgetId(),
+    datasourceId: defaultDatasourceId,
     panelType: panelType || 'viz',
     vizType: resolvedVizType,
     title: 'New Widget',

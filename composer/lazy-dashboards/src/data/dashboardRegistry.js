@@ -6,6 +6,8 @@
  * @property {Object[]} layout
  * @property {Object|null} datasetBinding
  * @property {{ enabled: boolean, metrics: Object[], dimensions: Object[] }} semanticLayer
+ * @property {Object[]} [datasources]
+ * @property {string|null} [activeDatasourceId]
  */
 
 /**
@@ -26,6 +28,7 @@
  * @property {DashboardAuthoringModel} [authoringModel]
  * @property {Object|null} [compiledConfig]
  * @property {Object|null} [datasetBinding]
+ * @property {Object[]} [datasources]
  * @property {string[]} [tags]
  * @property {string} [description]
  */
@@ -38,6 +41,7 @@
  * @property {DashboardAuthoringModel} [authoringModel]
  * @property {Object|null} [compiledConfig]
  * @property {Object|null} [datasetBinding]
+ * @property {Object[]} [datasources]
  */
 
 /**
@@ -52,6 +56,7 @@ const DEFAULT_SEMANTIC_LAYER = {
   metrics: [],
   dimensions: [],
 };
+const DEFAULT_DATASOURCE_NAME = 'Primary datasource';
 
 const getEmptyRegistry = () => ({
   dashboards: [],
@@ -85,24 +90,58 @@ const writeRegistry = (registry) => {
   window.localStorage.setItem(STORAGE_KEY, JSON.stringify(registry));
 };
 
-const ensureAuthoringModel = (model = {}) => ({
-  ...model,
-  schemaVersion:
-    typeof model.schemaVersion === 'number'
-      ? model.schemaVersion
-      : DEFAULT_SCHEMA_VERSION,
-  meta: {
-    ...(model.meta || {}),
-  },
-  widgets: Array.isArray(model.widgets) ? model.widgets : [],
-  layout: Array.isArray(model.layout) ? model.layout : [],
-  datasetBinding:
-    model.datasetBinding === undefined ? null : model.datasetBinding,
-  semanticLayer: {
-    ...DEFAULT_SEMANTIC_LAYER,
-    ...(model.semanticLayer || {}),
-  },
-});
+const ensureAuthoringModel = (model = {}) => {
+  const legacyDatasource =
+    model.datasetBinding || model.semanticLayer
+      ? {
+          id: model.datasetBinding?.id || 'datasource',
+          name: model.meta?.title || DEFAULT_DATASOURCE_NAME,
+          datasetBinding:
+            model.datasetBinding === undefined ? null : model.datasetBinding,
+          semanticLayer: {
+            ...DEFAULT_SEMANTIC_LAYER,
+            ...(model.semanticLayer || {}),
+          },
+        }
+      : null;
+  const datasources = Array.isArray(model.datasources) && model.datasources.length > 0
+    ? model.datasources
+    : legacyDatasource
+      ? [legacyDatasource]
+      : [
+          {
+            id: 'datasource',
+            name: DEFAULT_DATASOURCE_NAME,
+            datasetBinding: null,
+            semanticLayer: { ...DEFAULT_SEMANTIC_LAYER },
+          },
+        ];
+  const activeDatasourceId =
+    datasources.find((item) => item.id === model.activeDatasourceId)?.id ||
+    datasources[0]?.id ||
+    null;
+
+  return {
+    ...model,
+    schemaVersion:
+      typeof model.schemaVersion === 'number'
+        ? model.schemaVersion
+        : DEFAULT_SCHEMA_VERSION,
+    meta: {
+      ...(model.meta || {}),
+    },
+    widgets: Array.isArray(model.widgets) ? model.widgets : [],
+    layout: Array.isArray(model.layout) ? model.layout : [],
+    datasetBinding:
+      model.datasetBinding === undefined ? null : model.datasetBinding,
+    semanticLayer: {
+      ...DEFAULT_SEMANTIC_LAYER,
+      ...(model.semanticLayer || {}),
+    },
+    datasources,
+    activeDatasourceId,
+  };
+};
 
 function normalizeRegistry(registry) {
   let didNormalize = false;

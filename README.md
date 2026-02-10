@@ -116,6 +116,22 @@ const App = () => {
 export default App;
 ```
 
+## Multiple Datasources
+
+Panels can target different `datasetId` values. Use `createMultiDataProvider` to
+route queries to the correct datasource.
+
+```js
+import { createMultiDataProvider } from 'radf';
+
+const provider = createMultiDataProvider({
+  sales: SalesApiProvider,
+  inventory: InventoryApiProvider,
+});
+
+// panel.datasetId decides which provider runs.
+```
+
 ## Features
 
 - Config-driven dashboards and panels.

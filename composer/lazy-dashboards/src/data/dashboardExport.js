@@ -867,7 +867,22 @@ const buildDashboardComponentSource = ({
   fileBase,
   hasFilterBar,
   hasDataProvider,
+  hasMultiApiProviders,
+  apiDatasourceId,
 }) => {
+  const apiImport = hasDataProvider
+    ? hasMultiApiProviders
+      ? `\nimport createExternalApiMultiProvider, { ApiDataProviders } from "./deps/${fileBase}.dataProvider.js";`
+      : `\nimport createExternalApiProvider from "./deps/${fileBase}.dataProvider.js";`
+    : '';
+  const apiDatasourceKey = apiDatasourceId
+    ? `"${apiDatasourceId}"`
+    : 'dashboardConfig.datasetId';
+  const apiProvidersInit = hasDataProvider
+    ? hasMultiApiProviders
+      ? ''
+      : `\nconst ApiDataProviders = { [${apiDatasourceKey}]: createExternalApiProvider() };`
+    : '\nconst ApiDataProviders = {};';
   const imports = `import { useEffect, useMemo } from "react";
 import {
   DashboardProvider,
@@ -875,12 +890,13 @@ import {
   Panel,
   VizRenderer,
   buildQuerySpec,
+  createMultiDataProvider,
   registerCharts,
   registerInsights,
   useDashboardState,
   useQuery,
 } from "radf";
-import dashboardConfig from "./deps/${fileBase}.dashboard.js";${hasDataProvider ? `\nimport createExternalApiProvider from "./deps/${fileBase}.dataProvider.js";` : ""}${hasFilterBar ? `\nimport LazyFilterBar from "./utils/LazyFilterBar.jsx";` : ""}`;
+import dashboardConfig from "./deps/${fileBase}.dashboard.js";${apiImport}${hasFilterBar ? `\nimport LazyFilterBar from "./utils/LazyFilterBar.jsx";` : ""}`;
   const providerImports = `\nimport { createLocalDataProvider } from "./utils/localDataProvider.js";`;
   const filterBarBlock = hasFilterBar
     ? `        <LazyFilterBar
@@ -893,7 +909,7 @@ import dashboardConfig from "./deps/${fileBase}.dashboard.js";${hasDataProvider 
           Filter Bar widget found but no filter bar component is included.
         </div>`;
 
-  return `${imports}${providerImports}
+  return `${imports}${providerImports}${apiProvidersInit}
 
 /**
  * @typedef {function(Object): Promise<{ rows: Object[], meta: Object }>} DataProvider
@@ -901,16 +917,52 @@ import dashboardConfig from "./deps/${fileBase}.dashboard.js";${hasDataProvider 
 
 /**
  * @typedef {Object} DashboardProps
- * @property {DataProvider} [dataProvider] - The optional external data provider.
- * @property {{ rows?: Object[], columns?: Object[], previewRows?: Object[] }} [datasetBinding] - The dataset binding.
- * @property {{ enabled?: boolean, dimensions?: Object[], metrics?: Object[] }} [semanticLayer] - The semantic layer config.
+ * @property {DataProvider} [dataProvider] - Optional multi-datasource provider.
+ * @property {Record<string, DataProvider>} [dataProviders] - Providers keyed by datasource id.
+ * @property {Array<{ id: string, name?: string, datasetBinding?: Object, semanticLayer?: Object }>} [datasources]
+ *   - Datasource definitions for local previews.
+ * @property {{ rows?: Object[], columns?: Object[], previewRows?: Object[] }} [datasetBinding] - Legacy dataset binding.
+ * @property {{ enabled?: boolean, dimensions?: Object[], metrics?: Object[] }} [semanticLayer] - Legacy semantic layer config.
  */
 
 /**
- * The API-backed data provider, when exported with an external API config.
+ * The API-backed data provider, when exported with external API configs.
  * @type {DataProvider|null}
  */
-const ApiDataProvider = ${hasDataProvider ? "createExternalApiProvider()" : "null"};
+const ApiDataProvider = ${
+  hasDataProvider
+    ? hasMultiApiProviders
+      ? "createExternalApiMultiProvider()"
+      : "createMultiDataProvider(ApiDataProviders)"
+    : "null"
+};
+
+/**
+ * Normalizes datasource inputs into an array.
+ *
+ * @param {DashboardProps["datasources"]} datasources
+ * @param {Object} datasetBinding
+ * @param {Object} semanticLayer
+ * @returns {Array<Object>} The normalized datasource list.
+ */
+const normalizeDatasources = (datasources, datasetBinding, semanticLayer) => {
+  if (Array.isArray(datasources) && datasources.length > 0) {
+    return datasources.map((datasource) => ({
+      id: datasource.id,
+      name: datasource.name || datasource.id,
+      datasetBinding: datasource.datasetBinding || null,
+      semanticLayer: datasource.semanticLayer || null,
+    }));
+  }
+  return [
+    {
+      id: dashboardConfig.datasetId,
+      name: dashboardConfig.title || dashboardConfig.datasetId,
+      datasetBinding: datasetBinding || null,
+      semanticLayer: semanticLayer || null,
+    },
+  ];
+};
 
 /**
  * Renders a single dashboard panel.
@@ -962,10 +1014,10 @@ ${filterBarBlock}
 /**
  * Renders the dashboard content layout.
  *
- * @param {{ dataProvider: DataProvider, datasetBinding: Object, semanticLayer: Object|null }} props - The content props.
+ * @param {{ dataProvider: DataProvider, datasourcesById: Map<string, Object>, defaultDatasource: Object }} props - The content props.
  * @returns {JSX.Element} The content markup.
  */
-const DashboardContent = ({ dataProvider, datasetBinding, semanticLayer }) => (
+const DashboardContent = ({ dataProvider, datasourcesById, defaultDatasource }) => (
   <section className="radf-dashboard">
     <header className="radf-dashboard__header">
       <div>
@@ -975,15 +1027,19 @@ const DashboardContent = ({ dataProvider, datasetBinding, semanticLayer }) => (
     </header>
     <GridLayout
       panels={dashboardConfig.panels}
-      renderPanel={(panel) => (
-        <VizPanel
-          key={panel.id}
-          panel={panel}
-          dataProvider={dataProvider}
-          datasetBinding={datasetBinding}
-          semanticLayer={semanticLayer}
-        />
-      )}
+      renderPanel={(panel) => {
+        const datasource =
+          datasourcesById.get(panel.datasetId) || defaultDatasource;
+        return (
+          <VizPanel
+            key={panel.id}
+            panel={panel}
+            dataProvider={dataProvider}
+            datasetBinding={datasource?.datasetBinding}
+            semanticLayer={datasource?.semanticLayer}
+          />
+        );
+      }}
     />
   </section>
 );
@@ -994,29 +1050,74 @@ const DashboardContent = ({ dataProvider, datasetBinding, semanticLayer }) => (
  * @param {DashboardProps} props - The component props.
  * @returns {JSX.Element} The dashboard markup.
  */
-const ${componentName} = ({ dataProvider, datasetBinding, semanticLayer }) => {
+const ${componentName} = ({
+  dataProvider,
+  dataProviders,
+  datasources,
+  datasetBinding,
+  semanticLayer,
+}) => {
   useEffect(() => {
     registerCharts();
     registerInsights();
   }, []);
 
-  const normalizedDataset = useMemo(() => ({
-    rows: Array.isArray(datasetBinding?.rows) ? datasetBinding.rows : [],
-    columns: Array.isArray(datasetBinding?.columns) ? datasetBinding.columns : [],
-    previewRows: Array.isArray(datasetBinding?.previewRows)
-      ? datasetBinding.previewRows
-      : [],
-  }), [datasetBinding]);
-  const resolvedSemanticLayer = semanticLayer?.enabled ? semanticLayer : null;
-  const localDataProvider = useMemo(
-    () => createLocalDataProvider({
-      rows: normalizedDataset.rows,
-      columns: normalizedDataset.columns,
-      semanticLayer: resolvedSemanticLayer,
-    }),
-    [normalizedDataset, resolvedSemanticLayer]
+  const normalizedDatasources = useMemo(
+    () => normalizeDatasources(datasources, datasetBinding, semanticLayer),
+    [datasources, datasetBinding, semanticLayer]
   );
-  const resolvedProvider = dataProvider || localDataProvider;
+  const datasourcesById = useMemo(
+    () =>
+      new Map(
+        normalizedDatasources.map((datasource) => [datasource.id, datasource])
+      ),
+    [normalizedDatasources]
+  );
+  const defaultDatasource =
+    datasourcesById.get(dashboardConfig.datasetId) ||
+    normalizedDatasources[0] ||
+    null;
+
+  const localProviders = useMemo(() => {
+    const next = {};
+    normalizedDatasources.forEach((datasource) => {
+      const binding = datasource?.datasetBinding || {};
+      const rows = Array.isArray(binding?.rows)
+        ? binding.rows
+        : Array.isArray(binding?.previewRows)
+          ? binding.previewRows
+          : [];
+      const columns = Array.isArray(binding?.columns) ? binding.columns : [];
+      const resolvedLayer =
+        datasource?.semanticLayer?.enabled ? datasource.semanticLayer : null;
+      next[datasource.id] = createLocalDataProvider({
+        rows,
+        columns,
+        semanticLayer: resolvedLayer,
+      });
+    });
+    return next;
+  }, [normalizedDatasources]);
+  const resolvedProviderMap = useMemo(
+    () => ({
+      ...localProviders,
+      ...ApiDataProviders,
+      ...(dataProviders || {}),
+    }),
+    [localProviders, dataProviders]
+  );
+  const fallbackProvider =
+    resolvedProviderMap[dashboardConfig.datasetId] ||
+    resolvedProviderMap[Object.keys(resolvedProviderMap)[0]] ||
+    null;
+  const resolvedProvider = useMemo(() => {
+    if (dataProvider) {
+      return dataProvider;
+    }
+    return createMultiDataProvider(resolvedProviderMap, {
+      defaultProvider: fallbackProvider,
+    });
+  }, [dataProvider, resolvedProviderMap, fallbackProvider]);
 
   return (
     <DashboardProvider
@@ -1027,8 +1128,8 @@ const ${componentName} = ({ dataProvider, datasetBinding, semanticLayer }) => {
     >
       <DashboardContent
         dataProvider={resolvedProvider}
-        datasetBinding={datasetBinding}
-        semanticLayer={semanticLayer}
+        datasourcesById={datasourcesById}
+        defaultDatasource={defaultDatasource}
       />
     </DashboardProvider>
   );
@@ -1061,6 +1162,28 @@ export const buildDashboardExport = ({
   const hasFilterBar = (compiledOutput.config?.panels || []).some(
     (panel) => panel?.panelType === 'viz' && panel?.vizType === 'filterBar'
   );
+  const resolvedDatasources =
+    Array.isArray(resolvedModel?.datasources) && resolvedModel.datasources.length
+      ? resolvedModel.datasources
+      : [
+          {
+            id:
+              compiledOutput.config?.datasetId ||
+              `${dashboard?.id || 'dashboard'}_dataset`,
+            name: resolvedModel?.meta?.title || dashboard?.name || 'Dataset',
+            datasetBinding: resolvedModel?.datasetBinding || null,
+            semanticLayer: resolvedModel?.semanticLayer || {
+              enabled: false,
+              metrics: [],
+              dimensions: [],
+            },
+        },
+      ];
+  const apiDatasourceIds = resolvedDatasources
+    .filter((datasource) => datasource?.datasetBinding?.source?.type === 'api')
+    .map((datasource) => datasource.id)
+    .filter(Boolean);
+  const apiDatasourceCount = apiDatasourceIds.length;
   const fallbackDataset = generateModule(
     'datasetConfig',
     {
@@ -1115,6 +1238,70 @@ export const buildDashboardExport = ({
     modules.dimensions || fallbackDimensions;
   files[`deps/${exportNames.fileBase}.metrics.js`] =
     modules.metrics || fallbackMetrics;
+  const datasetsById = modules.datasets || {};
+  const metricsById = modules.metricsById || {};
+  const dimensionsById = modules.dimensionsById || {};
+  resolvedDatasources.forEach((datasource) => {
+    const datasourceId = datasource?.id;
+    if (!datasourceId) {
+      return;
+    }
+    const semanticLayer = datasource.semanticLayer || {
+      enabled: false,
+      metrics: [],
+      dimensions: [],
+    };
+    const datasetFallback = generateModule(
+      'datasetConfig',
+      {
+        id: datasourceId,
+        label: datasource.name || datasourceId,
+        description: resolvedModel?.meta?.description || '',
+        dimensions: semanticLayer.dimensions || [],
+        metrics: semanticLayer.metrics || [],
+      },
+      {
+        doc: `/**
+ * Dataset config
+ *
+ * @typedef {Object} DatasetConfig
+ * @property {string} id - The dataset id.
+ * @property {string} label - The dataset label.
+ * @property {string} description - The dataset description.
+ * @property {Object[]} dimensions - The semantic layer dimensions.
+ * @property {Object[]} metrics - The semantic layer metrics.
+ *
+ * @type {DatasetConfig}
+ */`,
+      }
+    );
+    const dimensionsFallback = generateModule(
+      'dimensions',
+      semanticLayer.dimensions || [],
+      {
+        doc: `/**
+ * Dimension definitions
+ * @type {Object[]}
+ */`,
+      }
+    );
+    const metricsFallback = generateModule(
+      'metrics',
+      semanticLayer.metrics || [],
+      {
+        doc: `/**
+ * Metric definitions
+ * @type {Object[]}
+ */`,
+      }
+    );
+    files[`deps/${exportNames.fileBase}.dataset.${datasourceId}.js`] =
+      datasetsById[datasourceId] || datasetFallback;
+    files[`deps/${exportNames.fileBase}.dimensions.${datasourceId}.js`] =
+      dimensionsById[datasourceId] || dimensionsFallback;
+    files[`deps/${exportNames.fileBase}.metrics.${datasourceId}.js`] =
+      metricsById[datasourceId] || metricsFallback;
+  });
   if (modules.dataProvider) {
     files[`deps/${exportNames.fileBase}.dataProvider.js`] = modules.dataProvider;
   }
@@ -1127,6 +1314,8 @@ export const buildDashboardExport = ({
     fileBase: exportNames.fileBase,
     hasFilterBar,
     hasDataProvider: Boolean(modules.dataProvider),
+    hasMultiApiProviders: apiDatasourceCount > 1,
+    apiDatasourceId: apiDatasourceIds[0] || null,
   });
   return {
     ...exportNames,

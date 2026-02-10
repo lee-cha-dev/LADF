@@ -185,7 +185,10 @@ The semantic layer helpers live in `src/framework/core/model/`:
 ### How dashboard state influences queries
 
 - `globalFilters`, `selections`, and `drillPath` are all applied as filters.
-- `datasetId` comes from the panel config or the dashboard state.
+- `datasetId` comes from the panel config or the dashboard state; panels can
+  target different dataset ids for multi-datasource dashboards. Lazy Dashboards
+  stores this selection on each widget as `datasourceId` and compiles it into
+  `panel.datasetId`.
 - Drilldown behavior updates dimensions via `applyDrilldownToDimensions`.
 
 **Verified in repo:** `src/framework/core/query/buildQuerySpec.js`, `src/framework/core/interactions/drilldown.js`.

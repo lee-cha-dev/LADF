@@ -19,8 +19,8 @@ import { trackTelemetryEvent } from '../../data/telemetry.js';
  * @property {{ widgets: Object[] }} authoringModel
  * @property {string|null} activeWidgetId
  * @property {Object[]} vizManifests
- * @property {Object[]} datasetColumns
- * @property {Object|null} semanticLayer
+ * @property {Object[]} datasources
+ * @property {string|null} activeDatasourceId
  * @property {Object} validation
  * @property {Object} manifestCoverage
  * @property {Map<string, Object>} compiledPanelMap
@@ -38,8 +38,8 @@ const WidgetPropertiesPanel = ({
   authoringModel,
   activeWidgetId,
   vizManifests,
-  datasetColumns,
-  semanticLayer,
+  datasources,
+  activeDatasourceId,
   validation,
   manifestCoverage,
   compiledPanelMap,
@@ -53,11 +53,6 @@ const WidgetPropertiesPanel = ({
   const [showCompiledConfig, setShowCompiledConfig] = useState(false);
   const unsupportedOptionLogRef = useRef(new Set());
   const widgets = authoringModel?.widgets || [];
-  const normalizedSemanticLayer = semanticLayer || {
-    enabled: false,
-    metrics: [],
-    dimensions: [],
-  };
 
   useEffect(() => {
     setShowAdvancedOptions(false);
@@ -68,6 +63,21 @@ const WidgetPropertiesPanel = ({
   const activeWidget = widgets.find(
     (widget) => widget.id === activeWidgetId
   );
+  const resolvedDatasourceId =
+    activeWidget?.datasourceId ||
+    activeWidget?.datasetId ||
+    activeDatasourceId ||
+    null;
+  const activeDatasource =
+    (datasources || []).find(
+      (datasource) => datasource.id === resolvedDatasourceId
+    ) || datasources?.[0] || null;
+  const datasetColumns = activeDatasource?.datasetBinding?.columns || [];
+  const normalizedSemanticLayer = activeDatasource?.semanticLayer || {
+    enabled: false,
+    metrics: [],
+    dimensions: [],
+  };
 
   useEffect(() => {
     if (!activeWidget || showExpertOptions) {
@@ -535,6 +545,27 @@ const WidgetPropertiesPanel = ({
                 )
               }
             />
+          </label>
+          <label className="lazy-form__field">
+            <span className="lazy-input__label">Datasource</span>
+            <select
+              className="lazy-input__field"
+              value={resolvedDatasourceId || ''}
+              onChange={(event) =>
+                handleWidgetFieldChange(
+                  activeWidget.id,
+                  'datasourceId',
+                  event.target.value
+                )
+              }
+              disabled={(datasources || []).length <= 1}
+            >
+              {(datasources || []).map((datasource) => (
+                <option key={datasource.id} value={datasource.id}>
+                  {datasource.name || datasource.id}
+                </option>
+              ))}
+            </select>
           </label>
           <label className="lazy-form__field">
             <span className="lazy-input__label">Viz Type</span>

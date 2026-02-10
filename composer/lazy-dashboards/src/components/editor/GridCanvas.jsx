@@ -28,8 +28,8 @@ const DEFAULT_LAYOUT = { x: 1, y: 1, w: 4, h: 2 };
  * @property {(widgetId: string) => void} onWidgetSelect
  * @property {(updater: (model: Object) => Object) => void} onUpdateAuthoringModel
  * @property {Object} previewProvider
- * @property {Object|null} datasetBinding
- * @property {Object} semanticLayer
+ * @property {Object[]} datasources
+ * @property {Map<string, Object>} previewDatasourceBindings
  * @property {() => void} onAddWidget
  * @property {'layout'|'preview'} viewMode
  * @property {(mode: 'layout'|'preview') => void} onViewModeChange
@@ -55,8 +55,8 @@ const GridCanvas = ({
   onWidgetSelect,
   onUpdateAuthoringModel,
   previewProvider,
-  datasetBinding,
-  semanticLayer,
+  datasources,
+  previewDatasourceBindings,
   onAddWidget,
   viewMode,
   onViewModeChange,
@@ -66,6 +66,11 @@ const GridCanvas = ({
   const widgets = authoringModel?.widgets || [];
   const widgetValidation = validation?.widgets || {};
   const resolvedMode = viewMode === 'preview' ? 'preview' : 'layout';
+  const datasourceMap = useMemo(
+    () => new Map((datasources || []).map((datasource) => [datasource.id, datasource])),
+    [datasources]
+  );
+  const defaultDatasourceId = compiledConfig?.datasetId || datasources?.[0]?.id || null;
 
   const gridClasses = (layout) => {
     const safeLayout = getSafeLayout(layout);
@@ -286,6 +291,15 @@ const GridCanvas = ({
         <GridLayout
           panels={panels}
           renderPanel={(panel) => {
+            const datasourceId = panel?.datasetId || panel?.datasourceId || defaultDatasourceId;
+            const datasource =
+              datasourceMap.get(datasourceId) || datasources?.[0] || null;
+            const datasetBinding =
+              previewDatasourceBindings?.get(datasourceId) ||
+              datasource?.datasetBinding ||
+              null;
+            const semanticLayer =
+              datasource?.semanticLayer || { enabled: false, metrics: [], dimensions: [] };
             if (panel.panelType === 'viz' && panel.vizType === 'filterBar') {
               return (
                 <Panel title={panel.title} subtitle={panel.subtitle}>
@@ -411,7 +425,7 @@ const GridCanvas = ({
               dashboardId: compiledConfig?.id || dashboardId,
               datasetId:
                 compiledConfig?.datasetId ||
-                datasetBinding?.id ||
+                defaultDatasourceId ||
                 `${dashboardId}_dataset`,
             }}
           >

@@ -46,6 +46,37 @@ export const isDataProvider = (provider) =>
   Boolean(provider && typeof provider.execute === 'function');
 
 /**
+ * Creates a datasource-aware provider that routes queries by datasetId.
+ *
+ * @param {Record<string, DataProvider>} providersById
+ * @param {{ defaultProvider?: DataProvider }} [options]
+ * @returns {DataProvider} The multi-datasource provider.
+ */
+export const createMultiDataProvider = (
+  providersById = {},
+  { defaultProvider } = {}
+) => {
+  const entries = Object.entries(providersById || {}).filter(
+    ([, provider]) => isDataProvider(provider)
+  );
+  const providerMap = new Map(entries);
+  const fallback = defaultProvider && isDataProvider(defaultProvider)
+    ? defaultProvider
+    : null;
+
+  return createDataProvider(async (querySpec, context) => {
+    const datasetId = querySpec?.datasetId;
+    const provider = providerMap.get(datasetId) || fallback;
+    if (!provider) {
+      throw new Error(
+        `No data provider registered for datasetId "${datasetId ?? 'unknown'}".`
+      );
+    }
+    return provider.execute(querySpec, context);
+  });
+};
+
+/**
  * Ensures a DataProvider is available before executing queries.
  *
  * @param {unknown} provider

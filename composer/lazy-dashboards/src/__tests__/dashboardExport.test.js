@@ -98,4 +98,58 @@ describe('dashboardExport', () => {
       `${exportPlan.folderName}/${exportPlan.componentName}.jsx`
     );
   });
+
+  it('includes per-datasource dataset modules', () => {
+    const dashboard = { id: 'dash-2', name: 'Multi Source' };
+    const authoringModel = {
+      schemaVersion: 1,
+      meta: { title: 'Multi Source', description: '' },
+      datasources: [
+        {
+          id: 'sales',
+          name: 'Sales',
+          datasetBinding: {
+            id: 'sales-1',
+            source: {
+              type: 'api',
+              baseUrl: 'https://example.com',
+              method: 'GET',
+              headers: [],
+              queryParams: [],
+              responsePath: 'data.items',
+              refreshInterval: null,
+            },
+          },
+          semanticLayer: { enabled: true, metrics: [], dimensions: [] },
+        },
+        {
+          id: 'inventory',
+          name: 'Inventory',
+          datasetBinding: {
+            id: 'inventory-1',
+            source: {
+              type: 'api',
+              baseUrl: 'https://example.com',
+              method: 'GET',
+              headers: [],
+              queryParams: [],
+              responsePath: 'data.items',
+              refreshInterval: null,
+            },
+          },
+          semanticLayer: { enabled: true, metrics: [], dimensions: [] },
+        },
+      ],
+      widgets: [],
+      layout: [],
+    };
+
+    const exportPlan = buildDashboardExport({ dashboard, authoringModel });
+    expect(exportPlan.files).toHaveProperty(
+      `deps/${exportPlan.fileBase}.dataset.sales.js`
+    );
+    expect(exportPlan.files).toHaveProperty(
+      `deps/${exportPlan.fileBase}.dataset.inventory.js`
+    );
+  });
 });
