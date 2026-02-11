@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { updateWidgetInModel } from '../../authoring/authoringModel.js';
 import { resolveEditorControl } from '../../authoring/editorFieldCatalog.js';
 import {
@@ -94,11 +94,11 @@ const WidgetPropertiesPanel = ({
     setRawOptionsError('');
   }, [activeWidget, showExpertOptions]);
 
-  const updateAuthoringModel = (updater) => {
+  const updateAuthoringModel = useCallback((updater) => {
     if (typeof onUpdateAuthoringModel === 'function') {
       onUpdateAuthoringModel(updater);
     }
-  };
+  }, [onUpdateAuthoringModel]);
 
   const getEncodingInputValue = (encoding, value) => {
     if (encoding?.multi) {
@@ -243,8 +243,14 @@ const WidgetPropertiesPanel = ({
     () => getVizManifest(activeWidget?.vizType),
     [activeWidget?.vizType]
   );
-  const requiredEncodings = activeVizManifest?.encodings?.required || [];
-  const optionalEncodings = activeVizManifest?.encodings?.optional || [];
+  const requiredEncodings = useMemo(
+    () => activeVizManifest?.encodings?.required || [],
+    [activeVizManifest]
+  );
+  const optionalEncodings = useMemo(
+    () => activeVizManifest?.encodings?.optional || [],
+    [activeVizManifest]
+  );
   const optionEntries = useMemo(
     () => Object.entries(activeVizManifest?.options || {}),
     [activeVizManifest]
@@ -480,28 +486,110 @@ const WidgetPropertiesPanel = ({
     ? validation.widgets[activeWidget.id]
     : null;
   const widgetErrors = activeValidation?.errors || [];
-  const fieldOptions = useMemo(() => {
-    const options = new Set();
-    (datasetColumns || []).forEach((column) => {
-      if (column?.id) {
-        options.add(column.id);
+  const fieldOptionsByRole = useMemo(() => {
+    const all = new Set();
+    const metrics = new Set();
+    const dimensions = new Set();
+    const addOption = (id, role) => {
+      if (!id) {
+        return;
       }
+      all.add(id);
+      if (role === 'metric') {
+        metrics.add(id);
+      } else if (role === 'dimension') {
+        dimensions.add(id);
+      }
+    };
+    (datasetColumns || []).forEach((column) => {
+      const id = column?.id;
+      let role = column?.role || column?.inferredRole || null;
+      if (!role) {
+        const type = column?.type || column?.inferredType || 'string';
+        role = type === 'number' ? 'metric' : 'dimension';
+      }
+      addOption(id, role);
     });
     if (normalizedSemanticLayer.enabled) {
-      normalizedSemanticLayer.dimensions.forEach((dimension) => {
-        if (dimension?.id) {
-          options.add(dimension.id);
-        }
-      });
-      normalizedSemanticLayer.metrics.forEach((metric) => {
-        if (metric?.id) {
-          options.add(metric.id);
-        }
-      });
+      normalizedSemanticLayer.dimensions.forEach((dimension) =>
+        addOption(dimension?.id, 'dimension')
+      );
+      normalizedSemanticLayer.metrics.forEach((metric) =>
+        addOption(metric?.id, 'metric')
+      );
     }
-    return Array.from(options);
+    return {
+      all: Array.from(all),
+      metric: Array.from(metrics),
+      dimension: Array.from(dimensions),
+    };
   }, [datasetColumns, normalizedSemanticLayer]);
+  const getFieldOptionsForEncoding = useCallback((encoding) => {
+    if (encoding?.role === 'metric') {
+      return fieldOptionsByRole.metric;
+    }
+    if (encoding?.role === 'dimension') {
+      return fieldOptionsByRole.dimension;
+    }
+    return fieldOptionsByRole.all;
+  }, [fieldOptionsByRole]);
+  const isEncodingValueAllowed = useCallback((encoding, value) => {
+    const allowed = getFieldOptionsForEncoding(encoding);
+    if (!allowed.length) {
+      return true;
+    }
+    if (encoding?.multi) {
+      return Array.isArray(value)
+        ? value.every((entry) => allowed.includes(entry))
+        : false;
+    }
+    if (value === '' || value === null || value === undefined) {
+      return true;
+    }
+    return allowed.includes(value);
+  }, [getFieldOptionsForEncoding]);
   const fieldOptionsListId = 'lazy-field-options';
+
+  useEffect(() => {
+    if (!activeWidget) {
+      return;
+    }
+    const encodingsToCheck = [
+      ...(requiredEncodings || []),
+      ...(optionalEncodings || []),
+    ];
+    const patch = {};
+    encodingsToCheck.forEach((encoding) => {
+      if (encoding?.role !== 'metric') {
+        return;
+      }
+      const allowed = getFieldOptionsForEncoding(encoding);
+      if (allowed.length !== 1) {
+        return;
+      }
+      const current = activeWidget.encodings?.[encoding.id];
+      if (!current || isEncodingValueAllowed(encoding, current)) {
+        return;
+      }
+      patch[encoding.id] = allowed[0];
+    });
+    if (Object.keys(patch).length) {
+      updateAuthoringModel((current) =>
+        updateWidgetInModel(current, activeWidget.id, {
+          encodings: patch,
+          draft: false,
+        })
+      );
+    }
+  }, [
+    activeWidget,
+    optionalEncodings,
+    requiredEncodings,
+    fieldOptionsByRole,
+    getFieldOptionsForEncoding,
+    isEncodingValueAllowed,
+    updateAuthoringModel,
+  ]);
 
   return (
     <section className="lazy-panel">
@@ -519,7 +607,7 @@ const WidgetPropertiesPanel = ({
       ) : (
         <div className="lazy-form">
           <datalist id={fieldOptionsListId}>
-            {fieldOptions.map((option) => (
+            {fieldOptionsByRole.all.map((option) => (
               <option key={option} value={option} />
             ))}
           </datalist>
@@ -620,6 +708,11 @@ const WidgetPropertiesPanel = ({
           ) : null}
           {requiredEncodings.map((encoding) => (
             <label key={encoding.id} className="lazy-form__field">
+              <datalist id={`${fieldOptionsListId}-${encoding.id}`}>
+                {getFieldOptionsForEncoding(encoding).map((option) => (
+                  <option key={option} value={option} />
+                ))}
+              </datalist>
               <span className="lazy-input__label">
                 {encoding.label || encoding.id}
               </span>
@@ -629,7 +722,7 @@ const WidgetPropertiesPanel = ({
                 placeholder={
                   encoding.multi ? 'Comma-separated fields' : ''
                 }
-                list={fieldOptionsListId}
+                list={`${fieldOptionsListId}-${encoding.id}`}
                 value={getEncodingInputValue(
                   encoding,
                   activeWidget.encodings?.[encoding.id]
@@ -648,6 +741,14 @@ const WidgetPropertiesPanel = ({
               {encoding.help ? (
                 <span className="lazy-input__help">{encoding.help}</span>
               ) : null}
+              {!isEncodingValueAllowed(
+                encoding,
+                activeWidget.encodings?.[encoding.id]
+              ) ? (
+                <span className="lazy-input__help">
+                  Select a {encoding.role || 'valid'} field.
+                </span>
+              ) : null}
             </label>
           ))}
           {optionalEncodings.length > 0 ? (
@@ -655,6 +756,11 @@ const WidgetPropertiesPanel = ({
           ) : null}
           {optionalEncodings.map((encoding) => (
             <label key={encoding.id} className="lazy-form__field">
+              <datalist id={`${fieldOptionsListId}-${encoding.id}`}>
+                {getFieldOptionsForEncoding(encoding).map((option) => (
+                  <option key={option} value={option} />
+                ))}
+              </datalist>
               <span className="lazy-input__label">
                 {encoding.label || encoding.id}
               </span>
@@ -664,7 +770,7 @@ const WidgetPropertiesPanel = ({
                 placeholder={
                   encoding.multi ? 'Comma-separated fields' : ''
                 }
-                list={fieldOptionsListId}
+                list={`${fieldOptionsListId}-${encoding.id}`}
                 value={getEncodingInputValue(
                   encoding,
                   activeWidget.encodings?.[encoding.id]
@@ -682,6 +788,14 @@ const WidgetPropertiesPanel = ({
               />
               {encoding.help ? (
                 <span className="lazy-input__help">{encoding.help}</span>
+              ) : null}
+              {!isEncodingValueAllowed(
+                encoding,
+                activeWidget.encodings?.[encoding.id]
+              ) ? (
+                <span className="lazy-input__help">
+                  Select a {encoding.role || 'valid'} field.
+                </span>
               ) : null}
             </label>
           ))}

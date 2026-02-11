@@ -108,10 +108,13 @@ const mergeQueryWithEncodings = (
     ...normalizeQueryArray(query.dimensions),
     ...derived.dimensions,
   ]);
+  const filteredMeasures = mergedMeasures.filter(
+    (measure) => !mergedDimensions.includes(measure)
+  );
   return {
     ...derived,
     ...query,
-    measures: mergedMeasures,
+    measures: filteredMeasures,
     dimensions: mergedDimensions,
   };
 };
