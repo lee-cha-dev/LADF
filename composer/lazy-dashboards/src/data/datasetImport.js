@@ -1,5 +1,4 @@
 const DEFAULT_MAX_ROWS = 5000;
-const DEFAULT_PREVIEW_ROWS = 10;
 const LARGE_ROW_WARNING_COUNT = 100000;
 
 /**
@@ -83,7 +82,6 @@ const isRowEmpty = (row) =>
 
 const normalizeTable = (rows, options = {}) => {
   const maxRows = options.maxRows ?? DEFAULT_MAX_ROWS;
-  const previewRows = options.previewRows ?? DEFAULT_PREVIEW_ROWS;
   if (!rows.length) {
     return {
       columns: [],
@@ -142,7 +140,7 @@ const normalizeTable = (rows, options = {}) => {
   return {
     columns,
     rows: formattedRows,
-    preview: formattedRows.slice(0, previewRows),
+    preview: formattedRows,
     warnings: [],
     rowCount: formattedRows.length,
     rawRowCount,
@@ -232,7 +230,6 @@ export const parseRowMatrix = (rows, options = {}) =>
  */
 export const buildTableFromObjectRows = (rows = [], options = {}) => {
   const maxRows = options.maxRows ?? DEFAULT_MAX_ROWS;
-  const previewRows = options.previewRows ?? DEFAULT_PREVIEW_ROWS;
   const rawRows = Array.isArray(rows) ? rows : [];
   const objectRows = rawRows.filter(
     (row) => row && typeof row === 'object' && !Array.isArray(row)
@@ -320,7 +317,7 @@ export const buildTableFromObjectRows = (rows = [], options = {}) => {
   return {
     columns,
     rows: formattedRows,
-    preview: formattedRows.slice(0, previewRows),
+    preview: formattedRows,
     warnings,
     rowCount: formattedRows.length,
     rawRowCount: objectRows.length,
