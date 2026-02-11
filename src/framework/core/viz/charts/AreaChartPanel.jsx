@@ -15,6 +15,7 @@ import {
 } from 'recharts';
 import ChartContainer from '../common/ChartContainer.jsx';
 import ChartTooltip from '../common/ChartTooltip.jsx';
+import { pivotRows } from '../../query/transforms/pivot';
 import { getSeriesColor, getSeriesColorsForKeys } from '../palettes/seriesColors';
 
 /**
@@ -62,17 +63,54 @@ function AreaChartPanel({
   colorAssignment,
   hiddenKeys,
 }) {
-  const assignedKeys =
-    colorAssignment?.mode === 'series' || colorAssignment?.mode === 'single'
-      ? colorAssignment.items.map((item) => item.key)
-      : [];
-  const seriesKeys = assignedKeys.length ? assignedKeys : resolveSeriesKeys(encodings, data);
-  const visibleSeriesKeys = seriesKeys.filter(
-    (key) => !hiddenKeys?.has(String(key))
-  );
+  const assignedKeys = useMemo(() => {
+    if (
+      colorAssignment?.mode === 'series' ||
+      colorAssignment?.mode === 'single' ||
+      colorAssignment?.mode === 'category'
+    ) {
+      return colorAssignment.items.map((item) => item.key);
+    }
+    return [];
+  }, [colorAssignment]);
+  const { chartData, seriesKeys } = useMemo(() => {
+    const groupKey = encodings.group || options.seriesBy;
+    const xKey = encodings.x;
+    const yKey = encodings.y;
+    const shouldPivot =
+      groupKey &&
+      xKey &&
+      typeof yKey === 'string' &&
+      Array.isArray(data) &&
+      data.length;
+    if (shouldPivot) {
+      const pivoted = pivotRows(data, {
+        index: xKey,
+        column: groupKey,
+        value: yKey,
+        fill: null,
+      });
+      const groupKeys = assignedKeys.length
+        ? assignedKeys
+        : Array.from(
+            new Set(
+              data.map((row) => row?.[groupKey]).filter((value) => value != null)
+            )
+          ).map((value) => String(value));
+      return { chartData: pivoted, seriesKeys: groupKeys };
+    }
+    const useAssignedKeys =
+      assignedKeys.length &&
+      (colorAssignment?.mode !== 'category' || shouldPivot);
+    const resolvedKeys = useAssignedKeys
+      ? assignedKeys
+      : resolveSeriesKeys(encodings, data);
+    return { chartData: data, seriesKeys: resolvedKeys };
+  }, [assignedKeys, colorAssignment, data, encodings, options.seriesBy]);
+  const visibleSeriesKeys = seriesKeys.filter((key) => !hiddenKeys?.has(String(key)));
   const showTooltip = options.tooltip !== false;
   const brushConfig = options.brush || {};
-  const brushEnabled = Boolean(brushConfig.enabled) && data.length > 1;
+  const brushEnabled = Boolean(brushConfig.enabled) && chartData.length > 1;
   const seriesColors = useMemo(
     () => getSeriesColorsForKeys(seriesKeys),
     [seriesKeys]
@@ -85,7 +123,10 @@ function AreaChartPanel({
   return (
     <ChartContainer>
       <ResponsiveContainer width="100%" height={280}>
-        <AreaChart data={data} margin={{ top: 8, right: 16, left: 0, bottom: 8 }}>
+        <AreaChart
+          data={chartData}
+          margin={{ top: 8, right: 16, left: 0, bottom: 8 }}
+        >
           <CartesianGrid stroke="var(--ladf-chart-grid)" strokeDasharray="3 3" />
           <XAxis
             dataKey={encodings.x}
@@ -129,7 +170,7 @@ function AreaChartPanel({
                 if (handlers.onBrushChange) {
                   handlers.onBrushChange({
                     ...range,
-                    data,
+                    data: chartData,
                     dataKey: encodings.x,
                   });
                 }

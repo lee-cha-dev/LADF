@@ -37,13 +37,15 @@ const uniq = (values) => Array.from(new Set(values.filter(Boolean)));
  * Derives a query definition from encodings.
  *
  * @param {Object} [encodings]
+ * @param {Object} [options]
  * @param {string} vizType
  * @returns {{ measures: string[], dimensions: string[] }} The query definition.
  */
-const buildQueryFromEncodings = (encodings = {}, vizType) => {
+const buildQueryFromEncodings = (encodings = {}, options = {}, vizType) => {
   if (!encodings || typeof encodings !== 'object') {
     return { measures: [], dimensions: [] };
   }
+  const seriesBy = options?.seriesBy;
   const measures = [];
   const dimensions = [];
   if (encodings.value) {
@@ -60,6 +62,9 @@ const buildQueryFromEncodings = (encodings = {}, vizType) => {
   }
   if (encodings.group) {
     dimensions.push(encodings.group);
+  }
+  if (seriesBy) {
+    dimensions.push(seriesBy);
   }
   if (vizType === 'table' && encodings.columns) {
     const columns = Array.isArray(encodings.columns)
@@ -84,7 +89,8 @@ const compileWidget = (widget, datasetId) => {
   const layout = widget.layout || { x: 1, y: 1, w: 4, h: 2 };
   const panelType = widget.panelType || 'viz';
   const vizType = widget.vizType || widget.type || 'kpi';
-  const query = widget.query || buildQueryFromEncodings(widget.encodings, vizType);
+  const query =
+    widget.query || buildQueryFromEncodings(widget.encodings, widget.options, vizType);
   const resolvedDatasourceId = widget.datasourceId || widget.datasetId || datasetId;
   const panel = {
     id: widget.id,
@@ -275,3 +281,5 @@ export const compileAuthoringModel = ({ dashboard, authoringModel }) => {
   };
   return { config, modules };
 };
+
+export { buildQueryFromEncodings };

@@ -5,7 +5,7 @@ import {
   GridLayout,
   Panel,
   VizRenderer,
-  dashboardSelectors,
+  buildQuerySpec,
   useDashboardState,
   useQuery,
 } from 'ladf';
@@ -247,7 +247,7 @@ const GridCanvas = ({
   const PreviewVizPanel = ({ panelConfig }) => {
     const dashboardState = useDashboardState();
     const querySpec = useMemo(
-      () => dashboardSelectors.selectDerivedQueryInputs(dashboardState, panelConfig),
+      () => buildQuerySpec(panelConfig, dashboardState),
       [dashboardState, panelConfig]
     );
     const { data, loading, error } = useQuery(querySpec, {

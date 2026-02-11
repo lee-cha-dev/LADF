@@ -172,6 +172,18 @@
     },
     {
       "vizType": "line",
+      "optionPath": "options.seriesBy",
+      "type": "string",
+      "default": "",
+      "required": false,
+      "enum": [],
+      "control": "text",
+      "status": "supported",
+      "notes": "Field to pivot long-form rows into series keys.",
+      "source": "src/framework/core/viz/charts/LineChartPanel.jsx"
+    },
+    {
+      "vizType": "line",
       "optionPath": "options.brush.enabled",
       "type": "boolean",
       "default": false,
@@ -528,6 +540,18 @@
       "control": "toggle",
       "status": "supported",
       "notes": "Toggle the Recharts tooltip.",
+      "source": "src/framework/core/viz/charts/AreaChartPanel.jsx"
+    },
+    {
+      "vizType": "area",
+      "optionPath": "options.seriesBy",
+      "type": "string",
+      "default": "",
+      "required": false,
+      "enum": [],
+      "control": "text",
+      "status": "supported",
+      "notes": "Field to pivot long-form rows into series keys.",
       "source": "src/framework/core/viz/charts/AreaChartPanel.jsx"
     },
     {

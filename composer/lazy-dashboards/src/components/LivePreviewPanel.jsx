@@ -6,6 +6,7 @@ import {
   useDashboardState,
   useQuery,
 } from 'ladf';
+import { buildQueryFromEncodings } from '../authoring/compiler.js';
 import LazyFilterBar from './LazyFilterBar.jsx';
 
 /**
@@ -38,10 +39,28 @@ const LivePreviewPanel = ({
 }) => {
   const dashboardState = useDashboardState();
   const isFilterBar = panel?.panelType === 'viz' && panel?.vizType === 'filterBar';
-  const shouldQuery = Boolean(panel) && !isFilterBar;
+  const panelQuery = useMemo(() => {
+    if (!panel) {
+      return null;
+    }
+    if (panel.query) {
+      return panel.query;
+    }
+    return buildQueryFromEncodings(panel.encodings, panel.options, panel.vizType);
+  }, [panel]);
+  const panelConfig = useMemo(() => {
+    if (!panel) {
+      return null;
+    }
+    if (!panelQuery || panel.query === panelQuery) {
+      return panel;
+    }
+    return { ...panel, query: panelQuery };
+  }, [panel, panelQuery]);
+  const shouldQuery = Boolean(panelConfig) && !isFilterBar;
   const querySpec = useMemo(
-    () => (shouldQuery ? buildQuerySpec(panel, dashboardState) : {}),
-    [panel, dashboardState, shouldQuery]
+    () => (shouldQuery ? buildQuerySpec(panelConfig, dashboardState) : {}),
+    [panelConfig, dashboardState, shouldQuery]
   );
   const { data, loading, error } = useQuery(querySpec, {
     provider: dataProvider,
@@ -81,6 +100,7 @@ const LivePreviewPanel = ({
     >
       {panel.panelType === 'viz' ? (
         <VizRenderer
+          panelConfig={panelConfig}
           vizType={panel.vizType}
           data={data || []}
           encodings={panel.encodings}

@@ -2,21 +2,38 @@
 
 Build analytics dashboards from config, not boilerplate.
 
-LADF is a config-driven React framework for building analytic dashboards (KPIs, trends, breakdowns, and insights) with Recharts. It ships as a package you can install directly from Git and includes a single CSS entrypoint for tokens, themes, and component styles.
+LADF is the runtime layer behind Lazy Dashboards. It takes a dashboard config,
+turns each panel into a QuerySpec, executes queries through a DataProvider, and
+renders Recharts visualizations with consistent layout, state, interactions, and
+themes.
 
-- Docs: `docs/EXTENDING.md`, `docs/FORKING.md`, `docs/CONTRIBUTING.md`
-- Themes: `docs/THEMES.md`
-- Example app: `examples/consumer-app`
+- Runtime only (no composer UI). The composer exports dashboards that run on LADF.
+- Package name: `ladf`.
+- CSS entrypoint: `ladf/styles.css`.
 
-## Quick Start
+## Why LADF
 
-### 1) Install
+- Config-first runtime: dashboard config -> QuerySpec -> provider -> viz.
+- Deterministic state: global filters, selections, drill path, per-panel state.
+- Extensible registries: register charts and insights without changing the renderer.
+- Query layer with caching + validation via `useQuery`.
+- Theme + palette system driven by CSS tokens and classes.
+
+## Core Flow (composer export model)
+
+1) Register default charts/insights once at app startup.
+2) Wrap the dashboard subtree in `DashboardProvider`.
+3) Build a QuerySpec from panel config + dashboard state.
+4) Execute queries via `useQuery` with a DataProvider.
+5) Render with `GridLayout`, `Panel`, and `VizRenderer`.
+
+## Install
 
 ```bash
 npm install ladf@"git+https://github.com/lee-cha-dev/LADF.git"
 ```
 
-### 2) Create a dashboard config
+## Quick Start (runtime)
 
 ```js
 // dashboard.config.js
@@ -45,8 +62,6 @@ const dashboardConfig = {
 export default dashboardConfig;
 ```
 
-### 3) Render it
-
 ```jsx
 import React, { useEffect, useMemo } from 'react';
 import {
@@ -56,6 +71,7 @@ import {
   VizRenderer,
   buildQuerySpec,
   registerCharts,
+  registerInsights,
   useDashboardState,
   useQuery,
   MockDataProvider,
@@ -93,6 +109,7 @@ const VizPanel = ({ panel }) => {
 const App = () => {
   useEffect(() => {
     registerCharts();
+    registerInsights();
   }, []);
 
   return (
@@ -116,10 +133,39 @@ const App = () => {
 export default App;
 ```
 
-## Multiple Datasources
+## Data Providers
 
-Panels can target different `datasetId` values. Use `createMultiDataProvider` to
-route queries to the correct datasource.
+LADF expects a DataProvider with an `execute(querySpec, { signal })` method. Use
+`createDataProvider` to wrap your query logic and optionally validate results.
+
+```js
+import { createDataProvider } from 'ladf';
+
+const ApiProvider = createDataProvider(
+  async (querySpec, { signal }) => {
+    const response = await fetch('/api/query', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(querySpec),
+      signal,
+    });
+    const json = await response.json();
+    return { rows: json.rows, meta: json.meta };
+  },
+  {
+    validateResult: (result) =>
+      Array.isArray(result?.rows) || 'rows must be an array',
+  }
+);
+```
+
+`useQuery` handles caching, stale checks, aborts, and validation warnings. Set
+`staleTime` and `strictResultValidation` as needed.
+
+### Multiple Datasources
+
+Panels can target different `datasetId` values. Use `createMultiDataProvider`
+to route queries to the right backend.
 
 ```js
 import { createMultiDataProvider } from 'ladf';
@@ -132,210 +178,103 @@ const provider = createMultiDataProvider({
 // panel.datasetId decides which provider runs.
 ```
 
-## Features
+## Dashboard State and Interactions
 
-- Config-driven dashboards and panels.
-- Recharts-based visualization registry with extensible chart types.
-- Pluggable data providers (API, local, mock).
-- Insights engine with built-in analyzers (trend, anomaly, top drivers).
-- Theme system with 12 light/dark palettes and CSS variables.
-- Interaction helpers for cross-filter, drilldown, and brush/zoom.
+`DashboardProvider` owns shared dashboard state (filters, selections, drill
+path, per-panel UI state). Use:
 
-## When to Use LADF
+- `useDashboardState`, `useDashboardActions` for read/write access.
+- `dashboardSelectors` for derived inputs (filters, breadcrumbs, QuerySpec).
+- Interaction helpers: `crossFilter`, `drilldown`, `brushZoom`.
 
-Good fit:
-- Internal analytics dashboards.
-- Customer-facing reporting and KPI pages.
-- Prototyping and validating dashboard layouts quickly.
-- Teams that want config-driven governance.
+## Insights
 
-Not a fit:
-- Complex multi-page applications that are not dashboard-first.
-- Ultra-low-latency streaming visualizations that require bespoke rendering.
-- Highly bespoke charts that do not fit the registry model.
+Register default insights with `registerInsights()`, or add your own analyzers
+via `registerInsight`. Render them with `InsightsPanel` or call `useInsights`
+directly for custom UI.
 
-## Themes
+## Semantic Layer Helpers
 
-LADF includes 12 professionally designed themes, each available in both light and dark variants:
+Define dataset metadata with the semantic layer helpers:
 
-- `ladf-theme-light` / `ladf-theme-dark` - default modern theme
-- `ladf-theme-nord-*` - arctic-inspired cool blues
-- `ladf-theme-dracula-*` - high-contrast purple and pink
-- `ladf-theme-solarized-*` - precision earth tones
-- `ladf-theme-monokai-*` - vibrant cyan and pink accents
-- `ladf-theme-gruvbox-*` - warm retro palette
-- `ladf-theme-material-*` - Material Design tones
-- `ladf-theme-one-*` - Atom One palette
-- `ladf-theme-tokyo-*` - modern Japanese-inspired tones
-- `ladf-theme-catppuccin-*` - soft pastel palette
-- `ladf-theme-horizon-*` - warm pink with cyan accents
+- `createDataset`, `createDimension`, `createMetric`, `createHierarchy`
+- `FIELD_TYPES` for dimension typing
 
-Apply a theme by adding a root class:
+These helpers keep query specs and dashboard configs aligned.
 
-```jsx
-useEffect(() => {
-  document.documentElement.classList.add('ladf-theme-nord-dark');
-}, []);
-```
+## Themes and Palettes
 
-Full palette documentation and custom theme guidance live in `docs/THEMES.md`.
+Import `ladf/styles.css` once. Apply theme and palette classes at the root.
 
-## Full Example
+Theme families (light + dark):
 
-```jsx
-import React, { useEffect, useMemo } from 'react';
-import {
-  DashboardProvider,
-  GridLayout,
-  Panel,
-  VizRenderer,
-  buildQuerySpec,
-  createDataProvider,
-  registerCharts,
-  registerInsights,
-  useDashboardState,
-  useQuery,
-} from 'ladf';
-import dashboardConfig from './dashboard.config.js';
+- `ladf-theme-light` / `ladf-theme-dark` (default)
+- `ladf-theme-nord-*`
+- `ladf-theme-dracula-*`
+- `ladf-theme-solarized-*`
+- `ladf-theme-monokai-*`
+- `ladf-theme-gruvbox-*`
+- `ladf-theme-material-*`
+- `ladf-theme-one-*`
+- `ladf-theme-tokyo-*`
+- `ladf-theme-catppuccin-*`
+- `ladf-theme-horizon-*`
 
-const ApiDataProvider = createDataProvider(
-  async (querySpec, { signal }) => {
-    const response = await fetch('/api/query', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(querySpec),
-      signal,
-    });
-    if (!response.ok) {
-      throw new Error(`Query failed: ${response.status}`);
-    }
-    const json = await response.json();
-    return { rows: json.rows, meta: json.meta };
-  },
-  {
-    validateResult: (result) => Array.isArray(result?.rows) || 'rows must be an array',
-  }
-);
+Palette classes:
 
-const VizPanel = ({ panel }) => {
-  const dashboardState = useDashboardState();
-  const querySpec = useMemo(
-    () => buildQuerySpec(panel, dashboardState),
-    [panel, dashboardState]
-  );
-
-  const { data, loading, error } = useQuery(querySpec, {
-    provider: ApiDataProvider,
-  });
-
-  const isEmpty = !loading && !error && (!data || data.length === 0);
-  const status = loading ? 'loading' : error ? 'error' : 'ready';
-
-  return (
-    <Panel
-      title={panel.title}
-      subtitle={panel.subtitle}
-      status={status}
-      error={error}
-      isEmpty={isEmpty}
-      emptyMessage="No data returned for this panel."
-    >
-      <VizRenderer
-        vizType={panel.vizType}
-        data={data || []}
-        encodings={panel.encodings}
-        options={panel.options}
-      />
-    </Panel>
-  );
-};
-
-const DashboardContent = () => (
-  <section className="ladf-dashboard">
-    <h1 className="ladf-dashboard__title">{dashboardConfig.title}</h1>
-    <p className="ladf-dashboard__subtitle">{dashboardConfig.subtitle}</p>
-    <GridLayout
-      panels={dashboardConfig.panels}
-      renderPanel={(panel) => <VizPanel key={panel.id} panel={panel} />}
-    />
-  </section>
-);
-
-const App = () => {
-  useEffect(() => {
-    registerCharts();
-    registerInsights();
-  }, []);
-
-  return (
-    <DashboardProvider
-      initialState={{
-        dashboardId: dashboardConfig.id,
-        datasetId: dashboardConfig.datasetId,
-      }}
-    >
-      <DashboardContent />
-    </DashboardProvider>
-  );
-};
-
-export default App;
-```
-
-## Consumer Example
-
-A runnable consumer app lives at `examples/consumer-app` and installs LADF via the Git dependency. It imports `ladf/styles.css` and renders a dashboard using the public API.
-
-## Troubleshooting
-
-Charts not rendering:
-- Ensure you imported `ladf/styles.css`.
-- Check that `registerCharts()` ran once on app startup.
-
-Theme not applying:
-- Verify the theme class is on `document.documentElement`.
-- Ensure the theme class is not being overwritten by another effect.
-
-## Browser Support
-
-LADF targets modern evergreen browsers (Chrome, Edge, Firefox, Safari).
-
-## Forking & Extending LADF
-
-If you want to fork LADF, extend the framework, or contribute changes back, start with:
-
-- `docs/FORKING.md` for fork workflow and local setup.
-- `docs/EXTENDING.md` for adding dashboards, panels, viz types, insights, providers, and themes.
-- `docs/CONTRIBUTING.md` for scripts, tests, and contributor hygiene.
-
-## How to Run Tests
-
-```bash
-npm run lint
-npm run test
-npm run build:lib
-npm run smoke:consumer
-npm run test:css
-```
-
-`npm run test:css` builds the library, installs the packed tarball into the consumer app, starts Vite preview, and runs Playwright to assert computed styles are applied.
+- `ladf-palette-analytics` (default)
+- `ladf-palette-tableau10`
+- `ladf-palette-set2`
+- `ladf-palette-dark2`
+- `ladf-palette-okabe-ito`
+- `ladf-palette-viridis`
+- `ladf-palette-rdylgn`
 
 ## Package Surface
 
-Public exports are available from the package root:
+Public exports from `ladf`:
 
 ```js
 import {
   DashboardProvider,
-  GridLayout,
+  useDashboardState,
+  useDashboardActions,
+  dashboardSelectors,
   Panel,
+  PanelBody,
+  PanelHeader,
+  GridLayout,
+  ErrorBoundary,
   VizRenderer,
   InsightsPanel,
+  useInsights,
   registerCharts,
   registerInsights,
   buildQuerySpec,
-  useQuery,
+  DataProvider,
+  createDataProvider,
+  createMultiDataProvider,
+  assertDataProvider,
+  isDataProvider,
   MockDataProvider,
+  useQuery,
+  DrillBreadcrumbs,
+  buildCrossFilterSelectionFromEvent,
+  isSelectionDuplicate,
+  applyDrilldownToDimensions,
+  buildDrilldownEntryFromEvent,
+  isDrilldownDuplicate,
+  buildBrushFilter,
+  formatBrushRangeLabel,
+  getBrushRange,
+  removeBrushFilter,
+  upsertBrushFilter,
+  resolvePalette,
+  createDataset,
+  createHierarchy,
+  createDimension,
+  FIELD_TYPES,
+  createMetric,
 } from 'ladf';
 ```
 
@@ -345,20 +284,30 @@ Styles are available from:
 import 'ladf/styles.css';
 ```
 
-## Constraints
+## Examples
 
-- JavaScript only (no TypeScript)
-- No Tailwind
-- No inline styles
-- Recharts is the chart library
-- CSS variables power tokens and themes
+- `examples/consumer-app` shows a runnable consumer app using the runtime API.
 
-## Next Steps
+## Docs
 
-- Explore `docs/EXTENDING.md` for custom viz types and insights.
-- Use `docs/THEMES.md` for theme palettes and custom themes.
-- Validate a fork with `docs/FORKING.md`.
+- `docs/EXTENDING.md` for custom viz, insights, providers, and themes.
+- `docs/THEMES.md` for palette details.
+- `docs/FORKING.md` and `docs/CONTRIBUTING.md` for dev workflow.
+
+## Browser Support
+
+LADF targets modern evergreen browsers (Chrome, Edge, Firefox, Safari).
+
+## Tests
+
+```bash
+npm run lint
+npm run test
+npm run build:lib
+npm run smoke:consumer
+npm run test:css
+```
 
 ## License
 
-MIT © Lee Cha. See `LICENSE` for details.
+MIT (c) Lee Cha. See `LICENSE` for details.

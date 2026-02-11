@@ -74,7 +74,7 @@ function LineChartPanel({
     return [];
   }, [colorAssignment]);
   const { chartData, seriesKeys } = useMemo(() => {
-    const groupKey = encodings.group;
+    const groupKey = encodings.group || options.seriesBy;
     const xKey = encodings.x;
     const yKey = encodings.y;
     const shouldPivot =
@@ -106,7 +106,7 @@ function LineChartPanel({
       ? assignedKeys
       : resolveSeriesKeys(encodings, data);
     return { chartData: data, seriesKeys: resolvedKeys };
-  }, [data, encodings, assignedKeys, colorAssignment]);
+  }, [data, encodings, assignedKeys, colorAssignment, options.seriesBy]);
   const visibleSeriesKeys = seriesKeys.filter((key) => !hiddenKeys?.has(String(key)));
   const showTooltip = options.tooltip !== false;
   const brushConfig = options.brush || {};

@@ -6,6 +6,7 @@ import { getDivergingVar, getSequentialVar, getSeriesVar } from './paletteRegist
 
 const TEXT_VIZ_TYPES = new Set(['kpi', 'text', 'metric', 'number', 'markdown']);
 const LINE_VIZ_TYPES = new Set(['line', 'area', 'composed', 'time-series', 'timeseries']);
+const GROUPABLE_LINE_VIZ_TYPES = new Set(['line', 'area', 'time-series', 'timeseries']);
 const BAR_VIZ_TYPES = new Set(['bar', 'column', 'histogram']);
 const PIE_VIZ_TYPES = new Set(['pie', 'donut']);
 const SCATTER_VIZ_TYPES = new Set(['scatter']);
@@ -401,10 +402,15 @@ export const buildColorAssignment = ({
   }
 
   if (LINE_VIZ_TYPES.has(vizType)) {
-    if (encodings?.group && !Array.isArray(encodings?.y)) {
+    const groupKey = encodings?.group || options?.seriesBy;
+    if (
+      GROUPABLE_LINE_VIZ_TYPES.has(vizType) &&
+      groupKey &&
+      !Array.isArray(encodings?.y)
+    ) {
       return {
         mode: 'category',
-        ...buildCategoryAssignment({ data, xKey: encodings.group }),
+        ...buildCategoryAssignment({ data, xKey: groupKey }),
       };
     }
     if (isMultiSeries) {

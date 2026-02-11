@@ -225,6 +225,13 @@ const VIZ_CAPABILITIES = {
           label: 'Show tooltip',
           default: true,
         },
+        seriesBy: {
+          type: 'string',
+          label: 'Series pivot field',
+          help: 'Field to pivot into series when your data is long-form.',
+          default: '',
+          suggestFrom: 'fields',
+        },
         brushEnabled: {
           type: 'boolean',
           label: 'Enable brush',
@@ -290,6 +297,13 @@ const VIZ_CAPABILITIES = {
           type: 'boolean',
           label: 'Show tooltip',
           default: true,
+        },
+        seriesBy: {
+          type: 'string',
+          label: 'Series pivot field',
+          help: 'Field to pivot into series when your data is long-form.',
+          default: '',
+          suggestFrom: 'fields',
         },
         brushEnabled: {
           type: 'boolean',
