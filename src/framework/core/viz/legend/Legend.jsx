@@ -12,28 +12,28 @@ import './legend.css';
  */
 const resolveSwatchClass = (colorVar) => {
   if (typeof colorVar !== 'string') {
-    return 'radf-swatch--1';
+    return 'ladf-swatch--1';
   }
-  const seriesMatch = colorVar.match(/--radf-series-(\d+)/);
+  const seriesMatch = colorVar.match(/--ladf-series-(\d+)/);
   if (seriesMatch) {
-    return `radf-swatch--${seriesMatch[1]}`;
+    return `ladf-swatch--${seriesMatch[1]}`;
   }
-  const seqMatch = colorVar.match(/--radf-seq-(\d+)/);
+  const seqMatch = colorVar.match(/--ladf-seq-(\d+)/);
   if (seqMatch) {
-    return `radf-swatch--seq-${seqMatch[1]}`;
+    return `ladf-swatch--seq-${seqMatch[1]}`;
   }
-  const divNegMatch = colorVar.match(/--radf-div-neg-(\d+)/);
+  const divNegMatch = colorVar.match(/--ladf-div-neg-(\d+)/);
   if (divNegMatch) {
-    return `radf-swatch--div-neg-${divNegMatch[1]}`;
+    return `ladf-swatch--div-neg-${divNegMatch[1]}`;
   }
-  const divPosMatch = colorVar.match(/--radf-div-pos-(\d+)/);
+  const divPosMatch = colorVar.match(/--ladf-div-pos-(\d+)/);
   if (divPosMatch) {
-    return `radf-swatch--div-pos-${divPosMatch[1]}`;
+    return `ladf-swatch--div-pos-${divPosMatch[1]}`;
   }
-  if (colorVar.includes('--radf-div-zero')) {
-    return 'radf-swatch--div-zero';
+  if (colorVar.includes('--ladf-div-zero')) {
+    return 'ladf-swatch--div-zero';
   }
-  return 'radf-swatch--1';
+  return 'ladf-swatch--1';
 };
 
 /**
@@ -68,8 +68,8 @@ function Legend({
   const toggleable = typeof onToggle === 'function';
 
   return (
-    <div className={['radf-legend', `radf-legend--${position}`].join(' ')}>
-      <ul className="radf-legend__list">
+    <div className={['ladf-legend', `ladf-legend--${position}`].join(' ')}>
+      <ul className="ladf-legend__list">
         {items.map((item) => {
           const isHidden = hiddenKeys?.has(item.key);
           const swatchClass = resolveSwatchClass(item.colorVar);
@@ -77,16 +77,16 @@ function Legend({
             <li
               key={item.key}
               className={[
-                'radf-legend__item',
+                'ladf-legend__item',
                 swatchClass,
-                toggleable ? 'radf-legend__item--toggleable' : '',
-                isHidden ? 'radf-legend__item--hidden' : '',
+                toggleable ? 'ladf-legend__item--toggleable' : '',
+                isHidden ? 'ladf-legend__item--hidden' : '',
               ]
                 .filter(Boolean)
                 .join(' ')}
             >
               <button
-                className="radf-legend__button"
+                className="ladf-legend__button"
                 type="button"
                 onClick={() => {
                   if (toggleable) {
@@ -94,8 +94,8 @@ function Legend({
                   }
                 }}
               >
-                <span className="radf-legend__swatch" />
-                <span className="radf-legend__label">{item.label}</span>
+                <span className="ladf-legend__swatch" />
+                <span className="ladf-legend__label">{item.label}</span>
               </button>
             </li>
           );

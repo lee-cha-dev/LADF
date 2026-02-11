@@ -30,21 +30,21 @@ const DrillBreadcrumbs = ({ drillPath = [], onCrumbClick, onReset }) => {
   }
 
   return (
-    <div className="radf-drill">
-      <span className="radf-drill__title">Drill path</span>
-      <div className="radf-drill__crumbs">
+    <div className="ladf-drill">
+      <span className="ladf-drill__title">Drill path</span>
+      <div className="ladf-drill__crumbs">
         {drillPath.map((entry, index) => (
           <button
             key={entry.id || `${entry.dimension}-${index}`}
             type="button"
-            className="radf-drill__crumb"
+            className="ladf-drill__crumb"
             onClick={() => onCrumbClick?.(index)}
           >
             {getDrilldownLabel(entry)}
           </button>
         ))}
       </div>
-      <button type="button" className="radf-drill__reset" onClick={onReset}>
+      <button type="button" className="ladf-drill__reset" onClick={onReset}>
         Reset
       </button>
     </div>

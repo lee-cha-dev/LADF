@@ -30,19 +30,19 @@ function ChartTooltip({ active, label, payload }) {
   }
 
   return (
-    <div className="radf-chart-tooltip">
-      {label ? <p className="radf-chart-tooltip__label">{label}</p> : null}
-      <ul className="radf-chart-tooltip__list">
+    <div className="ladf-chart-tooltip">
+      {label ? <p className="ladf-chart-tooltip__label">{label}</p> : null}
+      <ul className="ladf-chart-tooltip__list">
         {payload.map((item, index) => (
-          <li key={item.dataKey || item.name || index} className="radf-chart-tooltip__item">
+          <li key={item.dataKey || item.name || index} className="ladf-chart-tooltip__item">
             <span
               className={[
-                'radf-chart-tooltip__swatch',
+                'ladf-chart-tooltip__swatch',
                 getChartColorClass(index),
               ].join(' ')}
             />
-            <span className="radf-chart-tooltip__name">{item.name}</span>
-            <span className="radf-chart-tooltip__value">{item.value}</span>
+            <span className="ladf-chart-tooltip__name">{item.name}</span>
+            <span className="ladf-chart-tooltip__value">{item.value}</span>
           </li>
         ))}
       </ul>

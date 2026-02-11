@@ -13,23 +13,23 @@ import React from 'react';
  */
 
 /**
- * Render a chart container with standard RADF chrome.
+ * Render a chart container with standard LADF chrome.
  * @param {ChartContainerProps} props - Container props.
  * @returns {JSX.Element} Chart container.
  */
 function ChartContainer({ title, subtitle, footer, children }) {
   return (
-    <div className="radf-chart">
+    <div className="ladf-chart">
       {(title || subtitle) && (
-        <div className="radf-chart__header">
-          <div className="radf-chart__heading">
-            {title ? <p className="radf-chart__title">{title}</p> : null}
-            {subtitle ? <p className="radf-chart__subtitle">{subtitle}</p> : null}
+        <div className="ladf-chart__header">
+          <div className="ladf-chart__heading">
+            {title ? <p className="ladf-chart__title">{title}</p> : null}
+            {subtitle ? <p className="ladf-chart__subtitle">{subtitle}</p> : null}
           </div>
         </div>
       )}
-      <div className="radf-chart__canvas">{children}</div>
-      {footer ? <div className="radf-chart__footer">{footer}</div> : null}
+      <div className="ladf-chart__canvas">{children}</div>
+      {footer ? <div className="ladf-chart__footer">{footer}</div> : null}
     </div>
   );
 }

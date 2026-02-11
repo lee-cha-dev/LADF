@@ -1,51 +1,51 @@
-.radf-table {
+.ladf-table {
   width: 100%;
   border-collapse: separate;
   border-spacing: 0;
-  background: var(--radf-surface-1);
-  border: 1px solid var(--radf-border-subtle, var(--radf-color-border));
-  border-radius: var(--radf-radius-lg);
+  background: var(--ladf-surface-1);
+  border: 1px solid var(--ladf-border-subtle, var(--ladf-color-border));
+  border-radius: var(--ladf-radius-lg);
   overflow: hidden;
-  box-shadow: var(--radf-shadow-low);
+  box-shadow: var(--ladf-shadow-low);
 }
 
-.radf-table thead {
-  background: var(--radf-panel-header-gradient, var(--radf-surface-3));
-  color: var(--radf-text-secondary, var(--radf-color-text));
+.ladf-table thead {
+  background: var(--ladf-panel-header-gradient, var(--ladf-surface-3));
+  color: var(--ladf-text-secondary, var(--ladf-color-text));
   text-transform: uppercase;
   letter-spacing: 0.06em;
   font-size: 0.7rem;
 }
 
-.radf-table th,
-.radf-table td {
+.ladf-table th,
+.ladf-table td {
   padding: 12px 16px;
   text-align: left;
-  border-bottom: 1px solid var(--radf-border-divider, var(--radf-color-border));
+  border-bottom: 1px solid var(--ladf-border-divider, var(--ladf-color-border));
 }
 
-.radf-table th {
-  font-weight: var(--radf-font-weight-semibold);
+.ladf-table th {
+  font-weight: var(--ladf-font-weight-semibold);
 }
 
-.radf-table tbody tr {
+.ladf-table tbody tr {
   transition: background 0.2s ease, transform 0.2s ease;
 }
 
-.radf-table tbody tr:hover {
-  background: var(--radf-surface-muted, var(--radf-color-surface));
+.ladf-table tbody tr:hover {
+  background: var(--ladf-surface-muted, var(--ladf-color-surface));
 }
 
-.radf-table tbody tr:last-child td {
+.ladf-table tbody tr:last-child td {
   border-bottom: none;
 }
 
-.radf-table--compact th,
-.radf-table--compact td {
+.ladf-table--compact th,
+.ladf-table--compact td {
   padding: 10px 12px;
 }
 
-.radf-table--sticky thead th {
+.ladf-table--sticky thead th {
   position: sticky;
   top: 0;
   z-index: 1;

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { MockDataProvider, createMultiDataProvider } from 'radf';
+import { MockDataProvider, createMultiDataProvider } from 'ladf';
 import useDashboardRegistry from '../hooks/useDashboardRegistry.js';
 import {
   addWidgetToModel,

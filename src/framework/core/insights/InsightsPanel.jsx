@@ -19,9 +19,9 @@ const renderEvidence = (evidence = []) => {
     return null;
   }
   return (
-    <ul className="radf-insight-card__evidence">
+    <ul className="ladf-insight-card__evidence">
       {evidence.map((item, index) => (
-        <li key={`${item}-${index}`} className="radf-insight-card__evidence-item">
+        <li key={`${item}-${index}`} className="ladf-insight-card__evidence-item">
           {item}
         </li>
       ))}
@@ -41,29 +41,29 @@ const renderEvidence = (evidence = []) => {
  */
 function InsightsPanel({ insights = [] }) {
   return (
-    <div className="radf-insights">
+    <div className="ladf-insights">
       {insights.map((insight) => (
         <article
           key={insight.id}
-          className={`radf-insight-card radf-insight-card--${insight.severity || 'info'}`}
+          className={`ladf-insight-card ladf-insight-card--${insight.severity || 'info'}`}
         >
-          <header className="radf-insight-card__header">
+          <header className="ladf-insight-card__header">
             <div>
-              <h3 className="radf-insight-card__title">{insight.title}</h3>
+              <h3 className="ladf-insight-card__title">{insight.title}</h3>
               {insight.source ? (
-                <p className="radf-insight-card__source">Source: {insight.source}</p>
+                <p className="ladf-insight-card__source">Source: {insight.source}</p>
               ) : null}
             </div>
             {insight.severity ? (
-              <span className="radf-insight-card__badge">{insight.severity}</span>
+              <span className="ladf-insight-card__badge">{insight.severity}</span>
             ) : null}
           </header>
           {insight.narrative ? (
-            <p className="radf-insight-card__narrative">{insight.narrative}</p>
+            <p className="ladf-insight-card__narrative">{insight.narrative}</p>
           ) : null}
           {renderEvidence(insight.evidence)}
           {insight.recommendedAction ? (
-            <p className="radf-insight-card__action">
+            <p className="ladf-insight-card__action">
               <strong>Recommended:</strong> {insight.recommendedAction}
             </p>
           ) : null}

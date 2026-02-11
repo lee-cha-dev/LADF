@@ -86,9 +86,9 @@ function VizRenderer({
 
   if (!Component) {
     return (
-      <div className="radf-viz__missing">
-        <p className="radf-viz__missing-title">Visualization unavailable</p>
-        <p className="radf-viz__missing-text">
+      <div className="ladf-viz__missing">
+        <p className="ladf-viz__missing-title">Visualization unavailable</p>
+        <p className="ladf-viz__missing-text">
           The viz type &quot;{vizType}&quot; has not been registered yet.
         </p>
       </div>
@@ -97,8 +97,8 @@ function VizRenderer({
 
   const layoutClass =
     legendPosition === 'right'
-      ? 'radf-viz__layout radf-viz__layout--right'
-      : 'radf-viz__layout';
+      ? 'ladf-viz__layout ladf-viz__layout--right'
+      : 'ladf-viz__layout';
   const legend = shouldShowLegend ? (
     <Legend
       items={legendItems}

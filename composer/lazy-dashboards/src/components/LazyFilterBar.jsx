@@ -5,7 +5,7 @@ import {
   upsertBrushFilter,
   useDashboardActions,
   useDashboardState,
-} from 'radf';
+} from 'ladf';
 
 /**
  * @typedef {Object} FilterBarOptions
@@ -201,7 +201,7 @@ const LazyFilterBar = ({
   }
 
   return (
-    <div className={`radf-filter-bar lazy-filter-bar ${layout}`}>
+    <div className={`ladf-filter-bar lazy-filter-bar ${layout}`}>
       {resolvedFields.map((field) => {
         const activeFilter = filtersByField.get(field.id);
         const activeValues = Array.isArray(activeFilter?.values)
@@ -218,12 +218,12 @@ const LazyFilterBar = ({
           : availableValues;
 
         return (
-          <div key={field.id} className="radf-filter-bar__group">
-            <span className="radf-filter-bar__label">{field.label}</span>
-            <div className="radf-filter-bar__inputs">
+          <div key={field.id} className="ladf-filter-bar__group">
+            <span className="ladf-filter-bar__label">{field.label}</span>
+            <div className="ladf-filter-bar__inputs">
               {showSearch ? (
                 <input
-                  className="radf-filter-bar__input"
+                  className="ladf-filter-bar__input"
                   type="search"
                   placeholder="Search values"
                   value={searchValue}
@@ -236,7 +236,7 @@ const LazyFilterBar = ({
                 />
               ) : null}
               <select
-                className="radf-filter-bar__input lazy-filter-bar__select"
+                className="ladf-filter-bar__input lazy-filter-bar__select"
                 multiple={allowMultiSelect}
                 value={allowMultiSelect ? activeValues : activeValues[0] || ''}
                 onChange={(event) => {
@@ -267,7 +267,7 @@ const LazyFilterBar = ({
               {showClear && activeValues.length > 0 ? (
                 <button
                   type="button"
-                  className="radf-filter-bar__button radf-filter-bar__button--ghost"
+                  className="ladf-filter-bar__button ladf-filter-bar__button--ghost"
                   onClick={() => handleSelectionChange(field.id, [])}
                 >
                   Clear
@@ -280,7 +280,7 @@ const LazyFilterBar = ({
       {showClear && globalFilters?.length ? (
         <button
           type="button"
-          className="radf-filter-bar__clear"
+          className="ladf-filter-bar__clear"
           onClick={() => setGlobalFilters([])}
         >
           Clear all

@@ -1,6 +1,6 @@
 /**
  * @module core/docs/jsdocTypes
- * @description Canonical JSDoc typedefs for RADF's public APIs.
+ * @description Canonical JSDoc typedefs for LADF's public APIs.
  */
 
 /**

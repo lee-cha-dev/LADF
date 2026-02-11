@@ -9,7 +9,7 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      radf: resolve(rootDir, 'src/index.js'),
+      ladf: resolve(rootDir, 'src/index.js'),
     },
   },
   test: {

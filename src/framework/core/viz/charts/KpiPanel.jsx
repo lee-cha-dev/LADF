@@ -72,11 +72,11 @@ function KpiPanel({ data = [], encodings = {}, options = {} }) {
   const label = options.label || encodings?.label;
 
   return (
-    <div className="radf-kpi">
-      {label ? <div className="radf-kpi__label">{label}</div> : null}
-      <div className="radf-kpi__value">{formattedValue}</div>
+    <div className="ladf-kpi">
+      {label ? <div className="ladf-kpi__label">{label}</div> : null}
+      <div className="ladf-kpi__value">{formattedValue}</div>
       {options.caption ? (
-        <div className="radf-kpi__caption">{options.caption}</div>
+        <div className="ladf-kpi__caption">{options.caption}</div>
       ) : null}
     </div>
   );

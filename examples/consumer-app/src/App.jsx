@@ -10,7 +10,7 @@ import {
   useDashboardState,
   useQuery,
   MockDataProvider,
-} from 'radf';
+} from 'ladf';
 import dashboardConfig from './dashboard.config.js';
 
 const VizPanel = ({ panel }) => {
@@ -47,11 +47,11 @@ const VizPanel = ({ panel }) => {
 };
 
 const DashboardContent = ({ theme, onToggleTheme }) => (
-  <section className="radf-dashboard">
+  <section className="ladf-dashboard">
     <header className="consumer-dashboard__header">
       <div>
-        <h1 className="radf-dashboard__title">{dashboardConfig.title}</h1>
-        <p className="radf-dashboard__subtitle">{dashboardConfig.subtitle}</p>
+        <h1 className="ladf-dashboard__title">{dashboardConfig.title}</h1>
+        <p className="ladf-dashboard__subtitle">{dashboardConfig.subtitle}</p>
       </div>
       <button
         className="consumer-dashboard__theme-toggle"
@@ -79,8 +79,8 @@ const App = () => {
 
   useEffect(() => {
     const root = document.documentElement;
-    root.classList.remove('radf-theme-dark', 'radf-theme-light');
-    root.classList.add(`radf-theme-${theme}`);
+    root.classList.remove('ladf-theme-dark', 'ladf-theme-light');
+    root.classList.add(`ladf-theme-${theme}`);
   }, [theme]);
 
   const handleToggleTheme = () => {

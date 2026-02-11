@@ -86,15 +86,15 @@ function LineChartPanel({
     <ChartContainer>
       <ResponsiveContainer width="100%" height={280}>
         <LineChart data={data} margin={{ top: 8, right: 16, left: 0, bottom: 8 }}>
-          <CartesianGrid stroke="var(--radf-chart-grid)" strokeDasharray="3 3" />
+          <CartesianGrid stroke="var(--ladf-chart-grid)" strokeDasharray="3 3" />
           <XAxis
             dataKey={encodings.x}
-            tick={{ fill: 'var(--radf-text-muted)', fontSize: 12 }}
-            axisLine={{ stroke: 'var(--radf-border-divider)' }}
+            tick={{ fill: 'var(--ladf-text-muted)', fontSize: 12 }}
+            axisLine={{ stroke: 'var(--ladf-border-divider)' }}
           />
           <YAxis
-            tick={{ fill: 'var(--radf-text-muted)', fontSize: 12 }}
-            axisLine={{ stroke: 'var(--radf-border-divider)' }}
+            tick={{ fill: 'var(--ladf-text-muted)', fontSize: 12 }}
+            axisLine={{ stroke: 'var(--ladf-border-divider)' }}
           />
           {showTooltip ? <Tooltip content={<ChartTooltip />} /> : null}
           {visibleSeriesKeys.map((key, index) => (
@@ -115,11 +115,11 @@ function LineChartPanel({
           ))}
           {brushEnabled ? (
             <Brush
-              className="radf-chart__brush"
+              className="ladf-chart__brush"
               dataKey={encodings.x}
               height={24}
               travellerWidth={12}
-              stroke="var(--radf-accent-primary)"
+              stroke="var(--ladf-accent-primary)"
               startIndex={brushStartIndex}
               endIndex={brushEndIndex}
               onChange={(range) => {

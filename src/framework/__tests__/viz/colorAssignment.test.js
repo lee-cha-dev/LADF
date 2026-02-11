@@ -44,8 +44,8 @@ describe('buildColorAssignment', () => {
     });
 
     expect(assignment.mode).toBe('diverging');
-    expect(assignment.getColor(-5)).toContain('--radf-div-neg');
-    expect(assignment.getColor(5)).toContain('--radf-div-pos');
+    expect(assignment.getColor(-5)).toContain('--ladf-div-neg');
+    expect(assignment.getColor(5)).toContain('--ladf-div-pos');
   });
 
   it('assigns sequential palettes for sequential viz types', () => {
@@ -61,6 +61,6 @@ describe('buildColorAssignment', () => {
     });
 
     expect(assignment.mode).toBe('sequential');
-    expect(assignment.getColor(1)).toContain('--radf-seq-');
+    expect(assignment.getColor(1)).toContain('--ladf-seq-');
   });
 });

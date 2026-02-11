@@ -91,15 +91,15 @@ function BarChartPanel({
     <ChartContainer>
       <ResponsiveContainer width="100%" height={280}>
         <BarChart data={chartData} margin={{ top: 8, right: 16, left: 0, bottom: 8 }}>
-          <CartesianGrid stroke="var(--radf-chart-grid)" strokeDasharray="3 3" />
+          <CartesianGrid stroke="var(--ladf-chart-grid)" strokeDasharray="3 3" />
           <XAxis
             dataKey={encodings.x}
-            tick={{ fill: 'var(--radf-text-muted)', fontSize: 12 }}
-            axisLine={{ stroke: 'var(--radf-border-divider)' }}
+            tick={{ fill: 'var(--ladf-text-muted)', fontSize: 12 }}
+            axisLine={{ stroke: 'var(--ladf-border-divider)' }}
           />
           <YAxis
-            tick={{ fill: 'var(--radf-text-muted)', fontSize: 12 }}
-            axisLine={{ stroke: 'var(--radf-border-divider)' }}
+            tick={{ fill: 'var(--ladf-text-muted)', fontSize: 12 }}
+            axisLine={{ stroke: 'var(--ladf-border-divider)' }}
           />
           {showTooltip ? <Tooltip content={<ChartTooltip />} /> : null}
           {isSeriesMode
@@ -112,7 +112,7 @@ function BarChartPanel({
                     seriesColors[key] ||
                     getSeriesColor(index)
                   }
-                  stackId={isStacked ? 'radf-stack' : undefined}
+                  stackId={isStacked ? 'ladf-stack' : undefined}
                   radius={[6, 6, 0, 0]}
                   onClick={handlers.onClick}
                 />

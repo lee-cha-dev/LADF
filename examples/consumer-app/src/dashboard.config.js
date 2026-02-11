@@ -1,7 +1,7 @@
 const dashboardConfig = {
   id: 'consumer-smoke',
   title: 'Consumer Smoke Test',
-  subtitle: 'RADF styles load automatically from the package import.',
+  subtitle: 'LADF styles load automatically from the package import.',
   datasetId: 'consumer_dataset',
   panels: [
     {

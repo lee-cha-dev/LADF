@@ -42,8 +42,8 @@ describe('useThemeSettings', () => {
     fireEvent.click(getByText('Set Palette'));
 
     const root = document.documentElement;
-    expect(root.classList.contains('radf-theme-nord-dark')).toBe(true);
-    expect(root.classList.contains('radf-palette-set2')).toBe(true);
+    expect(root.classList.contains('ladf-theme-nord-dark')).toBe(true);
+    expect(root.classList.contains('ladf-palette-set2')).toBe(true);
 
     const stored = JSON.parse(window.localStorage.getItem(THEME_SETTINGS_STORAGE_KEY));
     expect(stored).toMatchObject({

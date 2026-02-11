@@ -1,6 +1,6 @@
 /**
  * @module core/dashboard/DashboardProvider
- * @description Provides dashboard state/actions via context for RADF dashboards.
+ * @description Provides dashboard state/actions via context for LADF dashboards.
  */
 
 import React, { useMemo, useReducer } from 'react';

@@ -210,7 +210,7 @@ const DashboardLibrary = ({ themeFamily, themeMode, paletteId }) => {
             Compose dashboards in minutes, ship config in seconds.
           </h1>
           <p className="lazy-hero__subtitle">
-            Import a dataset, map your metrics, and watch RADF render live panels
+            Import a dataset, map your metrics, and watch LADF render live panels
             as you build.
           </p>
         </div>

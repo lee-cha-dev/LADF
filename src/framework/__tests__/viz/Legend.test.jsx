@@ -7,15 +7,15 @@ describe('Legend', () => {
   it('renders items and toggles hidden state', () => {
     const onToggle = vi.fn();
     const items = [
-      { key: 'a', label: 'Alpha', colorVar: 'var(--radf-series-1)' },
-      { key: 'b', label: 'Beta', colorVar: 'var(--radf-series-2)' },
+      { key: 'a', label: 'Alpha', colorVar: 'var(--ladf-series-1)' },
+      { key: 'b', label: 'Beta', colorVar: 'var(--ladf-series-2)' },
     ];
 
     const { getByText, container } = render(
       <Legend items={items} hiddenKeys={new Set(['b'])} onToggle={onToggle} />
     );
 
-    const hiddenItem = container.querySelector('.radf-legend__item--hidden');
+    const hiddenItem = container.querySelector('.ladf-legend__item--hidden');
     expect(hiddenItem).not.toBeNull();
 
     fireEvent.click(getByText('Alpha'));
@@ -24,11 +24,11 @@ describe('Legend', () => {
 
   it('derives swatch classes from palette variables', () => {
     const items = [
-      { key: 'a', label: 'Alpha', colorVar: 'var(--radf-series-2)' },
+      { key: 'a', label: 'Alpha', colorVar: 'var(--ladf-series-2)' },
     ];
 
     const { container } = render(<Legend items={items} />);
-    const item = container.querySelector('.radf-legend__item');
-    expect(item.className).toContain('radf-swatch--2');
+    const item = container.querySelector('.ladf-legend__item');
+    expect(item.className).toContain('ladf-swatch--2');
   });
 });

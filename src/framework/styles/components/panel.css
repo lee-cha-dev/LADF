@@ -1,63 +1,63 @@
-.radf-panel {
+.ladf-panel {
   display: flex;
   flex-direction: column;
   height: 100%;
-  background: var(--radf-panel-gradient, var(--radf-color-surface));
-  border: 1px solid var(--radf-border-subtle, var(--radf-color-border));
-  border-radius: var(--radf-radius-lg);
-  box-shadow: var(--radf-shadow-med);
+  background: var(--ladf-panel-gradient, var(--ladf-color-surface));
+  border: 1px solid var(--ladf-border-subtle, var(--ladf-color-border));
+  border-radius: var(--ladf-radius-lg);
+  box-shadow: var(--ladf-shadow-med);
   overflow: hidden;
   position: relative;
 }
 
-.radf-panel::before {
+.ladf-panel::before {
   content: '';
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  box-shadow: var(--radf-shadow-inset);
+  box-shadow: var(--ladf-shadow-inset);
   pointer-events: none;
 }
 
-.radf-panel__header {
+.ladf-panel__header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  padding: var(--radf-space-4) var(--radf-space-5);
-  border-bottom: 1px solid var(--radf-border-divider, var(--radf-color-border));
-  gap: var(--radf-space-3);
-  background: var(--radf-panel-header-gradient, var(--radf-surface-3));
+  padding: var(--ladf-space-4) var(--ladf-space-5);
+  border-bottom: 1px solid var(--ladf-border-divider, var(--ladf-color-border));
+  gap: var(--ladf-space-3);
+  background: var(--ladf-panel-header-gradient, var(--ladf-surface-3));
   position: relative;
   z-index: 1;
 }
 
-.radf-panel__heading {
+.ladf-panel__heading {
   display: flex;
   flex-direction: column;
-  gap: var(--radf-space-1);
+  gap: var(--ladf-space-1);
 }
 
-.radf-panel__title {
+.ladf-panel__title {
   margin: 0;
   font-size: 1.05rem;
-  font-weight: var(--radf-font-weight-bold);
+  font-weight: var(--ladf-font-weight-bold);
   letter-spacing: -0.01em;
 }
 
-.radf-panel__subtitle {
+.ladf-panel__subtitle {
   margin: 0;
-  color: var(--radf-text-muted, var(--radf-color-muted));
+  color: var(--ladf-text-muted, var(--ladf-color-muted));
   font-size: 0.88rem;
 }
 
-.radf-panel__actions {
+.ladf-panel__actions {
   display: flex;
-  gap: var(--radf-space-2);
+  gap: var(--ladf-space-2);
 }
 
-.radf-panel__body {
+.ladf-panel__body {
   flex: 1;
-  padding: var(--radf-space-4) var(--radf-space-5);
+  padding: var(--ladf-space-4) var(--ladf-space-5);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -65,55 +65,55 @@
   z-index: 1;
 }
 
-.radf-panel__content {
+.ladf-panel__content {
   width: 100%;
 }
 
-.radf-panel__footer {
-  padding: var(--radf-space-3) var(--radf-space-5);
-  border-top: 1px solid var(--radf-border-divider, var(--radf-color-border));
-  color: var(--radf-text-muted, var(--radf-color-muted));
+.ladf-panel__footer {
+  padding: var(--ladf-space-3) var(--ladf-space-5);
+  border-top: 1px solid var(--ladf-border-divider, var(--ladf-color-border));
+  color: var(--ladf-text-muted, var(--ladf-color-muted));
   font-size: 0.85rem;
-  background: var(--radf-surface-1);
+  background: var(--ladf-surface-1);
 }
 
-.radf-panel__state {
+.ladf-panel__state {
   text-align: center;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--radf-space-2);
-  color: var(--radf-text-muted, var(--radf-color-muted));
+  gap: var(--ladf-space-2);
+  color: var(--ladf-text-muted, var(--ladf-color-muted));
 }
 
-.radf-panel__state-icon {
+.ladf-panel__state-icon {
   font-size: 1.6rem;
 }
 
-.radf-panel__state-title {
+.ladf-panel__state-title {
   margin: 0;
-  font-weight: var(--radf-font-weight-semibold);
-  color: var(--radf-text-primary, var(--radf-color-text));
+  font-weight: var(--ladf-font-weight-semibold);
+  color: var(--ladf-text-primary, var(--ladf-color-text));
 }
 
-.radf-panel__state-text {
+.ladf-panel__state-text {
   margin: 0;
   font-size: 0.9rem;
 }
 
-.radf-panel__state--error .radf-panel__state-title {
-  color: var(--radf-accent-danger);
+.ladf-panel__state--error .ladf-panel__state-title {
+  color: var(--ladf-accent-danger);
 }
 
-.radf-panel__state--error .radf-panel__state-text {
-  color: color-mix(in srgb, var(--radf-accent-danger) 70%, #ffffff 30%);
+.ladf-panel__state--error .ladf-panel__state-text {
+  color: color-mix(in srgb, var(--ladf-accent-danger) 70%, #ffffff 30%);
 }
 
-.radf-panel__state--loading .radf-panel__state-icon {
-  animation: radf-spin 1.6s linear infinite;
+.ladf-panel__state--loading .ladf-panel__state-icon {
+  animation: ladf-spin 1.6s linear infinite;
 }
 
-@keyframes radf-spin {
+@keyframes ladf-spin {
   from {
     transform: rotate(0deg);
   }

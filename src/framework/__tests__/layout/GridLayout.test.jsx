@@ -19,10 +19,10 @@ describe('GridLayout', () => {
       />
     );
 
-    const item = container.querySelector('.radf-grid__item');
-    expect(item.className).toContain('radf-grid__item--col-start-1');
-    expect(item.className).toContain('radf-grid__item--row-start-1');
-    expect(item.className).toContain('radf-grid__item--col-span-12');
-    expect(item.className).toContain('radf-grid__item--row-span-1');
+    const item = container.querySelector('.ladf-grid__item');
+    expect(item.className).toContain('ladf-grid__item--col-start-1');
+    expect(item.className).toContain('ladf-grid__item--row-start-1');
+    expect(item.className).toContain('ladf-grid__item--col-span-12');
+    expect(item.className).toContain('ladf-grid__item--row-span-1');
   });
 });

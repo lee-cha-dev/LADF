@@ -53,7 +53,7 @@ const Settings = ({
       <section className="lazy-panel">
         <h2 className="lazy-panel__title">Theme Family</h2>
         <p className="lazy-panel__body">
-          Choose the core RADF visual language for the app shell.
+          Choose the core LADF visual language for the app shell.
         </p>
         <select
           className="lazy-input__field"

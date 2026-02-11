@@ -8,7 +8,7 @@ import {
   dashboardSelectors,
   useDashboardState,
   useQuery,
-} from 'radf';
+} from 'ladf';
 import { updateWidgetInModel } from '../../authoring/authoringModel.js';
 import LazyFilterBar from '../LazyFilterBar.jsx';
 
@@ -279,13 +279,13 @@ const GridCanvas = ({
   const PreviewDashboard = ({ config }) => {
     const panels = config?.panels || [];
     return (
-      <section className="radf-dashboard lazy-preview-dashboard">
+      <section className="ladf-dashboard lazy-preview-dashboard">
         <header className="lazy-preview-dashboard__header">
-          <h1 className="radf-dashboard__title">
+          <h1 className="ladf-dashboard__title">
             {config?.title || 'Untitled Dashboard'}
           </h1>
           {config?.subtitle ? (
-            <p className="radf-dashboard__subtitle">{config.subtitle}</p>
+            <p className="ladf-dashboard__subtitle">{config.subtitle}</p>
           ) : null}
         </header>
         <GridLayout

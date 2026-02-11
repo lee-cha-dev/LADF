@@ -29,26 +29,26 @@ const SelectionChips = ({ selections = [], onRemove, onClear }) => {
   }
 
   return (
-    <div className="radf-selection-bar">
-      <span className="radf-selection-bar__title">Selections</span>
-      <div className="radf-selection-bar__chips">
+    <div className="ladf-selection-bar">
+      <span className="ladf-selection-bar__title">Selections</span>
+      <div className="ladf-selection-bar__chips">
         {selections.map((selection) => (
           <button
             key={selection.id}
             type="button"
-            className="radf-selection-chip"
+            className="ladf-selection-chip"
             onClick={() => onRemove(selection.id)}
           >
-            <span className="radf-selection-chip__label">
+            <span className="ladf-selection-chip__label">
               {getSelectionLabel(selection)}
             </span>
-            <span className="radf-selection-chip__remove">×</span>
+            <span className="ladf-selection-chip__remove">×</span>
           </button>
         ))}
       </div>
       <button
         type="button"
-        className="radf-selection-bar__clear"
+        className="ladf-selection-bar__clear"
         onClick={onClear}
       >
         Clear All

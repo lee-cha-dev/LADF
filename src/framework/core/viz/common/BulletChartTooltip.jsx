@@ -90,50 +90,50 @@ const BulletChartTooltip = forwardRef(function BulletChartTooltip(
 
   const colorEntry = category != null ? colorMap?.get(String(category)) : null;
   const dotClass = Number.isInteger(colorEntry?.index)
-    ? `radf-chart-color-${colorEntry.index}`
-    : 'radf-chart-color-0';
+    ? `ladf-chart-color-${colorEntry.index}`
+    : 'ladf-chart-color-0';
 
   const style = position ? { left: `${position.x}px`, top: `${position.y}px` } : undefined;
 
   return (
-    <div ref={tooltipRef} className="radf-chart-tooltip radf-bullet-tooltip" style={style}>
-      <div className="radf-bullet-tooltip__header">
-        <span className={['radf-bullet-tooltip__dot', dotClass].join(' ')} />
-        <span className="radf-bullet-tooltip__name">{name}</span>
+    <div ref={tooltipRef} className="ladf-chart-tooltip ladf-bullet-tooltip" style={style}>
+      <div className="ladf-bullet-tooltip__header">
+        <span className={['ladf-bullet-tooltip__dot', dotClass].join(' ')} />
+        <span className="ladf-bullet-tooltip__name">{name}</span>
       </div>
 
       {categoryLabel && (
-        <div className="radf-bullet-tooltip__row">
-          <span className="radf-bullet-tooltip__label">Department</span>
-          <span className="radf-bullet-tooltip__value">{categoryLabel}</span>
+        <div className="ladf-bullet-tooltip__row">
+          <span className="ladf-bullet-tooltip__label">Department</span>
+          <span className="ladf-bullet-tooltip__value">{categoryLabel}</span>
         </div>
       )}
 
-      <div className="radf-bullet-tooltip__row radf-bullet-tooltip__row--primary">
-        <span className="radf-bullet-tooltip__label">OT Hours</span>
-        <span className="radf-bullet-tooltip__value radf-bullet-tooltip__value--primary">
+      <div className="ladf-bullet-tooltip__row ladf-bullet-tooltip__row--primary">
+        <span className="ladf-bullet-tooltip__label">OT Hours</span>
+        <span className="ladf-bullet-tooltip__value ladf-bullet-tooltip__value--primary">
           {formatValue(value, 'h')}
         </span>
       </div>
 
       {markerValue != null && (
-        <div className="radf-bullet-tooltip__row">
-          <span className="radf-bullet-tooltip__label">{markerLabel || 'Dept average'}</span>
-          <span className="radf-bullet-tooltip__value">{formatValue(markerValue, 'h')}</span>
+        <div className="ladf-bullet-tooltip__row">
+          <span className="ladf-bullet-tooltip__label">{markerLabel || 'Dept average'}</span>
+          <span className="ladf-bullet-tooltip__value">{formatValue(markerValue, 'h')}</span>
         </div>
       )}
 
       {percent != null && (
-        <div className="radf-bullet-tooltip__row">
-          <span className="radf-bullet-tooltip__label">% of Total</span>
-          <span className="radf-bullet-tooltip__value">{Number(percent).toFixed(1)}%</span>
+        <div className="ladf-bullet-tooltip__row">
+          <span className="ladf-bullet-tooltip__label">% of Total</span>
+          <span className="ladf-bullet-tooltip__value">{Number(percent).toFixed(1)}%</span>
         </div>
       )}
 
       {exceeds && (
-        <div className="radf-bullet-tooltip__warning">
-          <span className="radf-bullet-tooltip__warning-icon">⚠</span>
-          <span className="radf-bullet-tooltip__warning-text">Higher than most peers</span>
+        <div className="ladf-bullet-tooltip__warning">
+          <span className="ladf-bullet-tooltip__warning-icon">⚠</span>
+          <span className="ladf-bullet-tooltip__warning-text">Higher than most peers</span>
         </div>
       )}
     </div>

@@ -5,7 +5,7 @@ import {
   buildQuerySpec,
   useDashboardState,
   useQuery,
-} from 'radf';
+} from 'ladf';
 import LazyFilterBar from './LazyFilterBar.jsx';
 
 /**

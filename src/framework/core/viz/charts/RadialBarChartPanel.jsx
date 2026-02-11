@@ -109,10 +109,10 @@ function RadialBarChartPanel({
           outerRadius={outerRadius}
           barSize={10}
         >
-          <PolarGrid stroke="var(--radf-chart-grid)" />
+          <PolarGrid stroke="var(--ladf-chart-grid)" />
           <PolarAngleAxis
             dataKey={categoryKey}
-            tick={{ fill: 'var(--radf-text-muted)', fontSize: 12 }}
+            tick={{ fill: 'var(--ladf-text-muted)', fontSize: 12 }}
           />
           {showTooltip ? <Tooltip content={<ChartTooltip />} /> : null}
           {visibleSeriesKeys.length > 1
@@ -128,7 +128,7 @@ function RadialBarChartPanel({
                   onClick={handlers.onClick}
                   label={
                     showLabels
-                      ? { fill: 'var(--radf-text-primary)', position: 'insideStart' }
+                      ? { fill: 'var(--ladf-text-primary)', position: 'insideStart' }
                       : false
                   }
                 />
@@ -143,7 +143,7 @@ function RadialBarChartPanel({
                 onClick={handlers.onClick}
                 label={
                   showLabels
-                    ? { fill: 'var(--radf-text-primary)', position: 'insideStart' }
+                    ? { fill: 'var(--ladf-text-primary)', position: 'insideStart' }
                     : false
                 }
               >

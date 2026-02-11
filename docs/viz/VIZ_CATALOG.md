@@ -1,6 +1,6 @@
 # Viz Catalog and Authoring Guidance
 
-This catalog summarizes RADF viz types and how to author them. Option support is
+This catalog summarizes LADF viz types and how to author them. Option support is
 authoritative in `composer/lazy-dashboards/src/authoring/optionCoverageMatrix.json`.
 
 ## Authoring Rules (One Page)
@@ -13,7 +13,7 @@ authoritative in `composer/lazy-dashboards/src/authoring/optionCoverageMatrix.js
 - When multiple measure keys are supported, you can pass an array in `encodings.y` or rely
   on `options.seriesKeys` when available.
 - If a viz needs structured input (for example, Sankey nodes + links), authoring must
-  provide that structure directly; RADF does not infer it.
+  provide that structure directly; LADF does not infer it.
 
 Status legend:
 - supported: available in authoring UI and runtime

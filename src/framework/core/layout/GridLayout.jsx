@@ -47,7 +47,7 @@ const toPositiveNumber = (value, fallback) => {
  */
 const buildGridItemClasses = (layout) => {
   if (!layout) {
-    return 'radf-grid__item';
+    return 'ladf-grid__item';
   }
 
   const colStart = toPositiveNumber(layout.x, 1);
@@ -56,30 +56,30 @@ const buildGridItemClasses = (layout) => {
   const rowSpan = toPositiveNumber(layout.h, 1);
 
   return [
-    'radf-grid__item',
-    `radf-grid__item--col-start-${colStart}`,
-    `radf-grid__item--col-span-${colSpan}`,
-    `radf-grid__item--row-start-${rowStart}`,
-    `radf-grid__item--row-span-${rowSpan}`,
+    'ladf-grid__item',
+    `ladf-grid__item--col-start-${colStart}`,
+    `ladf-grid__item--col-span-${colSpan}`,
+    `ladf-grid__item--row-start-${rowStart}`,
+    `ladf-grid__item--row-span-${rowSpan}`,
   ].join(' ');
 };
 
 /**
- * Renders a CSS grid of panels using RADF grid utility classes.
+ * Renders a CSS grid of panels using LADF grid utility classes.
  *
  * Uses:
- * - `radf-grid`
- * - `radf-grid__item`
- * - `radf-grid__item--col-start-*`
- * - `radf-grid__item--col-span-*`
- * - `radf-grid__item--row-start-*`
- * - `radf-grid__item--row-span-*`
+ * - `ladf-grid`
+ * - `ladf-grid__item`
+ * - `ladf-grid__item--col-start-*`
+ * - `ladf-grid__item--col-span-*`
+ * - `ladf-grid__item--row-start-*`
+ * - `ladf-grid__item--row-span-*`
  *
  * @param {GridLayoutProps} props
  * @returns {JSX.Element}
  */
 function GridLayout({ panels, renderPanel, className }) {
-  const gridClassName = ['radf-grid', className].filter(Boolean).join(' ');
+  const gridClassName = ['ladf-grid', className].filter(Boolean).join(' ');
 
   return (
     <div className={gridClassName}>

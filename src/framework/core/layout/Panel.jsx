@@ -26,8 +26,8 @@ import PanelBody from './PanelBody.jsx';
  * Composes panel layout with header, body state handling, and footer.
  *
  * Uses:
- * - `radf-panel`
- * - `radf-panel__footer`
+ * - `ladf-panel`
+ * - `ladf-panel__footer`
  *
  * @param {PanelProps} props
  * @returns {JSX.Element}
@@ -44,7 +44,7 @@ function Panel({
   footer,
   children,
 }) {
-  const panelClassName = ['radf-panel', className].filter(Boolean).join(' ');
+  const panelClassName = ['ladf-panel', className].filter(Boolean).join(' ');
   return (
     <section className={panelClassName}>
       <PanelHeader title={title} subtitle={subtitle} actions={actions} />
@@ -56,7 +56,7 @@ function Panel({
       >
         {children}
       </PanelBody>
-      {footer ? <div className="radf-panel__footer">{footer}</div> : null}
+      {footer ? <div className="ladf-panel__footer">{footer}</div> : null}
     </section>
   );
 }
