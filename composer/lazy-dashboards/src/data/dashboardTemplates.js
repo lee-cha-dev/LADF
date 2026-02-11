@@ -48,6 +48,7 @@ const TEMPLATE_SCHEMA_VERSION = 1;
 
 const DEFAULT_SEMANTIC_LAYER = {
   enabled: false,
+  exportDatasetConfig: false,
   metrics: [],
   dimensions: [],
 };

@@ -16,7 +16,7 @@ import { compileAuthoringModel } from '../authoring/compiler.js';
  * @property {number} schemaVersion - The authoring schema version.
  * @property {{ title: string, description: string }} meta - The dashboard metadata.
  * @property {{ id: string, source: { type: string, baseUrl: string, method: string, headers: Array<Object>, queryParams: Array<Object>, responsePath: string, refreshInterval: number|null } }} datasetBinding - The dataset binding.
- * @property {{ enabled: boolean, metrics: Array<{ id: string, label: string }>, dimensions: Array<{ id: string, label: string }> }} semanticLayer - The semantic layer settings.
+ * @property {{ enabled: boolean, exportDatasetConfig: boolean, metrics: Array<{ id: string, label: string }>, dimensions: Array<{ id: string, label: string }> }} semanticLayer - The semantic layer settings.
  * @property {Array<Object>} widgets - The widget definitions.
  * @property {Array<Object>} layout - The layout placements.
  */
@@ -48,6 +48,7 @@ const baseModel = {
   },
   semanticLayer: {
     enabled: true,
+    exportDatasetConfig: true,
     metrics: [{ id: 'revenue', label: 'Revenue' }],
     dimensions: [{ id: 'region', label: 'Region' }],
   },
@@ -167,6 +168,7 @@ describe('compileAuthoringModel', () => {
         ...baseModel,
         semanticLayer: {
           enabled: false,
+          exportDatasetConfig: false,
           metrics: [],
           dimensions: [],
         },
@@ -208,6 +210,7 @@ describe('compileAuthoringModel', () => {
             },
             semanticLayer: {
               enabled: true,
+              exportDatasetConfig: true,
               metrics: [],
               dimensions: [],
             },

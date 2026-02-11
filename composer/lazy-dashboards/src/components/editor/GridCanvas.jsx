@@ -299,7 +299,12 @@ const GridCanvas = ({
               datasource?.datasetBinding ||
               null;
             const semanticLayer =
-              datasource?.semanticLayer || { enabled: false, metrics: [], dimensions: [] };
+              datasource?.semanticLayer || {
+                enabled: false,
+                exportDatasetConfig: false,
+                metrics: [],
+                dimensions: [],
+              };
             if (panel.panelType === 'viz' && panel.vizType === 'filterBar') {
               return (
                 <Panel title={panel.title} subtitle={panel.subtitle}>

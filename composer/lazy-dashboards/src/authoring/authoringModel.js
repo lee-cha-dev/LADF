@@ -10,6 +10,7 @@ import { mergeDeep } from './optionUtils.js';
 /**
  * @typedef {Object} SemanticLayer
  * @property {boolean} enabled
+ * @property {boolean} exportDatasetConfig
  * @property {Object[]} metrics
  * @property {Object[]} dimensions
  */
@@ -72,6 +73,7 @@ const DEFAULT_DATASOURCE_NAME = 'Primary datasource';
 
 const DEFAULT_SEMANTIC_LAYER = {
   enabled: false,
+  exportDatasetConfig: false,
   metrics: [],
   dimensions: [],
 };

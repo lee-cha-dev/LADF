@@ -5,7 +5,7 @@
  * @property {Object[]} widgets
  * @property {Object[]} layout
  * @property {Object|null} datasetBinding
- * @property {{ enabled: boolean, metrics: Object[], dimensions: Object[] }} semanticLayer
+ * @property {{ enabled: boolean, exportDatasetConfig: boolean, metrics: Object[], dimensions: Object[] }} semanticLayer
  * @property {Object[]} [datasources]
  * @property {string|null} [activeDatasourceId]
  */
@@ -53,6 +53,7 @@ const STORAGE_KEY = 'lazyDashboards.registry';
 const DEFAULT_SCHEMA_VERSION = 1;
 const DEFAULT_SEMANTIC_LAYER = {
   enabled: false,
+  exportDatasetConfig: false,
   metrics: [],
   dimensions: [],
 };

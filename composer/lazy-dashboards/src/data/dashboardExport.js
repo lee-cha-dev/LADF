@@ -992,7 +992,7 @@ const EXPORTED_PALETTE_ID = ${normalizedPaletteId};
  * @property {Array<{ id: string, name?: string, datasetBinding?: Object, semanticLayer?: Object }>} [datasources]
  *   - Datasource definitions for local previews.
  * @property {{ rows?: Object[], columns?: Object[], previewRows?: Object[] }} [datasetBinding] - Legacy dataset binding.
- * @property {{ enabled?: boolean, dimensions?: Object[], metrics?: Object[] }} [semanticLayer] - Legacy semantic layer config.
+ * @property {{ enabled?: boolean, exportDatasetConfig?: boolean, dimensions?: Object[], metrics?: Object[] }} [semanticLayer] - Legacy semantic layer config.
  * @property {string} [themeFamily] - Theme family id (for example: default, nord).
  * @property {'light'|'dark'} [themeMode] - Active theme mode.
  * @property {string} [paletteId] - Active palette id.
@@ -1416,29 +1416,48 @@ export const buildDashboardExport = ({
             datasetBinding: resolvedModel?.datasetBinding || null,
             semanticLayer: resolvedModel?.semanticLayer || {
               enabled: false,
+              exportDatasetConfig: false,
               metrics: [],
               dimensions: [],
             },
         },
       ];
+  const defaultDatasourceId =
+    compiledOutput.config?.datasetId || resolvedDatasources[0]?.id || null;
+  const defaultDatasource =
+    resolvedDatasources.find((datasource) => datasource?.id === defaultDatasourceId) ||
+    resolvedDatasources[0] ||
+    null;
+  const defaultSemanticLayer =
+    defaultDatasource?.semanticLayer ||
+    resolvedModel?.semanticLayer || {
+      enabled: false,
+      exportDatasetConfig: false,
+      metrics: [],
+      dimensions: [],
+    };
+  const shouldExportDefaultDataset = Boolean(
+    defaultSemanticLayer?.exportDatasetConfig
+  );
   const apiDatasourceIds = resolvedDatasources
     .filter((datasource) => datasource?.datasetBinding?.source?.type === 'api')
     .map((datasource) => datasource.id)
     .filter(Boolean);
   const apiDatasourceCount = apiDatasourceIds.length;
-  const fallbackDataset = generateModule(
-    'datasetConfig',
-    {
-      id:
-        compiledOutput.config?.datasetId ||
-        `${dashboard?.id || 'dashboard'}_dataset`,
-      label: resolvedModel?.meta?.title || dashboard?.name || 'Dataset',
-      description: resolvedModel?.meta?.description || '',
-      dimensions: resolvedModel?.semanticLayer?.dimensions || [],
-      metrics: resolvedModel?.semanticLayer?.metrics || [],
-    },
-    {
-      doc: `/**
+  const fallbackDataset = shouldExportDefaultDataset
+    ? generateModule(
+        'datasetConfig',
+        {
+          id:
+            compiledOutput.config?.datasetId ||
+            `${dashboard?.id || 'dashboard'}_dataset`,
+          label: resolvedModel?.meta?.title || dashboard?.name || 'Dataset',
+          description: resolvedModel?.meta?.description || '',
+          dimensions: defaultSemanticLayer?.dimensions || [],
+          metrics: defaultSemanticLayer?.metrics || [],
+        },
+        {
+          doc: `/**
  * Dataset config
  *
  * @typedef {Object} DatasetConfig
@@ -1450,36 +1469,43 @@ export const buildDashboardExport = ({
  *
  * @type {DatasetConfig}
  */`,
-    }
-  );
-  const fallbackDimensions = generateModule(
-    'dimensions',
-    resolvedModel?.semanticLayer?.dimensions || [],
-    {
-      doc: `/**
+        }
+      )
+    : null;
+  const fallbackDimensions = shouldExportDefaultDataset
+    ? generateModule(
+        'dimensions',
+        defaultSemanticLayer?.dimensions || [],
+        {
+          doc: `/**
  * Dimension definitions
  * @type {Object[]}
  */`,
-    }
-  );
-  const fallbackMetrics = generateModule(
-    'metrics',
-    resolvedModel?.semanticLayer?.metrics || [],
-    {
-      doc: `/**
+        }
+      )
+    : null;
+  const fallbackMetrics = shouldExportDefaultDataset
+    ? generateModule(
+        'metrics',
+        defaultSemanticLayer?.metrics || [],
+        {
+          doc: `/**
  * Metric definitions
  * @type {Object[]}
  */`,
-    }
-  );
+        }
+      )
+    : null;
   const files = {};
   files[`deps/${exportNames.fileBase}.dashboard.js`] = modules.dashboard || '';
-  files[`deps/${exportNames.fileBase}.dataset.js`] =
-    modules.dataset || fallbackDataset;
-  files[`deps/${exportNames.fileBase}.dimensions.js`] =
-    modules.dimensions || fallbackDimensions;
-  files[`deps/${exportNames.fileBase}.metrics.js`] =
-    modules.metrics || fallbackMetrics;
+  if (shouldExportDefaultDataset) {
+    files[`deps/${exportNames.fileBase}.dataset.js`] =
+      modules.dataset || fallbackDataset;
+    files[`deps/${exportNames.fileBase}.dimensions.js`] =
+      modules.dimensions || fallbackDimensions;
+    files[`deps/${exportNames.fileBase}.metrics.js`] =
+      modules.metrics || fallbackMetrics;
+  }
   const datasetsById = modules.datasets || {};
   const metricsById = modules.metricsById || {};
   const dimensionsById = modules.dimensionsById || {};
@@ -1490,9 +1516,13 @@ export const buildDashboardExport = ({
     }
     const semanticLayer = datasource.semanticLayer || {
       enabled: false,
+      exportDatasetConfig: false,
       metrics: [],
       dimensions: [],
     };
+    if (!semanticLayer.exportDatasetConfig) {
+      return;
+    }
     const datasetFallback = generateModule(
       'datasetConfig',
       {

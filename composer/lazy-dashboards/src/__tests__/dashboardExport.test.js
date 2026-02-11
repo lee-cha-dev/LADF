@@ -20,7 +20,7 @@ import {
  * @property {number} schemaVersion - The authoring schema version.
  * @property {{ title: string, description: string }} meta - The dashboard metadata.
  * @property {{ id: string, source: { type: string, baseUrl: string, method: string, headers: Array<Object>, queryParams: Array<Object>, responsePath: string, refreshInterval: number|null } }} datasetBinding - The dataset binding.
- * @property {{ enabled: boolean, metrics: Array<Object>, dimensions: Array<Object> }} semanticLayer - The semantic layer settings.
+ * @property {{ enabled: boolean, exportDatasetConfig: boolean, metrics: Array<Object>, dimensions: Array<Object> }} semanticLayer - The semantic layer settings.
  * @property {Array<Object>} widgets - The widget definitions.
  * @property {Array<Object>} layout - The layout placements.
  */
@@ -47,6 +47,7 @@ describe('dashboardExport', () => {
       },
       semanticLayer: {
         enabled: false,
+        exportDatasetConfig: true,
         metrics: [],
         dimensions: [],
       },
@@ -132,7 +133,12 @@ describe('dashboardExport', () => {
               refreshInterval: null,
             },
           },
-          semanticLayer: { enabled: true, metrics: [], dimensions: [] },
+          semanticLayer: {
+            enabled: true,
+            exportDatasetConfig: true,
+            metrics: [],
+            dimensions: [],
+          },
         },
         {
           id: 'inventory',
@@ -149,7 +155,12 @@ describe('dashboardExport', () => {
               refreshInterval: null,
             },
           },
-          semanticLayer: { enabled: true, metrics: [], dimensions: [] },
+          semanticLayer: {
+            enabled: true,
+            exportDatasetConfig: true,
+            metrics: [],
+            dimensions: [],
+          },
         },
       ],
       widgets: [],

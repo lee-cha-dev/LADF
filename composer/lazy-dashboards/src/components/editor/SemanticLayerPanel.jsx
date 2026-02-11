@@ -36,10 +36,11 @@ import { sanitizeFieldId } from '../../data/datasetImport.js';
  * @typedef {Object} SemanticLayerPanelProps
  * @property {Object|null} datasetBinding
  * @property {DatasetColumn[]} datasetColumns
- * @property {{ dimensions: SemanticDimension[], metrics: SemanticMetric[] }} semanticLayer
+ * @property {{ enabled: boolean, exportDatasetConfig?: boolean, dimensions: SemanticDimension[], metrics: SemanticMetric[] }} semanticLayer
  * @property {SemanticDimension[]} dimensionSuggestions
  * @property {MetricGroup[]} metricGroups
  * @property {(mode: string) => void} onModeChange
+ * @property {(enabled: boolean) => void} [onExportDatasetConfigChange]
  * @property {() => void} onReset
  * @property {(dimensionId: string) => void} onDimensionToggle
  * @property {(dimensionId: string, label: string) => void} onDimensionLabelChange
@@ -61,6 +62,7 @@ const SemanticLayerPanel = ({
   dimensionSuggestions,
   metricGroups,
   onModeChange,
+  onExportDatasetConfigChange,
   onReset,
   onDimensionToggle,
   onDimensionLabelChange,
@@ -304,11 +306,26 @@ const SemanticLayerPanel = ({
       ) : (
         <div className="lazy-semantic">
           <div className="lazy-semantic__header">
-            <p className="lazy-panel__body">
-              {semanticLayer.enabled
-                ? 'Select which fields to publish as semantic assets.'
-                : 'Use raw column ids directly in widget encodings.'}
-            </p>
+            <div>
+              <p className="lazy-panel__body">
+                {semanticLayer.enabled
+                  ? 'Select which fields to publish as semantic assets.'
+                  : 'Use raw column ids directly in widget encodings.'}
+              </p>
+              <label className="lazy-checkbox">
+                <input
+                  type="checkbox"
+                  checked={Boolean(semanticLayer.exportDatasetConfig)}
+                  onChange={(event) =>
+                    onExportDatasetConfigChange?.(event.target.checked)
+                  }
+                />
+                <span>Export dataset configs</span>
+              </label>
+              <p className="lazy-panel__body">
+                Include dataset, metric, and dimension metadata in exports.
+              </p>
+            </div>
             <button
               className="lazy-button ghost"
               type="button"

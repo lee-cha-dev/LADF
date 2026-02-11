@@ -719,7 +719,12 @@ const DashboardEditor = ({ themeFamily, themeMode, paletteId }) => {
         id,
         name,
         datasetBinding: null,
-        semanticLayer: { enabled: false, metrics: [], dimensions: [] },
+        semanticLayer: {
+          enabled: false,
+          exportDatasetConfig: false,
+          metrics: [],
+          dimensions: [],
+        },
       };
       return {
         ...current,
@@ -997,6 +1002,7 @@ const DashboardEditor = ({ themeFamily, themeMode, paletteId }) => {
           (datasource) => datasource.id === activeDatasourceId
         )?.semanticLayer || {
           enabled: false,
+          exportDatasetConfig: false,
           metrics: [],
           dimensions: [],
         }
@@ -1033,6 +1039,16 @@ const DashboardEditor = ({ themeFamily, themeMode, paletteId }) => {
       });
     },
     [updateSemanticLayer, defaultSemanticLayer]
+  );
+
+  const handleExportDatasetConfigChange = useCallback(
+    (exportDatasetConfig) => {
+      updateSemanticLayer((currentLayer) => ({
+        ...currentLayer,
+        exportDatasetConfig,
+      }));
+    },
+    [updateSemanticLayer]
   );
 
   const handleSemanticReset = useCallback(() => {
@@ -1412,6 +1428,7 @@ const DashboardEditor = ({ themeFamily, themeMode, paletteId }) => {
                   dimensionSuggestions={dimensionSuggestions}
                   metricGroups={metricGroups}
                   onModeChange={handleSemanticModeChange}
+                  onExportDatasetConfigChange={handleExportDatasetConfigChange}
                   onReset={handleSemanticReset}
                   onDimensionToggle={handleDimensionToggle}
                   onDimensionLabelChange={handleDimensionLabelChange}
