@@ -62,6 +62,7 @@ textarea {
   width: auto;
   margin: 0 auto;
   min-width: 95vw;
+  color: var(--ladf-accent-primary);
 }
 
 .ladf-button {
