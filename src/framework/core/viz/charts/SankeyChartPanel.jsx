@@ -62,7 +62,7 @@ function SankeyChartPanel({
           width={width}
           height={height}
           fill={fill}
-          stroke="var(--radf-border-divider)"
+          stroke="var(--ladf-border-divider)"
           strokeWidth={1}
           rx={4}
           ry={4}
@@ -71,7 +71,7 @@ function SankeyChartPanel({
           <text
             x={x + width + 6}
             y={y + height / 2}
-            fill="var(--radf-text-muted)"
+            fill="var(--ladf-text-muted)"
             fontSize={12}
             dominantBaseline="middle"
           >
@@ -95,7 +95,7 @@ function SankeyChartPanel({
     } = linkProps;
     const sourceNode = payload?.source;
     const targetNode = payload?.target;
-    let stroke = 'var(--radf-border-divider)';
+    let stroke = 'var(--ladf-border-divider)';
     if (colorBy === 'source' || colorBy === 'node') {
       stroke = resolveNodeColor(sourceNode, sourceNode?.index || 0);
     } else if (colorBy === 'target') {
@@ -115,9 +115,9 @@ function SankeyChartPanel({
 
   if (!sankeyData?.nodes?.length || !sankeyData?.links?.length) {
     return (
-      <div className="radf-viz__missing">
-        <p className="radf-viz__missing-title">Sankey data required</p>
-        <p className="radf-viz__missing-text">
+      <div className="ladf-viz__missing">
+        <p className="ladf-viz__missing-title">Sankey data required</p>
+        <p className="ladf-viz__missing-text">
           Provide nodes and links arrays to render a sankey diagram.
         </p>
       </div>

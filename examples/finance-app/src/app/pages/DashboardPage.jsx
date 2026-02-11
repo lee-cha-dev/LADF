@@ -1,6 +1,6 @@
 /**
  * @module app/pages/DashboardPage
- * @description Example dashboard page wiring RADF providers, interactions, and panels.
+ * @description Example dashboard page wiring LADF providers, interactions, and panels.
  */
 
 import React, { useCallback, useMemo, useRef, useEffect } from 'react';
@@ -28,7 +28,7 @@ import {
   removeBrushFilter,
   upsertBrushFilter,
   resolvePalette,
-} from 'radf';
+} from 'ladf';
 import exampleDashboard from '../dashboards/example/example.dashboard.js';
 import ExampleFilterBar from '../dashboards/example/ExampleFilterBar.jsx';
 import '../dashboards/example/example.css';
@@ -48,7 +48,7 @@ const buildDefaultRange = (days) => {
 
 /**
  * @typedef {Object} VizPanelProps
- * @property {import('radf').PanelConfig} panelConfig
+ * @property {import('ladf').PanelConfig} panelConfig
  *   - Panel configuration for the visualization.
  */
 
@@ -293,15 +293,15 @@ const VizPanel = ({ panelConfig }) => {
   }, [data, panelConfig, resolvedEncodings]);
 
   const panelFooter = brushZoomEnabled ? (
-    <div className="radf-brush">
-      <div className="radf-brush__range">
-        <span className="radf-brush__label">{brushLabel}</span>
-        <span className="radf-brush__value">{brushRangeLabel}</span>
+    <div className="ladf-brush">
+      <div className="ladf-brush__range">
+        <span className="ladf-brush__label">{brushLabel}</span>
+        <span className="ladf-brush__value">{brushRangeLabel}</span>
       </div>
-      <div className="radf-brush__actions">
+      <div className="ladf-brush__actions">
         {brushState ? (
           <button
-            className="radf-brush__button"
+            className="ladf-brush__button"
             type="button"
             onClick={handleBrushReset}
           >
@@ -310,7 +310,7 @@ const VizPanel = ({ panelConfig }) => {
         ) : null}
         {brushApplyToGlobal ? (
           <button
-            className="radf-brush__button radf-brush__button--primary"
+            className="ladf-brush__button ladf-brush__button--primary"
             type="button"
             onClick={handleBrushApply}
             disabled={!brushState}
@@ -363,7 +363,7 @@ const VizPanel = ({ panelConfig }) => {
 
 /**
  * @typedef {Object} InsightsPanelContainerProps
- * @property {import('radf').PanelConfig} panelConfig
+ * @property {import('ladf').PanelConfig} panelConfig
  *   - Panel configuration for the insight renderer.
  */
 
@@ -438,10 +438,10 @@ const DashboardContent = () => {
   const panels = useMemo(() => exampleDashboard.panels, []);
 
   return (
-    <section className="radf-dashboard radf-example-dashboard">
-      <header className="radf-example-dashboard__header">
-        <h1 className="radf-dashboard__title">{exampleDashboard.title}</h1>
-        <p className="radf-dashboard__subtitle">
+    <section className="ladf-dashboard ladf-example-dashboard">
+      <header className="ladf-example-dashboard__header">
+        <h1 className="ladf-dashboard__title">{exampleDashboard.title}</h1>
+        <p className="ladf-dashboard__subtitle">
           {exampleDashboard.subtitle}
         </p>
       </header>

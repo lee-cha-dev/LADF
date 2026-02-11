@@ -26,7 +26,7 @@ export const getChartColor = (index) => {
  */
 export const getChartColorClass = (index) => {
   const safeIndex = Number.isInteger(index) ? index : 0;
-  return `radf-chart-color-${safeIndex % chartColorVars.length}`;
+  return `ladf-chart-color-${safeIndex % chartColorVars.length}`;
 };
 
 /**

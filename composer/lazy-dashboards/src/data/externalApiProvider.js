@@ -33,7 +33,7 @@ export const generateExternalApiProviderModule = (config = {}) => {
     refreshInterval: config.refreshInterval || null,
   };
   const serializedConfig = JSON.stringify(payload, null, 2);
-  return `import { createDataProvider } from 'radf';
+  return `import { createDataProvider } from 'ladf';
 
 /**
  * @typedef {Object} ApiKeyValue
@@ -251,7 +251,7 @@ export const generateExternalApiProvidersModule = (datasources = []) => {
     };
   });
   const serializedConfig = JSON.stringify(apiConfigs, null, 2);
-  return `import { createDataProvider, createMultiDataProvider } from 'radf';
+  return `import { createDataProvider, createMultiDataProvider } from 'ladf';
 
 /**
  * @typedef {Object} ApiKeyValue
@@ -455,7 +455,7 @@ export const createExternalApiProviders = () =>
 /**
  * Creates a multi-datasource provider for all API-backed datasources.
  *
- * @returns {import('radf').DataProvider} The multi-datasource provider.
+ * @returns {import('ladf').DataProvider} The multi-datasource provider.
  */
 export const createExternalApiMultiProvider = () =>
   createMultiDataProvider(createExternalApiProviders());

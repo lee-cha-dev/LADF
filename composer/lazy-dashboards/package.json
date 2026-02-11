@@ -1,5 +1,5 @@
 {
-  "name": "radf-lazy-dashboards",
+  "name": "ladf-lazy-dashboards",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "jszip": "^3.10.1",
-    "radf": "git+https://github.com/lee-cha-dev/RADF.git",
+    "ladf": "git+https://github.com/lee-cha-dev/LADF.git",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.26.2",

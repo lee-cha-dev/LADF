@@ -1,7 +1,7 @@
-# RADF Visual Overview
+# LADF Visual Overview
 
 ## Intro
-- This document summarizes RADF at a conceptual level using diagrams to show major layers and flows.
+- This document summarizes LADF at a conceptual level using diagrams to show major layers and flows.
 - The diagrams use consistent terms (see glossary) and keep implementation details abstract.
 - Each diagram focuses on one concern: system context, config composition, data flow, state propagation, styling, integration, and error handling.
 - The flows reflect a config-driven, Recharts-based dashboard system with provider-backed data.
@@ -17,14 +17,14 @@
 
 ---
 
-## Diagram 1 — RADF at a glance (system context)
+## Diagram 1 — LADF at a glance (system context)
 
 ```mermaid
 flowchart LR
   App[App Integrator]
   Data[Data Sources]
 
-  subgraph RADF[RADF Framework]
+  subgraph LADF[LADF Framework]
     direction LR
     Config[Configuration Layer]
     Query[Query & Execution]
@@ -44,8 +44,8 @@ flowchart LR
 ```
 
 **Interpretation**
-- The app supplies config and theme choices; RADF supplies runtime logic and rendering.
-- Providers connect RADF to external data sources.
+- The app supplies config and theme choices; LADF supplies runtime logic and rendering.
+- Providers connect LADF to external data sources.
 - Styling flows through CSS tokens into the rendering layer.
 
 ---
@@ -165,7 +165,7 @@ flowchart TD
 
 ```mermaid
 flowchart LR
-  Step1[Import RADF CSS] --> Step2[Define Dashboard Config]
+  Step1[Import LADF CSS] --> Step2[Define Dashboard Config]
   Step2 --> Step3[Provide Provider]
   Step3 --> Step4[Mount Dashboard Component]
   Step4 --> Step5[Render Panels]

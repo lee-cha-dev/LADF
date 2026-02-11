@@ -1,10 +1,10 @@
-# Extending RADF
+# Extending LADF
 
 This guide maps the actual extension points in the repository so you can add dashboards, viz types, insights, data providers, and themes without guessing.
 
 ## Public API surface (exports)
 
-RADF exports its public API from `src/index.js` and ships compiled assets from `dist/`.
+LADF exports its public API from `src/index.js` and ships compiled assets from `dist/`.
 
 **Verified in repo:** `src/index.js`, `package.json`.
 
@@ -122,14 +122,14 @@ An analyzer object has `{ id, label, analyze }` and returns one or more `Insight
 
 ## Adding/using a new DataProvider
 
-RADF expects a **DataProvider** with an `execute(querySpec, { signal })` function that returns `{ rows, meta }`.
+LADF expects a **DataProvider** with an `execute(querySpec, { signal })` function that returns `{ rows, meta }`.
 
 **Verified in repo:** `src/framework/core/query/DataProvider.js`, `src/framework/core/docs/jsdocTypes.js`.
 
 ### Provider contract
 
 ```js
-import { createDataProvider } from 'radf';
+import { createDataProvider } from 'ladf';
 
 export const MyProvider = createDataProvider(async (querySpec, { signal }) => {
   const response = await fetch('/api/query', {
@@ -197,7 +197,7 @@ The semantic layer helpers live in `src/framework/core/model/`:
 
 ### Where themes/tokens live
 
-RADF ships CSS variables and theme classes under `src/framework/styles/`, and `src/styles.css` stitches them together into a single entrypoint.
+LADF ships CSS variables and theme classes under `src/framework/styles/`, and `src/styles.css` stitches them together into a single entrypoint.
 
 **Verified in repo:** `src/framework/styles/`, `src/styles.css`.
 
@@ -205,8 +205,8 @@ RADF ships CSS variables and theme classes under `src/framework/styles/`, and `s
 
 The built-in theme classes are:
 
-- `radf-theme-light`
-- `radf-theme-dark`
+- `ladf-theme-light`
+- `ladf-theme-dark`
 
 Additional theme namespaces (e.g., `fecc-theme-light` / `fecc-theme-dark`) also exist.
 
@@ -215,12 +215,12 @@ Additional theme namespaces (e.g., `fecc-theme-light` / `fecc-theme-dark`) also 
 ### Adding a new theme class
 
 1) Add a new `:root.<theme-class>` block in a theme file (or a new CSS file imported by `src/styles.css`).
-2) Define all required `--radf-*` variables (match the existing theme blocks).
+2) Define all required `--ladf-*` variables (match the existing theme blocks).
 3) Ensure consumers apply the class to `document.documentElement`.
 
 **Verified in repo:** `src/framework/styles/theme.light.css`, `src/framework/styles/theme.dark.css`, `src/styles.css`.
 
-### How `radf/styles.css` is built
+### How `ladf/styles.css` is built
 
 The library build uses `src/index.js` as the entry point; it imports `src/styles.css` so Vite emits `dist/styles.css`, and `package.json` exports it as `./styles.css`.
 
@@ -240,7 +240,7 @@ The library build uses `src/index.js` as the entry point; it imports `src/styles
 
 - **Unregistered viz types render a “Visualization unavailable” state.** Register your custom viz before rendering. **Verified in repo:** `src/framework/core/viz/VizRenderer.jsx`.
 - **Panel type mismatches.** Example render logic checks for `panelType === 'insights'`; match that in your configs. **Verified in repo:** `examples/finance-app/src/app/pages/DashboardPage.jsx`.
-- **Missing theme class = unthemed UI.** Ensure `radf-theme-light` or `radf-theme-dark` is applied at the root. **Verified in repo:** `README.md`, `src/framework/styles/theme.light.css`, `src/framework/styles/theme.dark.css`.
+- **Missing theme class = unthemed UI.** Ensure `ladf-theme-light` or `ladf-theme-dark` is applied at the root. **Verified in repo:** `README.md`, `src/framework/styles/theme.light.css`, `src/framework/styles/theme.dark.css`.
 
 ## File map (where to look)
 

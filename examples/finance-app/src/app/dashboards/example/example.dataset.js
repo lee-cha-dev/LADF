@@ -3,13 +3,13 @@
  * @description Example dataset definition used by the tutorial dashboard.
  */
 
-import { createDataset, createHierarchy } from 'radf';
+import { createDataset, createHierarchy } from 'ladf';
 import dimensions from './example.dimensions';
 import metrics from './example.metrics';
 
 /**
  * Drilldown hierarchy for date dimensions used in the example dashboard.
- * @type {import('radf').Hierarchy[]}
+ * @type {import('ladf').Hierarchy[]}
  */
 const hierarchies = [
   createHierarchy({
@@ -22,7 +22,7 @@ const hierarchies = [
 
 /**
  * Dataset with dimensions, metrics, and hierarchies for the example dashboard.
- * @type {import('radf').Dataset}
+ * @type {import('ladf').Dataset}
  *
  * @example
  * import exampleDataset from './example.dataset';

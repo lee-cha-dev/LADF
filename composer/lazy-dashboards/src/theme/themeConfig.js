@@ -16,48 +16,48 @@ export const THEME_FAMILIES = [
 
 export const THEME_CLASS_MAP = {
   default: {
-    light: 'radf-theme-light',
-    dark: 'radf-theme-dark',
+    light: 'ladf-theme-light',
+    dark: 'ladf-theme-dark',
   },
   nord: {
-    light: 'radf-theme-nord-light',
-    dark: 'radf-theme-nord-dark',
+    light: 'ladf-theme-nord-light',
+    dark: 'ladf-theme-nord-dark',
   },
   dracula: {
-    light: 'radf-theme-dracula-light',
-    dark: 'radf-theme-dracula-dark',
+    light: 'ladf-theme-dracula-light',
+    dark: 'ladf-theme-dracula-dark',
   },
   solarized: {
-    light: 'radf-theme-solarized-light',
-    dark: 'radf-theme-solarized-dark',
+    light: 'ladf-theme-solarized-light',
+    dark: 'ladf-theme-solarized-dark',
   },
   monokai: {
-    light: 'radf-theme-monokai-light',
-    dark: 'radf-theme-monokai-dark',
+    light: 'ladf-theme-monokai-light',
+    dark: 'ladf-theme-monokai-dark',
   },
   gruvbox: {
-    light: 'radf-theme-gruvbox-light',
-    dark: 'radf-theme-gruvbox-dark',
+    light: 'ladf-theme-gruvbox-light',
+    dark: 'ladf-theme-gruvbox-dark',
   },
   material: {
-    light: 'radf-theme-material-light',
-    dark: 'radf-theme-material-dark',
+    light: 'ladf-theme-material-light',
+    dark: 'ladf-theme-material-dark',
   },
   one: {
-    light: 'radf-theme-one-light',
-    dark: 'radf-theme-one-dark',
+    light: 'ladf-theme-one-light',
+    dark: 'ladf-theme-one-dark',
   },
   tokyo: {
-    light: 'radf-theme-tokyo-light',
-    dark: 'radf-theme-tokyo-dark',
+    light: 'ladf-theme-tokyo-light',
+    dark: 'ladf-theme-tokyo-dark',
   },
   catppuccin: {
-    light: 'radf-theme-catppuccin-light',
-    dark: 'radf-theme-catppuccin-dark',
+    light: 'ladf-theme-catppuccin-light',
+    dark: 'ladf-theme-catppuccin-dark',
   },
   horizon: {
-    light: 'radf-theme-horizon-light',
-    dark: 'radf-theme-horizon-dark',
+    light: 'ladf-theme-horizon-light',
+    dark: 'ladf-theme-horizon-dark',
   },
 };
 
@@ -76,7 +76,7 @@ export const ALL_THEME_CLASSES = Object.values(THEME_CLASS_MAP).flatMap((modes) 
 );
 
 export const ALL_PALETTE_CLASSES = PALETTE_OPTIONS.map(
-  ({ id }) => `radf-palette-${id}`
+  ({ id }) => `ladf-palette-${id}`
 );
 
 export const resolveThemeFamily = (value) =>

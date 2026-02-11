@@ -17,11 +17,11 @@ import React from 'react';
  * Renders the panel header if any content is provided.
  *
  * Uses:
- * - `radf-panel__header`
- * - `radf-panel__heading`
- * - `radf-panel__title`
- * - `radf-panel__subtitle`
- * - `radf-panel__actions`
+ * - `ladf-panel__header`
+ * - `ladf-panel__heading`
+ * - `ladf-panel__title`
+ * - `ladf-panel__subtitle`
+ * - `ladf-panel__actions`
  *
  * @param {PanelHeaderProps} props
  * @returns {JSX.Element | null}
@@ -32,12 +32,12 @@ function PanelHeader({ title, subtitle, actions }) {
   }
 
   return (
-    <div className="radf-panel__header">
-      <div className="radf-panel__heading">
-        {title ? <h2 className="radf-panel__title">{title}</h2> : null}
-        {subtitle ? <p className="radf-panel__subtitle">{subtitle}</p> : null}
+    <div className="ladf-panel__header">
+      <div className="ladf-panel__heading">
+        {title ? <h2 className="ladf-panel__title">{title}</h2> : null}
+        {subtitle ? <p className="ladf-panel__subtitle">{subtitle}</p> : null}
       </div>
-      {actions ? <div className="radf-panel__actions">{actions}</div> : null}
+      {actions ? <div className="ladf-panel__actions">{actions}</div> : null}
     </div>
   );
 }

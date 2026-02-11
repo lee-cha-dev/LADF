@@ -3,11 +3,11 @@
  * @description Example dimension definitions for the tutorial dashboard.
  */
 
-import { createDimension, FIELD_TYPES } from 'radf';
+import { createDimension, FIELD_TYPES } from 'ladf';
 
 /**
  * Dimension definitions for the example dataset.
- * @type {import('radf').Dimension[]}
+ * @type {import('ladf').Dimension[]}
  *
  * @example
  * import dimensions from './example.dimensions';

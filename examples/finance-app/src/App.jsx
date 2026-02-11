@@ -1,19 +1,19 @@
 /**
  * @module App
  * @description Application shell that manages theme toggling, routing, and
- * error boundaries for the RADF example dashboard.
+ * error boundaries for the LADF example dashboard.
  */
 import React, { useEffect, useMemo, useState } from 'react';
 import { useRoutes } from 'react-router-dom';
-import { ErrorBoundary } from 'radf';
+import { ErrorBoundary } from 'ladf';
 import routes from './routes.jsx';
 import "./app.css";
 
 // Switch to "fecc-theme-light" and "fecc-theme-dark"
 // for an example of a custom style
 const THEME_CLASS = {
-  light: 'radf-theme-dracula-light',
-  dark: 'radf-theme-dracula-dark',
+  light: 'ladf-theme-dracula-light',
+  dark: 'ladf-theme-dracula-dark',
 };
 
 function App() {
@@ -40,19 +40,19 @@ function App() {
   };
 
   return (
-    <div className="radf-app app">
-      <header className="radf-app__header">
-        <div className="radf-app__branding">
-          <span className="radf-app__title">RADF</span>
-          <span className="radf-app__subtitle">
-            Recharts Analytics Dashboard Framework
+    <div className="ladf-app app">
+      <header className="ladf-app__header">
+        <div className="ladf-app__branding">
+          <span className="ladf-app__title">LADF</span>
+          <span className="ladf-app__subtitle">
+            Lazy Analytics Dashboard Framework
           </span>
         </div>
-        <button className="radf-button" type="button" onClick={handleToggleTheme}>
+        <button className="ladf-button" type="button" onClick={handleToggleTheme}>
           {toggleLabel}
         </button>
       </header>
-      <main className="radf-app__content">
+      <main className="ladf-app__content">
         <ErrorBoundary
           title="Dashboard failed to load"
           message="The dashboard encountered an unexpected error. Reload the page to retry."

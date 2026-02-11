@@ -92,7 +92,7 @@ import {
   upsertBrushFilter,
   useDashboardActions,
   useDashboardState,
-} from "radf";
+} from "ladf";
 
 /**
  * @typedef {Object} LazyFilterBarProps
@@ -304,7 +304,7 @@ const LazyFilterBar = ({ fields, datasetBinding, semanticLayer, options }) => {
   }
 
   return (
-    <div className={\`radf-filter-bar lazy-filter-bar \${layout}\`}>
+    <div className={\`ladf-filter-bar lazy-filter-bar \${layout}\`}>
       {resolvedFields.map((field) => {
         const activeFilter = filtersByField.get(field.id);
         const activeValues = Array.isArray(activeFilter?.values)
@@ -321,12 +321,12 @@ const LazyFilterBar = ({ fields, datasetBinding, semanticLayer, options }) => {
           : availableValues;
 
         return (
-          <div key={field.id} className="radf-filter-bar__group">
-            <span className="radf-filter-bar__label">{field.label}</span>
-            <div className="radf-filter-bar__inputs">
+          <div key={field.id} className="ladf-filter-bar__group">
+            <span className="ladf-filter-bar__label">{field.label}</span>
+            <div className="ladf-filter-bar__inputs">
               {showSearch ? (
                 <input
-                  className="radf-filter-bar__input"
+                  className="ladf-filter-bar__input"
                   type="search"
                   placeholder="Search values"
                   value={searchValue}
@@ -339,7 +339,7 @@ const LazyFilterBar = ({ fields, datasetBinding, semanticLayer, options }) => {
                 />
               ) : null}
               <select
-                className="radf-filter-bar__input lazy-filter-bar__select"
+                className="ladf-filter-bar__input lazy-filter-bar__select"
                 multiple={allowMultiSelect}
                 value={allowMultiSelect ? activeValues : activeValues[0] || ""}
                 onChange={(event) => {
@@ -365,7 +365,7 @@ const LazyFilterBar = ({ fields, datasetBinding, semanticLayer, options }) => {
               {showClear && activeValues.length > 0 ? (
                 <button
                   type="button"
-                  className="radf-filter-bar__button radf-filter-bar__button--ghost"
+                  className="ladf-filter-bar__button ladf-filter-bar__button--ghost"
                   onClick={() => handleSelectionChange(field.id, [])}
                 >
                   Clear
@@ -378,7 +378,7 @@ const LazyFilterBar = ({ fields, datasetBinding, semanticLayer, options }) => {
       {showClear && globalFilters?.length ? (
         <button
           type="button"
-          className="radf-filter-bar__clear"
+          className="ladf-filter-bar__clear"
           onClick={() => setGlobalFilters([])}
         >
           Clear all
@@ -391,7 +391,7 @@ const LazyFilterBar = ({ fields, datasetBinding, semanticLayer, options }) => {
 export default LazyFilterBar;
 `;
 
-const buildLocalDataProviderSource = () => `import { createDataProvider } from "radf";
+const buildLocalDataProviderSource = () => `import { createDataProvider } from "ladf";
 
 /**
  * @typedef {Object} DatasetBinding
@@ -906,7 +906,7 @@ import {
   registerInsights,
   useDashboardState,
   useQuery,
-} from "radf";
+} from "ladf";
 import dashboardConfig from "./deps/${fileBase}.dashboard.js";${apiImport}${hasFilterBar ? `\nimport LazyFilterBar from "./utils/LazyFilterBar.jsx";` : ""}`;
   const providerImports = `\nimport { createLocalDataProvider } from "./utils/localDataProvider.js";`;
   const filterBarBlock = hasFilterBar
@@ -916,7 +916,7 @@ import dashboardConfig from "./deps/${fileBase}.dashboard.js";${apiImport}${hasF
           datasetBinding={datasetBinding}
           semanticLayer={semanticLayer}
         />`
-    : `        <div className="radf-panel__body">
+    : `        <div className="ladf-panel__body">
           Filter Bar widget found but no filter bar component is included.
         </div>`;
 
@@ -935,7 +935,7 @@ import dashboardConfig from "./deps/${fileBase}.dashboard.js";${apiImport}${hasF
   return `${imports}${providerImports}${apiProvidersInit}
 
 /**
- * Maps theme families and modes to the CSS classes expected by RADF themes.
+ * Maps theme families and modes to the CSS classes expected by LADF themes.
  * Generated from the runtime theme registry so we can resolve and validate
  * incoming theme settings safely.
  * @type {Record<string, Record<string, string>>}
@@ -956,10 +956,10 @@ const ALL_THEME_CLASSES = Object.values(THEME_CLASS_MAP).flatMap((modes) =>
   Object.values(modes)
 );
 /**
- * Flat list of palette classes used by RADF.
+ * Flat list of palette classes used by LADF.
  * @type {string[]}
  */
-const ALL_PALETTE_CLASSES = PALETTE_IDS.map((id) => "radf-palette-" + id);
+const ALL_PALETTE_CLASSES = PALETTE_IDS.map((id) => "ladf-palette-" + id);
 
 /**
  * Storage key used for persisting theme preferences between reloads.
@@ -1170,15 +1170,15 @@ const DashboardContent = ({
   themeMode,
   onToggleTheme,
 }) => (
-  <section className="radf-dashboard">
-    <header className="radf-dashboard__header">
+  <section className="ladf-dashboard">
+    <header className="ladf-dashboard__header">
       <div>
-        <h1 className="radf-dashboard__title">{dashboardConfig.title}</h1>
-        <p className="radf-dashboard__subtitle">{dashboardConfig.subtitle}</p>
+        <h1 className="ladf-dashboard__title">{dashboardConfig.title}</h1>
+        <p className="ladf-dashboard__subtitle">{dashboardConfig.subtitle}</p>
       </div>
       <button
         type="button"
-        className="radf-dashboard__theme-toggle"
+        className="ladf-dashboard__theme-toggle"
         onClick={onToggleTheme}
         aria-pressed={themeMode === "dark"}
       >
@@ -1221,7 +1221,7 @@ const ${componentName} = ({
   paletteId,
 }) => {
   useEffect(() => {
-    // Ensure RADF visual registry is ready for runtime rendering.
+    // Ensure LADF visual registry is ready for runtime rendering.
     registerCharts();
     registerInsights();
   }, []);
@@ -1254,12 +1254,12 @@ const ${componentName} = ({
     if (typeof document === "undefined") {
       return;
     }
-    // Update the root element so RADF theme and palette classes take effect.
+    // Update the root element so LADF theme and palette classes take effect.
     const root = document.documentElement;
     const themeClass = THEME_CLASS_MAP[resolvedThemeFamily][resolvedThemeMode];
 
     root.classList.remove(...ALL_THEME_CLASSES, ...ALL_PALETTE_CLASSES);
-    root.classList.add(themeClass, "radf-palette-" + resolvedPaletteId);
+    root.classList.add(themeClass, "ladf-palette-" + resolvedPaletteId);
   }, [resolvedThemeFamily, resolvedThemeMode, resolvedPaletteId]);
 
   const normalizedDatasources = useMemo(
@@ -1349,7 +1349,7 @@ const ${componentName} = ({
   };
 
   return (
-    <main className="radf-app__content">
+    <main className="ladf-app__content">
       <ErrorBoundary
           title="Dashboard failed to load"
           message="The dashboard encountered an unexpected error. Reload the page to retry."

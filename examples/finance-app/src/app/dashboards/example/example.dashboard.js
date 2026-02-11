@@ -5,7 +5,7 @@
 
 /**
  * Example dashboard configuration used by the tutorial page.
- * @type {import('radf').DashboardConfig & {
+ * @type {import('ladf').DashboardConfig & {
  *   dateField: string
  * }}
  *
@@ -164,7 +164,7 @@ const exampleDashboard = {
         thresholdMarkers: {
           valueKey: 'avg_revenue',
           label: 'Avg revenue',
-          color: 'var(--radf-accent-warning)',
+          color: 'var(--ladf-accent-warning)',
         },
       },
     },

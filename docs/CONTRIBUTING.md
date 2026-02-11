@@ -1,4 +1,4 @@
-# Contributing to RADF
+# Contributing to LADF
 
 Thanks for your interest in contributing! This guide summarizes how to run checks and keep PRs aligned with existing repo conventions.
 
@@ -19,7 +19,7 @@ From `package.json`:
 
 - `npm run dev` / `npm run start` — run Vite dev server.
 - `npm run build` — build the example app.
-- `npm run build:lib` — build the RADF library for `dist/`.
+- `npm run build:lib` — build the LADF library for `dist/`.
 - `npm run lint` — ESLint check.
 - `npm run test` — Vitest (unit tests).
 - `npm run smoke:consumer` — ensure `npm pack` includes `dist/index.js` and `dist/styles.css`.

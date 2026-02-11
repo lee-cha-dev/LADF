@@ -81,14 +81,14 @@ function RadarChartPanel({
     <ChartContainer>
       <ResponsiveContainer width="100%" height={280}>
         <RadarChart data={data}>
-          <PolarGrid stroke="var(--radf-chart-grid)" />
+          <PolarGrid stroke="var(--ladf-chart-grid)" />
           <PolarAngleAxis
             dataKey={encodings.x}
-            tick={{ fill: 'var(--radf-text-muted)', fontSize: 12 }}
+            tick={{ fill: 'var(--ladf-text-muted)', fontSize: 12 }}
           />
           <PolarRadiusAxis
-            tick={{ fill: 'var(--radf-text-muted)', fontSize: 12 }}
-            axisLine={{ stroke: 'var(--radf-border-divider)' }}
+            tick={{ fill: 'var(--ladf-text-muted)', fontSize: 12 }}
+            axisLine={{ stroke: 'var(--ladf-border-divider)' }}
           />
           {showTooltip ? <Tooltip content={<ChartTooltip />} /> : null}
           {visibleSeriesKeys.map((key, index) => {

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "source": "RADF core viz components + Lazy Dashboards filter bar",
+  "source": "LADF core viz components + Lazy Dashboards filter bar",
   "options": [
     {
       "vizType": "kpi",
@@ -354,7 +354,7 @@
       "vizType": "bulletChart",
       "optionPath": "options.markerColor",
       "type": "color",
-      "default": "var(--radf-accent-warning)",
+      "default": "var(--ladf-accent-warning)",
       "required": false,
       "enum": [],
       "control": "color",

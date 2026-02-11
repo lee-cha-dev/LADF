@@ -12,24 +12,24 @@ import React from 'react';
  */
 
 /**
- * Panel loading state with RADF panel state styles.
+ * Panel loading state with LADF panel state styles.
  *
  * Uses:
- * - `radf-panel__state`
- * - `radf-panel__state--loading`
- * - `radf-panel__state-icon`
- * - `radf-panel__state-text`
+ * - `ladf-panel__state`
+ * - `ladf-panel__state--loading`
+ * - `ladf-panel__state-icon`
+ * - `ladf-panel__state-text`
  *
  * @param {LoadingStateProps} props
  * @returns {JSX.Element}
  */
 function LoadingState({ message = 'Loading data…' }) {
   return (
-    <div className="radf-panel__state radf-panel__state--loading">
-      <span className="radf-panel__state-icon" aria-hidden="true">
+    <div className="ladf-panel__state ladf-panel__state--loading">
+      <span className="ladf-panel__state-icon" aria-hidden="true">
         ⏳
       </span>
-      <p className="radf-panel__state-text">{message}</p>
+      <p className="ladf-panel__state-text">{message}</p>
     </div>
   );
 }

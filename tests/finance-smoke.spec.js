@@ -7,7 +7,7 @@ test('finance dashboard loads with panels and theme', async ({ page }) => {
     page.getByRole('heading', { name: 'Executive Performance Overview' })
   ).toBeVisible();
 
-  const panelCount = await page.locator('.radf-panel').count();
+  const panelCount = await page.locator('.ladf-panel').count();
   expect(panelCount).toBeGreaterThan(0);
 
   await expect(page.locator('html')).toHaveClass(/fecc-theme-(dark|light)/);

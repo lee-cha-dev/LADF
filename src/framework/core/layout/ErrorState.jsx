@@ -13,22 +13,22 @@ import React from 'react';
  */
 
 /**
- * Panel error state with RADF panel state styles.
+ * Panel error state with LADF panel state styles.
  *
  * Uses:
- * - `radf-panel__state`
- * - `radf-panel__state--error`
- * - `radf-panel__state-title`
- * - `radf-panel__state-text`
+ * - `ladf-panel__state`
+ * - `ladf-panel__state--error`
+ * - `ladf-panel__state-title`
+ * - `ladf-panel__state-text`
  *
  * @param {ErrorStateProps} props
  * @returns {JSX.Element}
  */
 function ErrorState({ title = 'Something went wrong', message = 'Please try again.' }) {
   return (
-    <div className="radf-panel__state radf-panel__state--error">
-      <p className="radf-panel__state-title">{title}</p>
-      <p className="radf-panel__state-text">{message}</p>
+    <div className="ladf-panel__state ladf-panel__state--error">
+      <p className="ladf-panel__state-title">{title}</p>
+      <p className="ladf-panel__state-text">{message}</p>
     </div>
   );
 }

@@ -158,7 +158,7 @@ const FieldMetadataModal = ({
                 {/* Sample Values */}
                 {field.samples && field.samples.length > 0 && (
                   <div className="lazy-field-card__samples">
-                    <strong style={{ color: 'var(--radf-text-secondary)', marginBottom: '6px', display: 'block', fontSize: '0.8rem' }}>
+                    <strong style={{ color: 'var(--ladf-text-secondary)', marginBottom: '6px', display: 'block', fontSize: '0.8rem' }}>
                       Samples:
                     </strong>
                     {field.samples.join(', ')}

@@ -100,14 +100,14 @@ function TreemapChartPanel({
           width={width}
           height={height}
           fill={fill}
-          stroke="var(--radf-border-divider)"
+          stroke="var(--ladf-border-divider)"
           strokeWidth={1}
         />
         {shouldShowLabel ? (
           <text
             x={x + 6}
             y={y + 16}
-            fill="var(--radf-text-primary)"
+            fill="var(--ladf-text-primary)"
             fontSize={12}
           >
             {name}
@@ -124,7 +124,7 @@ function TreemapChartPanel({
           data={normalized.data}
           dataKey={normalized.valueKey}
           nameKey={normalized.nameKey}
-          stroke="var(--radf-border-divider)"
+          stroke="var(--ladf-border-divider)"
           content={renderNode}
           onClick={handlers.onClick}
         >

@@ -105,7 +105,7 @@ function FunnelChartPanel({
         y={y + height / 2}
         textAnchor="middle"
         dominantBaseline="middle"
-        fill="var(--radf-text-primary)"
+        fill="var(--ladf-text-primary)"
         fontSize={12}
       >
         {label}

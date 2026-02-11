@@ -85,7 +85,7 @@ const useThemeSettings = () => {
     const themeClass = THEME_CLASS_MAP[family][resolvedMode];
 
     root.classList.remove(...ALL_THEME_CLASSES, ...ALL_PALETTE_CLASSES);
-    root.classList.add(themeClass, `radf-palette-${palette}`);
+    root.classList.add(themeClass, `ladf-palette-${palette}`);
   }, [themeFamily, paletteId, resolvedMode]);
 
   return useMemo(

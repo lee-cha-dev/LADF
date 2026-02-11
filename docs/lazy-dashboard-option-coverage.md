@@ -1,6 +1,6 @@
 # Lazy Dashboards Option Coverage Matrix
 
-This table tracks RADF option parity for Lazy Dashboards. "Supported" options are editable
+This table tracks LADF option parity for Lazy Dashboards. "Supported" options are editable
 in the visual editor. "Deferred" options are preserved but only editable via Expert mode.
 
 | Viz | Option Path | Type | Default | Enum | Control | Status | Notes | Source |

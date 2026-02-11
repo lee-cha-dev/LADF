@@ -1,58 +1,58 @@
-.radf-viz__layout {
+.ladf-viz__layout {
   display: flex;
   flex-direction: column;
-  gap: var(--radf-space-2);
+  gap: var(--ladf-space-2);
 }
 
-.radf-viz__layout--right {
+.ladf-viz__layout--right {
   flex-direction: row;
   align-items: flex-start;
 }
 
-.radf-legend {
-  color: var(--radf-text-muted, var(--radf-color-muted));
+.ladf-legend {
+  color: var(--ladf-text-muted, var(--ladf-color-muted));
   font-size: 0.85rem;
 }
 
-.radf-legend--top {
-  margin-bottom: var(--radf-space-2);
+.ladf-legend--top {
+  margin-bottom: var(--ladf-space-2);
 }
 
-.radf-legend--bottom {
-  margin-top: var(--radf-space-2);
+.ladf-legend--bottom {
+  margin-top: var(--ladf-space-2);
 }
 
-.radf-legend--right {
-  margin-left: var(--radf-space-3);
+.ladf-legend--right {
+  margin-left: var(--ladf-space-3);
 }
 
-.radf-legend__list {
+.ladf-legend__list {
   list-style: none;
   display: flex;
   flex-wrap: wrap;
-  gap: var(--radf-space-3);
+  gap: var(--ladf-space-3);
   padding: 0;
   margin: 0;
 }
 
-.radf-viz__layout--right .radf-legend__list {
+.ladf-viz__layout--right .ladf-legend__list {
   flex-direction: column;
   align-items: flex-start;
 }
 
-.radf-legend__item {
+.ladf-legend__item {
   display: inline-flex;
   align-items: center;
 }
 
-.radf-legend__item--hidden {
+.ladf-legend__item--hidden {
   opacity: 0.5;
 }
 
-.radf-legend__button {
+.ladf-legend__button {
   display: inline-flex;
   align-items: center;
-  gap: var(--radf-space-2);
+  gap: var(--ladf-space-2);
   padding: 0;
   border: none;
   background: none;
@@ -61,139 +61,139 @@
   cursor: default;
 }
 
-.radf-legend__item--toggleable .radf-legend__button {
+.ladf-legend__item--toggleable .ladf-legend__button {
   cursor: pointer;
 }
 
-.radf-legend__swatch {
+.ladf-legend__swatch {
   display: inline-block;
   width: 10px;
   height: 10px;
   border-radius: 3px;
-  background-color: var(--radf-legend-swatch);
+  background-color: var(--ladf-legend-swatch);
 }
 
-.radf-legend__label {
-  color: var(--radf-text-secondary, var(--radf-color-text));
+.ladf-legend__label {
+  color: var(--ladf-text-secondary, var(--ladf-color-text));
   font-weight: 500;
 }
 
-.radf-swatch--1 {
-  --radf-legend-swatch: var(--radf-series-1);
+.ladf-swatch--1 {
+  --ladf-legend-swatch: var(--ladf-series-1);
 }
 
-.radf-swatch--2 {
-  --radf-legend-swatch: var(--radf-series-2);
+.ladf-swatch--2 {
+  --ladf-legend-swatch: var(--ladf-series-2);
 }
 
-.radf-swatch--3 {
-  --radf-legend-swatch: var(--radf-series-3);
+.ladf-swatch--3 {
+  --ladf-legend-swatch: var(--ladf-series-3);
 }
 
-.radf-swatch--4 {
-  --radf-legend-swatch: var(--radf-series-4);
+.ladf-swatch--4 {
+  --ladf-legend-swatch: var(--ladf-series-4);
 }
 
-.radf-swatch--5 {
-  --radf-legend-swatch: var(--radf-series-5);
+.ladf-swatch--5 {
+  --ladf-legend-swatch: var(--ladf-series-5);
 }
 
-.radf-swatch--6 {
-  --radf-legend-swatch: var(--radf-series-6);
+.ladf-swatch--6 {
+  --ladf-legend-swatch: var(--ladf-series-6);
 }
 
-.radf-swatch--7 {
-  --radf-legend-swatch: var(--radf-series-7);
+.ladf-swatch--7 {
+  --ladf-legend-swatch: var(--ladf-series-7);
 }
 
-.radf-swatch--8 {
-  --radf-legend-swatch: var(--radf-series-8);
+.ladf-swatch--8 {
+  --ladf-legend-swatch: var(--ladf-series-8);
 }
 
-.radf-swatch--9 {
-  --radf-legend-swatch: var(--radf-series-9);
+.ladf-swatch--9 {
+  --ladf-legend-swatch: var(--ladf-series-9);
 }
 
-.radf-swatch--10 {
-  --radf-legend-swatch: var(--radf-series-10);
+.ladf-swatch--10 {
+  --ladf-legend-swatch: var(--ladf-series-10);
 }
 
-.radf-swatch--11 {
-  --radf-legend-swatch: var(--radf-series-11);
+.ladf-swatch--11 {
+  --ladf-legend-swatch: var(--ladf-series-11);
 }
 
-.radf-swatch--12 {
-  --radf-legend-swatch: var(--radf-series-12);
+.ladf-swatch--12 {
+  --ladf-legend-swatch: var(--ladf-series-12);
 }
 
-.radf-swatch--div-neg-1 {
-  --radf-legend-swatch: var(--radf-div-neg-1);
+.ladf-swatch--div-neg-1 {
+  --ladf-legend-swatch: var(--ladf-div-neg-1);
 }
 
-.radf-swatch--div-neg-2 {
-  --radf-legend-swatch: var(--radf-div-neg-2);
+.ladf-swatch--div-neg-2 {
+  --ladf-legend-swatch: var(--ladf-div-neg-2);
 }
 
-.radf-swatch--div-neg-3 {
-  --radf-legend-swatch: var(--radf-div-neg-3);
+.ladf-swatch--div-neg-3 {
+  --ladf-legend-swatch: var(--ladf-div-neg-3);
 }
 
-.radf-swatch--div-neg-4 {
-  --radf-legend-swatch: var(--radf-div-neg-4);
+.ladf-swatch--div-neg-4 {
+  --ladf-legend-swatch: var(--ladf-div-neg-4);
 }
 
-.radf-swatch--div-pos-1 {
-  --radf-legend-swatch: var(--radf-div-pos-1);
+.ladf-swatch--div-pos-1 {
+  --ladf-legend-swatch: var(--ladf-div-pos-1);
 }
 
-.radf-swatch--div-pos-2 {
-  --radf-legend-swatch: var(--radf-div-pos-2);
+.ladf-swatch--div-pos-2 {
+  --ladf-legend-swatch: var(--ladf-div-pos-2);
 }
 
-.radf-swatch--div-pos-3 {
-  --radf-legend-swatch: var(--radf-div-pos-3);
+.ladf-swatch--div-pos-3 {
+  --ladf-legend-swatch: var(--ladf-div-pos-3);
 }
 
-.radf-swatch--div-pos-4 {
-  --radf-legend-swatch: var(--radf-div-pos-4);
+.ladf-swatch--div-pos-4 {
+  --ladf-legend-swatch: var(--ladf-div-pos-4);
 }
 
-.radf-swatch--div-zero {
-  --radf-legend-swatch: var(--radf-div-zero);
+.ladf-swatch--div-zero {
+  --ladf-legend-swatch: var(--ladf-div-zero);
 }
 
-.radf-swatch--seq-1 {
-  --radf-legend-swatch: var(--radf-seq-1);
+.ladf-swatch--seq-1 {
+  --ladf-legend-swatch: var(--ladf-seq-1);
 }
 
-.radf-swatch--seq-2 {
-  --radf-legend-swatch: var(--radf-seq-2);
+.ladf-swatch--seq-2 {
+  --ladf-legend-swatch: var(--ladf-seq-2);
 }
 
-.radf-swatch--seq-3 {
-  --radf-legend-swatch: var(--radf-seq-3);
+.ladf-swatch--seq-3 {
+  --ladf-legend-swatch: var(--ladf-seq-3);
 }
 
-.radf-swatch--seq-4 {
-  --radf-legend-swatch: var(--radf-seq-4);
+.ladf-swatch--seq-4 {
+  --ladf-legend-swatch: var(--ladf-seq-4);
 }
 
-.radf-swatch--seq-5 {
-  --radf-legend-swatch: var(--radf-seq-5);
+.ladf-swatch--seq-5 {
+  --ladf-legend-swatch: var(--ladf-seq-5);
 }
 
-.radf-swatch--seq-6 {
-  --radf-legend-swatch: var(--radf-seq-6);
+.ladf-swatch--seq-6 {
+  --ladf-legend-swatch: var(--ladf-seq-6);
 }
 
-.radf-swatch--seq-7 {
-  --radf-legend-swatch: var(--radf-seq-7);
+.ladf-swatch--seq-7 {
+  --ladf-legend-swatch: var(--ladf-seq-7);
 }
 
-.radf-swatch--seq-8 {
-  --radf-legend-swatch: var(--radf-seq-8);
+.ladf-swatch--seq-8 {
+  --ladf-legend-swatch: var(--ladf-seq-8);
 }
 
-.radf-swatch--seq-9 {
-  --radf-legend-swatch: var(--radf-seq-9);
+.ladf-swatch--seq-9 {
+  --ladf-legend-swatch: var(--ladf-seq-9);
 }

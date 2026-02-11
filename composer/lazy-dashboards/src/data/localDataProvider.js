@@ -1,4 +1,4 @@
-import { createDataProvider } from 'radf';
+import { createDataProvider } from 'ladf';
 
 /**
  * @typedef {Object} DatasetColumn

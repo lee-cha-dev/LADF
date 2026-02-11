@@ -23,6 +23,6 @@ describe('ChartContainer', () => {
       </ChartContainer>
     );
 
-    expect(container.querySelector('.radf-chart__header')).toBeNull();
+    expect(container.querySelector('.ladf-chart__header')).toBeNull();
   });
 });

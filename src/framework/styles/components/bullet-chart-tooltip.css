@@ -1,4 +1,4 @@
-.radf-bullet-tooltip {
+.ladf-bullet-tooltip {
   position: absolute;
   z-index: 1000;
   transform: none; /* important */
@@ -6,17 +6,17 @@
   margin-top: -12px;
   display: flex;
   flex-direction: column;
-  gap: var(--radf-space-2);
+  gap: var(--ladf-space-2);
   transition: left 300ms ease, top 300ms ease;
 }
 
-.radf-bullet-tooltip__header {
+.ladf-bullet-tooltip__header {
   display: flex;
   align-items: center;
-  gap: var(--radf-space-2);
+  gap: var(--ladf-space-2);
 }
 
-.radf-bullet-tooltip__dot {
+.ladf-bullet-tooltip__dot {
   width: 10px;
   height: 10px;
   border-radius: 50%;
@@ -24,47 +24,47 @@
   flex-shrink: 0;
 }
 
-.radf-bullet-tooltip__name {
-  font-weight: var(--radf-font-weight-semibold);
-  color: var(--radf-text-primary);
+.ladf-bullet-tooltip__name {
+  font-weight: var(--ladf-font-weight-semibold);
+  color: var(--ladf-text-primary);
 }
 
-.radf-bullet-tooltip__row {
+.ladf-bullet-tooltip__row {
   display: flex;
   justify-content: space-between;
-  gap: var(--radf-space-4);
+  gap: var(--ladf-space-4);
   font-size: 0.85rem;
 }
 
-.radf-bullet-tooltip__row--primary {
-  font-weight: var(--radf-font-weight-semibold);
+.ladf-bullet-tooltip__row--primary {
+  font-weight: var(--ladf-font-weight-semibold);
 }
 
-.radf-bullet-tooltip__label {
-  color: var(--radf-text-muted);
+.ladf-bullet-tooltip__label {
+  color: var(--ladf-text-muted);
 }
 
-.radf-bullet-tooltip__value {
-  color: var(--radf-text-primary);
+.ladf-bullet-tooltip__value {
+  color: var(--ladf-text-primary);
   font-weight: 500;
 }
 
-.radf-bullet-tooltip__value--primary {
-  font-weight: var(--radf-font-weight-semibold);
+.ladf-bullet-tooltip__value--primary {
+  font-weight: var(--ladf-font-weight-semibold);
 }
 
-.radf-bullet-tooltip__warning {
+.ladf-bullet-tooltip__warning {
   display: inline-flex;
   align-items: center;
-  gap: var(--radf-space-2);
+  gap: var(--ladf-space-2);
   font-size: 0.8rem;
-  color: var(--radf-accent-danger);
+  color: var(--ladf-accent-danger);
 }
 
-.radf-bullet-tooltip__warning-icon {
+.ladf-bullet-tooltip__warning-icon {
   font-size: 0.85rem;
 }
 
-.radf-bullet-tooltip__warning-text {
-  font-weight: var(--radf-font-weight-semibold);
+.ladf-bullet-tooltip__warning-text {
+  font-weight: var(--ladf-font-weight-semibold);
 }

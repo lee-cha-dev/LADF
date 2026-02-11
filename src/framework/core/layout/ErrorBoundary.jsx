@@ -70,11 +70,11 @@ class ErrorBoundary extends React.Component {
    * Renders children or fallback UI when an error has been caught.
    *
    * Uses:
-   * - `radf-error-boundary`
-   * - `radf-error-boundary__content`
-   * - `radf-error-boundary__title`
-   * - `radf-error-boundary__message`
-   * - `radf-error-boundary__action`
+   * - `ladf-error-boundary`
+   * - `ladf-error-boundary__content`
+   * - `ladf-error-boundary__title`
+   * - `ladf-error-boundary__message`
+   * - `ladf-error-boundary__action`
    *
    * @returns {JSX.Element | React.ReactNode}
    */
@@ -88,12 +88,12 @@ class ErrorBoundary extends React.Component {
     const message = this.props.message || DEFAULT_MESSAGE;
 
     return (
-      <section className="radf-error-boundary">
-        <div className="radf-error-boundary__content">
-          <h2 className="radf-error-boundary__title">{title}</h2>
-          <p className="radf-error-boundary__message">{message}</p>
+      <section className="ladf-error-boundary">
+        <div className="ladf-error-boundary__content">
+          <h2 className="ladf-error-boundary__title">{title}</h2>
+          <p className="ladf-error-boundary__message">{message}</p>
           <button
-            className="radf-button radf-error-boundary__action"
+            className="ladf-button ladf-error-boundary__action"
             type="button"
             onClick={this.handleReset}
           >

@@ -36,12 +36,12 @@ body {
   border-color: rgba(15, 23, 42, 0.4);
 }
 
-:root.radf-theme-dark .consumer-dashboard__theme-toggle {
+:root.ladf-theme-dark .consumer-dashboard__theme-toggle {
   border-color: rgba(148, 163, 184, 0.6);
   background-color: #0f172a;
   color: #f8fafc;
 }
 
-:root.radf-theme-dark .consumer-dashboard__theme-toggle:hover {
+:root.ladf-theme-dark .consumer-dashboard__theme-toggle:hover {
   border-color: rgba(148, 163, 184, 0.9);
 }

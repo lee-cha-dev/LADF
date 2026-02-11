@@ -3,11 +3,11 @@
  * @description Example metric definitions for the tutorial dashboard.
  */
 
-import { createMetric } from 'radf';
+import { createMetric } from 'ladf';
 
 /**
  * Metric definitions for the example dataset.
- * @type {import('radf').Metric[]}
+ * @type {import('ladf').Metric[]}
  *
  * @example
  * import metrics from './example.metrics';

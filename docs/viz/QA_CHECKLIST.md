@@ -1,6 +1,6 @@
 # Viz QA Checklist
 
-Use this checklist to validate all RADF visuals before release. Focus on correctness,
+Use this checklist to validate all LADF visuals before release. Focus on correctness,
 readability, and theme compliance over pixel-perfect layout.
 
 ## Required States

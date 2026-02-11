@@ -1,7 +1,7 @@
 /**
  * @module core/registry/registry
  * @description Registry utilities for visualization and insight modules.
- * Consumers can register new implementations to extend RADF without
+ * Consumers can register new implementations to extend LADF without
  * modifying core renderer logic.
  * @example
  * // 1) Create a chart component that follows the viz contract.

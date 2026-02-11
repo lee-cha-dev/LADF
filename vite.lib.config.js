@@ -7,7 +7,7 @@ export default defineConfig({
     cssCodeSplit: false,
     lib: {
       entry: 'src/index.js',
-      name: 'RADF',
+      name: 'LADF',
       formats: ['es'],
       fileName: 'index',
     },

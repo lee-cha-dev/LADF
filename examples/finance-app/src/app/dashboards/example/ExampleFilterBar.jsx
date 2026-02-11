@@ -11,7 +11,7 @@ import {
   buildBrushFilter,
   removeBrushFilter,
   upsertBrushFilter,
-} from 'radf';
+} from 'ladf';
 
 /**
  * Normalize a date value for input elements.
@@ -27,7 +27,7 @@ const toInputValue = (value) => {
 
 /**
  * Convert a brush filter into a date range object for inputs.
- * @param {import('radf').Filter|null} filter
+ * @param {import('ladf').Filter|null} filter
  * @returns {{ start: string, end: string }}
  */
 const buildRangeFromFilter = (filter) => {
@@ -118,20 +118,20 @@ function ExampleFilterBar({ dateField }) {
   }, [dateField, globalFilters, setGlobalFilters]);
 
   return (
-    <div className="radf-filter-bar">
-      <div className="radf-filter-bar__group">
-        <span className="radf-filter-bar__label">Date range</span>
-        <div className="radf-filter-bar__inputs">
+    <div className="ladf-filter-bar">
+      <div className="ladf-filter-bar__group">
+        <span className="ladf-filter-bar__label">Date range</span>
+        <div className="ladf-filter-bar__inputs">
           <input
-            className="radf-filter-bar__input"
+            className="ladf-filter-bar__input"
             type="date"
             name="start"
             value={range.start}
             onChange={handleRangeChange}
           />
-          <span className="radf-filter-bar__separator">to</span>
+          <span className="ladf-filter-bar__separator">to</span>
           <input
-            className="radf-filter-bar__input"
+            className="ladf-filter-bar__input"
             type="date"
             name="end"
             value={range.end}
@@ -139,14 +139,14 @@ function ExampleFilterBar({ dateField }) {
           />
           <button
             type="button"
-            className="radf-filter-bar__button radf-filter-bar__button--primary"
+            className="ladf-filter-bar__button ladf-filter-bar__button--primary"
             onClick={handleApply}
           >
             Apply
           </button>
           <button
             type="button"
-            className="radf-filter-bar__button radf-filter-bar__button--ghost"
+            className="ladf-filter-bar__button ladf-filter-bar__button--ghost"
             onClick={handleReset}
           >
             Reset
@@ -154,26 +154,26 @@ function ExampleFilterBar({ dateField }) {
         </div>
       </div>
       {selectionEntities.length ? (
-        <div className="radf-filter-bar__group radf-filter-bar__group--chips">
-          <span className="radf-filter-bar__label">Selections</span>
-          <div className="radf-filter-bar__chips">
+        <div className="ladf-filter-bar__group ladf-filter-bar__group--chips">
+          <span className="ladf-filter-bar__label">Selections</span>
+          <div className="ladf-filter-bar__chips">
             {selectionEntities.map((selection) => (
               <button
                 key={selection.selectionId}
                 type="button"
-                className="radf-filter-bar__chip"
+                className="ladf-filter-bar__chip"
                 onClick={() => removeSelection(selection.selectionId)}
               >
-                <span className="radf-filter-bar__chip-label">
+                <span className="ladf-filter-bar__chip-label">
                   {selection.label}
                 </span>
-                <span className="radf-filter-bar__chip-remove">×</span>
+                <span className="ladf-filter-bar__chip-remove">×</span>
               </button>
             ))}
           </div>
           <button
             type="button"
-            className="radf-filter-bar__clear"
+            className="ladf-filter-bar__clear"
             onClick={clearSelections}
           >
             Clear all

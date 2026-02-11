@@ -119,7 +119,7 @@ const resolveNonRedSeriesIndices = () => {
   }
   const styles = window.getComputedStyle(document.documentElement);
   const allowed = indices.filter((index) => {
-    const color = styles.getPropertyValue(`--radf-series-${index + 1}`);
+    const color = styles.getPropertyValue(`--ladf-series-${index + 1}`);
     return !isRedHue(color);
   });
   return allowed.length ? allowed : indices;
@@ -273,9 +273,9 @@ function BulletRow({
   const barColorEntry = category ? barColorMap.get(category) : null;
   const dotColorEntry = dotCategory ? dotColorMap.get(dotCategory) : null;
   const barColorClass = barColorEntry
-    ? `radf-chart-color-${barColorEntry.index}`
-    : 'radf-chart-color-0';
-  const dotColorClass = dotColorEntry ? `radf-chart-color-${dotColorEntry.index}` : barColorClass;
+    ? `ladf-chart-color-${barColorEntry.index}`
+    : 'ladf-chart-color-0';
+  const dotColorClass = dotColorEntry ? `ladf-chart-color-${dotColorEntry.index}` : barColorClass;
 
   const rawPercent = showPercent && percentKey ? row[percentKey] : null;
   const percent = Number.isFinite(Number(rawPercent)) ? Number(rawPercent) : null;
@@ -302,7 +302,7 @@ function BulletRow({
 
   return (
     <div
-      className="radf-bullet__row"
+      className="ladf-bullet__row"
       onClick={() => onClick?.(row)}
       onMouseEnter={handleMouseEnter}
       onMouseMove={handleMouseMove}
@@ -311,27 +311,27 @@ function BulletRow({
       tabIndex={0}
     >
       {/* Name column */}
-      <div className="radf-bullet__name-cell">
+      <div className="ladf-bullet__name-cell">
         {showAnnotations ? (
           <span
-            className={['radf-bullet__dot', dotColorClass, 'slide-from-left-strong'].join(' ')}
+            className={['ladf-bullet__dot', dotColorClass, 'slide-from-left-strong'].join(' ')}
           />
         ) : null}
-        <span className="radf-bullet__name slide-from-left">{label}</span>
+        <span className="ladf-bullet__name slide-from-left">{label}</span>
       </div>
 
       {/* Bar column */}
-      <div className="radf-bullet__bar-cell">
-        <div className="radf-bullet__track">
+      <div className="ladf-bullet__bar-cell">
+        <div className="ladf-bullet__track">
           {/* Background track */}
-          <div className="radf-bullet__track-bg" />
+          <div className="ladf-bullet__track-bg" />
 
           {/* Value bar */}
           <div
             className={[
-              'radf-bullet__bar',
+              'ladf-bullet__bar',
               barColorClass,
-              exceedsThreshold ? 'radf-bullet__bar--exceeded' : '',
+              exceedsThreshold ? 'ladf-bullet__bar--exceeded' : '',
               'expand-in',
             ]
               .filter(Boolean)
@@ -341,7 +341,7 @@ function BulletRow({
             }}
           >
             {/* Value label ON the bar */}
-            <span className="radf-bullet__value-label">
+            <span className="ladf-bullet__value-label">
               {value.toLocaleString(undefined, { maximumFractionDigits: 1 })}h
             </span>
           </div>
@@ -349,10 +349,10 @@ function BulletRow({
           {/* Marker line */}
           {markerPercent != null && markerEnabled && (
             <div
-              className="radf-bullet__marker fade-in"
+              className="ladf-bullet__marker fade-in"
               style={{
                 left: `${markerPercent}%`,
-                background: markerColor || 'var(--radf-text-muted)',
+                background: markerColor || 'var(--ladf-text-muted)',
               }}
             />
           )}
@@ -361,7 +361,7 @@ function BulletRow({
 
       {/* Percent column */}
       {showPercent && (
-        <div className="radf-bullet__pct-cell slide-from-right">
+        <div className="ladf-bullet__pct-cell slide-from-right">
           {percent != null ? `${percent.toFixed(1)}%` : '—'}
         </div>
       )}
@@ -408,7 +408,7 @@ function BulletChart({ data = [], encodings = {}, options = {}, handlers = {}, h
     }, 0);
   }, [data, xKey]);
 
-  const resolvedPercentKey = percentKey || (showPercent ? '__radfPercent' : null);
+  const resolvedPercentKey = percentKey || (showPercent ? '__LADFPercent' : null);
 
   const normalizedData = useMemo(() => {
     if (!data?.length || percentKey || !resolvedPercentKey) {
@@ -667,7 +667,7 @@ function BulletChart({ data = [], encodings = {}, options = {}, handlers = {}, h
   }, []);
 
   const markerLabel = markerConfig.label || 'Dept average';
-  const markerColor = markerConfig.color || 'var(--radf-accent-warning, var(--radf-viz-marker))';
+  const markerColor = markerConfig.color || 'var(--ladf-accent-warning, var(--ladf-viz-marker))';
   const headerTitles = options.headerTitles || {};
   const xTitle = headerTitles.xTitle || '';
   const yTitle = headerTitles.yTitle || '';
@@ -675,37 +675,37 @@ function BulletChart({ data = [], encodings = {}, options = {}, handlers = {}, h
 
   return (
     <ChartContainer>
-      <div className="radf-bullet" ref={bulletRef}>
+      <div className="ladf-bullet" ref={bulletRef}>
         {/* Header row */}
-        <div className="radf-bullet__header">
-          <div className="radf-bullet__name-cell">
-            <span className="radf-bullet__axis-label radf-bullet-name-label">{xTitle}</span>
+        <div className="ladf-bullet__header">
+          <div className="ladf-bullet__name-cell">
+            <span className="ladf-bullet__axis-label ladf-bullet-name-label">{xTitle}</span>
           </div>
-          <div className="radf-bullet__bar-cell">
-            <span className="radf-bullet__axis-label">{yTitle}</span>
+          <div className="ladf-bullet__bar-cell">
+            <span className="ladf-bullet__axis-label">{yTitle}</span>
           </div>
           {showPercent && (
-            <div className="radf-bullet__pct-cell radf-bullet__pct-header">{percentTitle}</div>
+            <div className="ladf-bullet__pct-cell ladf-bullet__pct-header">{percentTitle}</div>
           )}
         </div>
 
         {/* Data rows */}
-        <div className="radf-bullet__body">
+        <div className="ladf-bullet__body">
           {/* Vertical grid lines container */}
-          <div className="radf-bullet__grid-lines">
-            <div className="radf-bullet__name-cell" />
-            <div className="radf-bullet__bar-cell">
-              <div className="radf-bullet__grid-container">
+          <div className="ladf-bullet__grid-lines">
+            <div className="ladf-bullet__name-cell" />
+            <div className="ladf-bullet__bar-cell">
+              <div className="ladf-bullet__grid-container">
                 {xTicks.map((tick) => (
                   <div
                     key={tick}
-                    className="radf-bullet__grid-line"
+                    className="ladf-bullet__grid-line"
                     style={{ left: `${(tick / axisMaxValue) * 100}%` }}
                   />
                 ))}
               </div>
             </div>
-            {showPercent && <div className="radf-bullet__pct-cell" />}
+            {showPercent && <div className="ladf-bullet__pct-cell" />}
           </div>
 
           {filteredData.map((row, index) => (
@@ -735,14 +735,14 @@ function BulletChart({ data = [], encodings = {}, options = {}, handlers = {}, h
         </div>
 
         {/* X-axis */}
-        <div className="radf-bullet__axis">
-          <div className="radf-bullet__name-cell" />
-          <div className="radf-bullet__bar-cell">
-            <div className="radf-bullet__axis-ticks">
+        <div className="ladf-bullet__axis">
+          <div className="ladf-bullet__name-cell" />
+          <div className="ladf-bullet__bar-cell">
+            <div className="ladf-bullet__axis-ticks">
               {xTicks.map((tick) => (
                 <span
                   key={tick}
-                  className="radf-bullet__tick"
+                  className="ladf-bullet__tick"
                   style={{ left: `${(tick / axisMaxValue) * 100}%` }}
                 >
                   {tick.toLocaleString()}
@@ -750,38 +750,38 @@ function BulletChart({ data = [], encodings = {}, options = {}, handlers = {}, h
               ))}
             </div>
           </div>
-          {showPercent && <div className="radf-bullet__pct-cell" />}
+          {showPercent && <div className="ladf-bullet__pct-cell" />}
         </div>
 
         {/* Legend */}
         {(legendItems.length > 0 || markerEnabled || hasExceededThreshold) && (
-          <div className="radf-bullet__legend">
-            <ul className="radf-bullet__legend-list">
+          <div className="ladf-bullet__legend">
+            <ul className="ladf-bullet__legend-list">
               {legendItems.map((item) => {
                 const isHidden = hiddenKeys?.has(item.key);
                 return (
                   <li
                     key={item.key}
                     className={[
-                      'radf-bullet__legend-item',
-                      isHidden ? 'radf-bullet__legend-item--hidden' : '',
+                      'ladf-bullet__legend-item',
+                      isHidden ? 'ladf-bullet__legend-item--hidden' : '',
                     ]
                       .filter(Boolean)
                       .join(' ')}
                   >
                     <button
                       type="button"
-                      className="radf-bullet__legend-button"
+                      className="ladf-bullet__legend-button"
                       onClick={() => handlers.onLegendToggle?.(item.key)}
                     >
                       <span
                         className={[
-                          'radf-bullet__legend-swatch',
-                          `radf-chart-color-${item.index}`,
+                          'ladf-bullet__legend-swatch',
+                          `ladf-chart-color-${item.index}`,
                           'slide-from-bottom',
                         ].join(' ')}
                       />
-                      <span className="radf-bullet__legend-label slide-from-bottom">
+                      <span className="ladf-bullet__legend-label slide-from-bottom">
                         {item.label}
                       </span>
                     </button>
@@ -789,20 +789,20 @@ function BulletChart({ data = [], encodings = {}, options = {}, handlers = {}, h
                 );
               })}
               {markerEnabled && (
-                <li className="radf-bullet__legend-item radf-bullet__legend-item--marker">
+                <li className="ladf-bullet__legend-item ladf-bullet__legend-item--marker">
                   <span
-                    className="radf-bullet__legend-line slide-from-bottom"
+                    className="ladf-bullet__legend-line slide-from-bottom"
                     style={{
                       background: markerColor,
                     }}
                   />
-                  <span className="radf-bullet__legend-label slide-from-bottom">{markerLabel}</span>
+                  <span className="ladf-bullet__legend-label slide-from-bottom">{markerLabel}</span>
                 </li>
               )}
               {hasExceededThreshold && (
-                <li className="radf-bullet__legend-item radf-bullet__legend-item--exceeded">
-                  <span className="radf-bullet__legend-exceeded-swatch slide-from-bottom" />
-                  <span className="radf-bullet__legend-label slide-from-bottom">
+                <li className="ladf-bullet__legend-item ladf-bullet__legend-item--exceeded">
+                  <span className="ladf-bullet__legend-exceeded-swatch slide-from-bottom" />
+                  <span className="ladf-bullet__legend-label slide-from-bottom">
                     Higher than most peers
                   </span>
                 </li>

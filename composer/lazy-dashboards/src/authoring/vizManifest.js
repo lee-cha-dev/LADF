@@ -749,7 +749,7 @@ const VIZ_CAPABILITIES = {
         markerColor: {
           type: 'color',
           label: 'Marker color',
-          default: 'var(--radf-accent-warning)',
+          default: 'var(--ladf-accent-warning)',
           advanced: true,
           visibleWhen: { option: 'showMarkers', equals: true },
         },

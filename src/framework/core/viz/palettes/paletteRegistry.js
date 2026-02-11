@@ -69,7 +69,7 @@ export const PALETTES = [
  * @returns {string} CSS class name.
  */
 export const getPaletteClass = (id = DEFAULT_PALETTE_ID) =>
-  `radf-palette-${id}`;
+  `ladf-palette-${id}`;
 
 /**
  * Clamp a palette step to a range.
@@ -98,7 +98,7 @@ export const getSeriesVar = (index, seriesCount = DEFAULT_SERIES_COUNT) => {
       ? seriesCount
       : DEFAULT_SERIES_COUNT;
   const normalizedIndex = ((safeIndex % count) + count) % count;
-  return `var(--radf-series-${normalizedIndex + 1})`;
+  return `var(--ladf-series-${normalizedIndex + 1})`;
 };
 
 /**
@@ -108,7 +108,7 @@ export const getSeriesVar = (index, seriesCount = DEFAULT_SERIES_COUNT) => {
  */
 export const getSequentialVar = (step) => {
   const normalizedStep = clampStep(step, 1, SEQUENTIAL_STEPS);
-  return `var(--radf-seq-${normalizedStep})`;
+  return `var(--ladf-seq-${normalizedStep})`;
 };
 
 /**
@@ -119,11 +119,11 @@ export const getSequentialVar = (step) => {
  */
 export const getDivergingVar = (side, step) => {
   if (side === 'zero') {
-    return 'var(--radf-div-zero)';
+    return 'var(--ladf-div-zero)';
   }
   const normalizedStep = clampStep(step, 1, DIVERGING_STEPS);
   const prefix = side === 'neg' ? 'neg' : 'pos';
-  return `var(--radf-div-${prefix}-${normalizedStep})`;
+  return `var(--ladf-div-${prefix}-${normalizedStep})`;
 };
 
 /**

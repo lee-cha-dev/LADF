@@ -95,7 +95,7 @@ function PieChartPanel({
         y={y}
         textAnchor={x > cx ? 'start' : 'end'}
         dominantBaseline="central"
-        fill="var(--radf-text-muted)"
+        fill="var(--ladf-text-muted)"
         fontSize={12}
       >
         {label}

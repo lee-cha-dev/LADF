@@ -33,17 +33,17 @@ const resolveErrorMessage = (error) => {
 };
 
 /**
- * Renders panel body content with RADF panel state styles.
+ * Renders panel body content with LADF panel state styles.
  *
  * Uses:
- * - `radf-panel__body`
- * - `radf-panel__content`
+ * - `ladf-panel__body`
+ * - `ladf-panel__content`
  *
  * @param {PanelBodyProps} props
  * @returns {JSX.Element}
  */
 function PanelBody({ status = 'ready', isEmpty = false, emptyMessage, error, children }) {
-  let content = <div className="radf-panel__content">{children}</div>;
+  let content = <div className="ladf-panel__content">{children}</div>;
 
   if (status === 'loading') {
     content = <LoadingState />;
@@ -57,7 +57,7 @@ function PanelBody({ status = 'ready', isEmpty = false, emptyMessage, error, chi
     content = <EmptyState message={emptyMessage} />;
   }
 
-  return <div className="radf-panel__body">{content}</div>;
+  return <div className="ladf-panel__body">{content}</div>;
 }
 
 export default PanelBody;
