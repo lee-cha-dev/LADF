@@ -10,7 +10,6 @@ export default defineConfig({
   resolve: {
     alias: {
       radf: resolve(rootDir, 'src/index.js'),
-      xlsx: resolve(rootDir, 'test/mocks/xlsx.js'),
     },
   },
   test: {
