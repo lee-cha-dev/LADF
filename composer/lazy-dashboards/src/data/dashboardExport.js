@@ -934,21 +934,49 @@ import dashboardConfig from "./deps/${fileBase}.dashboard.js";${apiImport}${hasF
 
   return `${imports}${providerImports}${apiProvidersInit}
 
+/**
+ * Maps theme families and modes to the CSS classes expected by RADF themes.
+ * Generated from the runtime theme registry so we can resolve and validate
+ * incoming theme settings safely.
+ * @type {Record<string, Record<string, string>>}
+ */
 const THEME_CLASS_MAP = ${serializedThemeClassMap};
 
+/**
+ * Available palette identifiers for exported dashboards.
+ * @type {string[]}
+ */
 const PALETTE_IDS = ${serializedPaletteIds};
 
+/**
+ * Flat list of all theme classes so we can remove them before applying new ones.
+ * @type {string[]}
+ */
 const ALL_THEME_CLASSES = Object.values(THEME_CLASS_MAP).flatMap((modes) =>
   Object.values(modes)
 );
+/**
+ * Flat list of palette classes used by RADF.
+ * @type {string[]}
+ */
 const ALL_PALETTE_CLASSES = PALETTE_IDS.map((id) => "radf-palette-" + id);
 
+/**
+ * Storage key used for persisting theme preferences between reloads.
+ * @type {string}
+ */
 const THEME_SETTINGS_STORAGE_KEY = ${JSON.stringify(THEME_SETTINGS_STORAGE_KEY)};
 
+/**
+ * Default theme settings used when no export or stored settings are present.
+ */
 const DEFAULT_THEME_FAMILY = "default";
 const DEFAULT_THEME_MODE = "light";
 const DEFAULT_PALETTE_ID = "analytics";
 
+/**
+ * Theme settings baked into the exported dashboard bundle.
+ */
 const EXPORTED_THEME_FAMILY = ${normalizedThemeFamily};
 const EXPORTED_THEME_MODE = ${normalizedThemeMode};
 const EXPORTED_PALETTE_ID = ${normalizedPaletteId};
@@ -982,15 +1010,39 @@ const ApiDataProvider = ${
     : "null"
 };
 
+/**
+ * Resolves a theme family to a known key from the theme registry.
+ *
+ * @param {string|undefined|null} value
+ * @returns {string} The resolved theme family id.
+ */
 const resolveThemeFamily = (value) =>
   value && THEME_CLASS_MAP[value] ? value : DEFAULT_THEME_FAMILY;
 
+/**
+ * Resolves the theme mode, falling back to the default mode when invalid.
+ *
+ * @param {string|undefined|null} value
+ * @returns {"light"|"dark"} The resolved theme mode.
+ */
 const resolveThemeMode = (value) =>
   value === "dark" || value === "light" ? value : DEFAULT_THEME_MODE;
 
+/**
+ * Resolves a palette id to one of the available palette ids.
+ *
+ * @param {string|undefined|null} value
+ * @returns {string} The resolved palette id.
+ */
 const resolvePaletteId = (value) =>
   PALETTE_IDS.includes(value) ? value : DEFAULT_PALETTE_ID;
 
+/**
+ * Reads theme preferences from local storage.
+ *
+ * @returns {{ themeFamily?: string, themeMode?: string, paletteId?: string }}
+ *   The stored theme settings, if any.
+ */
 const readStoredThemeSettings = () => {
   if (typeof window === "undefined") {
     return {};
@@ -1003,6 +1055,13 @@ const readStoredThemeSettings = () => {
   }
 };
 
+/**
+ * Persists theme preferences to local storage so the user's choice survives
+ * refreshes.
+ *
+ * @param {{ themeFamily: string, themeMode: "light"|"dark", paletteId: string }} settings
+ * @returns {void}
+ */
 const persistThemeSettings = ({ themeFamily, themeMode, paletteId }) => {
   if (typeof window === "undefined") {
     return;
@@ -1057,6 +1116,7 @@ const normalizeDatasources = (datasources, datasetBinding, semanticLayer) => {
  * @returns {JSX.Element} The panel markup.
  */
 const VizPanel = ({ panel, dataProvider, datasetBinding, semanticLayer }) => {
+  // Filter bar panels are rendered locally and do not execute queries.
   const dashboardState = useDashboardState();
   const isFilterBar = panel?.panelType === "viz" && panel?.vizType === "filterBar";
   const querySpec = useMemo(
@@ -1161,6 +1221,7 @@ const ${componentName} = ({
   paletteId,
 }) => {
   useEffect(() => {
+    // Ensure RADF visual registry is ready for runtime rendering.
     registerCharts();
     registerInsights();
   }, []);
@@ -1172,6 +1233,7 @@ const ${componentName} = ({
   const [resolvedPaletteId, setResolvedPaletteId] = useState(DEFAULT_PALETTE_ID);
 
   useEffect(() => {
+    // Merge explicit props, stored preferences, and export defaults.
     const stored = readStoredThemeSettings();
     const nextThemeFamily = resolveThemeFamily(
       themeFamily || stored.themeFamily || EXPORTED_THEME_FAMILY
@@ -1192,6 +1254,7 @@ const ${componentName} = ({
     if (typeof document === "undefined") {
       return;
     }
+    // Update the root element so RADF theme and palette classes take effect.
     const root = document.documentElement;
     const themeClass = THEME_CLASS_MAP[resolvedThemeFamily][resolvedThemeMode];
 
@@ -1216,6 +1279,7 @@ const ${componentName} = ({
     null;
 
   const localProviders = useMemo(() => {
+    // Build local providers for any datasources that include inline rows/columns.
     const next = {};
     normalizedDatasources.forEach((datasource) => {
       const binding = datasource?.datasetBinding || {};
@@ -1243,11 +1307,13 @@ const ${componentName} = ({
     }),
     [localProviders, dataProviders]
   );
+  // Pick a fallback provider so queries have a default datasource.
   const fallbackProvider =
     resolvedProviderMap[dashboardConfig.datasetId] ||
     resolvedProviderMap[Object.keys(resolvedProviderMap)[0]] ||
     null;
   const resolvedProvider = useMemo(() => {
+    // Favor the user-supplied provider, otherwise wrap the resolved map.
     if (dataProvider) {
       return dataProvider;
     }
@@ -1256,10 +1322,20 @@ const ${componentName} = ({
     });
   }, [dataProvider, resolvedProviderMap, fallbackProvider]);
   
+  /**
+   * Reloads the page when the error boundary requests a reset.
+   *
+   * @returns {void}
+   */
   const handleResetApp = () => {
     window.location.reload();
   };
 
+  /**
+   * Toggles the active theme mode and persists the choice.
+   *
+   * @returns {void}
+   */
   const handleToggleTheme = () => {
     setResolvedThemeMode((current) => {
       const nextMode = current === "dark" ? "light" : "dark";

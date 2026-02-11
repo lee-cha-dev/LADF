@@ -10,8 +10,8 @@ export default defineConfig({
     css: true,
     exclude: ['tests/**'],
     include: [
-      'src/framework/__tests__/**/*.test.js',
-      'examples/lazy-dashboards/src/**/__tests__/**/*.test.js',
+      'src/framework/__tests__/**/*.test.{js,jsx}',
+      'composer/lazy-dashboards/src/**/__tests__/**/*.test.{js,jsx}',
     ],
   },
 });
