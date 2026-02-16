@@ -1,0 +1,378 @@
+/**
+ * Bullet chart table styles
+ * Three-column layout: names | bars with marker lines | percent
+ * Includes vertical grid lines and exceeded peer legend
+ */
+
+.ladf-bullet {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    font-family: var(--ladf-font-family);
+    overflow: hidden;
+}
+
+/* Header */
+.ladf-bullet__header {
+    display: grid;
+    grid-template-columns: minmax(140px, 2fr) 5fr minmax(80px, 1fr);
+    gap: var(--ladf-space-2);
+    padding: var(--ladf-space-2) 0;
+    border-bottom: 1px solid var(--ladf-border-divider);
+}
+
+.ladf-bullet__header .ladf-bullet__bar-cell {
+    display: flex;
+    justify-content: center;
+}
+
+.ladf-bullet__axis-label {
+    font-size: 0.75rem;
+    font-weight: var(--ladf-font-weight-semibold);
+    color: var(--ladf-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.ladf-bullet-name-label {
+    padding-bottom: 1rem;
+    align-items: center;
+    display: flex;
+    justify-content: center;
+    align-content: center;
+}
+
+.ladf-bullet__pct-header {
+    font-size: 0.7rem;
+    font-weight: var(--ladf-font-weight-semibold);
+    color: var(--ladf-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    text-align: center;
+    line-height: 1.2;
+}
+
+/* Body */
+.ladf-bullet__body {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Vertical Grid Lines — dashed to match Recharts CartesianGrid (strokeDasharray 3 3) */
+.ladf-bullet__grid-lines {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: grid;
+    grid-template-columns: minmax(140px, 2fr) 5fr minmax(80px, 1fr);
+    gap: var(--ladf-space-2);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.ladf-bullet__grid-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.ladf-bullet__grid-line {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: repeating-linear-gradient(
+            to bottom,
+            var(--ladf-chart-grid, rgba(148, 163, 184, 0.2)) 0px,
+            var(--ladf-chart-grid, rgba(148, 163, 184, 0.2)) 3px,
+            transparent 3px,
+            transparent 6px
+    );
+    transform: translateX(-50%);
+}
+
+.ladf-bullet__grid-line:first-child {
+    transform: translateX(0);
+}
+
+/* Row */
+.ladf-bullet__row {
+    position: relative;
+    display: grid;
+    border-radius: 6px;
+    grid-template-columns: minmax(140px, 2fr) 5fr minmax(80px, 1fr);
+    gap: var(--ladf-space-2);
+    align-items: center;
+    padding: var(--ladf-space-2) 0;
+    cursor: pointer;
+    transition: background 0.15s ease;
+    z-index: 1;
+}
+
+.ladf-bullet__row:hover {
+    background: var(--ladf-accent-primary-soft);
+}
+
+.ladf-bullet__row:focus-visible {
+    outline: var(--ladf-focus-ring-size) solid var(--ladf-border-focus);
+    outline-offset: -2px;
+}
+
+/* Name cell */
+.ladf-bullet__name-cell {
+    display: flex;
+    align-items: center;
+    gap: var(--ladf-space-2);
+    padding-right: var(--ladf-space-2);
+    padding-left: var(--ladf-space-4);
+}
+
+.ladf-bullet__dot {
+    flex-shrink: 0;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    box-shadow: var(--ladf-shadow-low);
+}
+
+.ladf-bullet__name {
+    font-size: 0.85rem;
+    font-weight: var(--ladf-font-weight-semibold);
+    color: var(--ladf-text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Bar cell */
+.ladf-bullet__bar-cell {
+    position: relative;
+    height: 28px;
+}
+
+.ladf-bullet__track {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.ladf-bullet__track-bg {
+    position: absolute;
+    inset: 0;
+    background: var(--ladf-viz-bar-muted);
+    border-radius: 6px;
+}
+
+.ladf-bullet__bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    min-width: 2px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: var(--ladf-space-2);
+    transition: width 0.4s ease-out;
+}
+
+.ladf-bullet__bar--exceeded {
+    box-shadow: inset 0 0 0 2px var(--ladf-accent-danger);
+}
+
+.ladf-bullet__value-label {
+    font-size: 0.75rem;
+    font-weight: var(--ladf-font-weight-bold);
+    color: var(--ladf-text-inverse, #fff);
+    text-shadow: 0 1px 1px color-mix(in srgb, var(--ladf-surface-bg, #000) 45%, transparent);
+    white-space: nowrap;
+}
+
+/* Marker line — vertical line on the bar (dept average) */
+.ladf-bullet__marker,
+.ladf-bullet__threshold {
+    position: absolute;
+    top: -2px;
+    bottom: -2px;
+    width: 4px;
+    border-radius: 2px;
+    transform: translateX(-50%);
+    box-shadow: var(--ladf-shadow-low);
+    background: var(--ladf-viz-marker);
+    z-index: 2;
+    opacity: 1;
+}
+
+/* Percent cell */
+.ladf-bullet__pct-cell {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--ladf-text-secondary);
+    text-align: center;
+}
+
+/* X-axis */
+.ladf-bullet__axis {
+    display: grid;
+    grid-template-columns: minmax(140px, 2fr) 5fr minmax(80px, 1fr);
+    gap: var(--ladf-space-2);
+    padding: var(--ladf-space-2) 0;
+    border-top: 1px solid var(--ladf-border-divider);
+}
+
+.ladf-bullet__axis-ticks {
+    position: relative;
+    height: 20px;
+}
+
+.ladf-bullet__tick {
+    position: absolute;
+    transform: translateX(-50%);
+    font-size: 0.7rem;
+    color: var(--ladf-text-muted);
+}
+
+.ladf-bullet__tick:first-child {
+    transform: translateX(0);
+}
+
+/* Legend */
+.ladf-bullet__legend {
+    padding: var(--ladf-space-4) 0 var(--ladf-space-2);
+    border-top: 1px solid var(--ladf-border-subtle);
+    margin-top: var(--ladf-space-2);
+}
+
+.ladf-bullet__legend-list {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--ladf-space-4);
+    padding: 0;
+    margin: 0;
+    justify-content: center;
+}
+
+.ladf-bullet__legend-item {
+    display: inline-flex;
+    align-items: center;
+}
+
+.ladf-bullet__legend-item--hidden {
+    opacity: 0.4;
+}
+
+.ladf-bullet__legend-button {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--ladf-space-2);
+    padding: var(--ladf-space-1) var(--ladf-space-2);
+    border: none;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+    border-radius: var(--ladf-radius-sm);
+    transition: background 0.15s ease;
+}
+
+.ladf-bullet__legend-button:hover {
+    background: var(--ladf-accent-primary-soft);
+}
+
+.ladf-bullet__legend-swatch {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border-radius: 3px;
+    flex-shrink: 0;
+}
+
+.ladf-bullet__legend-label {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--ladf-text-secondary);
+}
+
+/* Marker legend item (dept average line) */
+.ladf-bullet__legend-item--marker,
+.ladf-bullet__legend-item--threshold {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--ladf-space-2);
+    padding: var(--ladf-space-1) var(--ladf-space-2);
+    margin-left: var(--ladf-space-3);
+    border-left: 1px solid var(--ladf-border-subtle);
+    padding-left: var(--ladf-space-4);
+}
+
+.ladf-bullet__legend-line {
+    display: inline-block;
+    width: 4px;
+    height: 16px;
+    border-radius: 2px;
+    background: var(--ladf-viz-marker);
+}
+
+/* Exceeded Peers Legend Item */
+.ladf-bullet__legend-item--exceeded {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--ladf-space-2);
+    padding: var(--ladf-space-1) var(--ladf-space-2);
+    margin-left: var(--ladf-space-3);
+    border-left: 1px solid var(--ladf-border-subtle);
+    padding-left: var(--ladf-space-4);
+}
+
+.ladf-bullet__legend-exceeded-swatch {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border-radius: 3px;
+    background: var(--ladf-surface-well, rgba(128, 128, 128, 0.3));
+    box-shadow: inset 0 0 0 2px var(--ladf-accent-danger);
+    flex-shrink: 0;
+}
+
+/* Responsive: collapse to simpler layout on small screens */
+@media (max-width: 600px) {
+    .ladf-bullet__header,
+    .ladf-bullet__row,
+    .ladf-bullet__axis,
+    .ladf-bullet__grid-lines {
+        grid-template-columns: minmax(100px, 1.5fr) 4fr minmax(60px, 1fr);
+    }
+
+    .ladf-bullet__name {
+        font-size: 0.75rem;
+    }
+
+    .ladf-bullet__value-label {
+        font-size: 0.65rem;
+    }
+
+    .ladf-bullet__pct-cell {
+        font-size: 0.75rem;
+    }
+
+    .ladf-bullet__legend-list {
+        gap: var(--ladf-space-2);
+    }
+}
+
+/* Animation */
+@keyframes ladf-bullet-bar-enter {
+    from {
+        width: 0;
+    }
+}
+
+.ladf-bullet__bar {
+    animation: ladf-bullet-bar-enter 0.5s ease-out;
+}

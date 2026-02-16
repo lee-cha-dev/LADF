@@ -1,0 +1,70 @@
+.ladf-bullet-tooltip {
+  position: absolute;
+  z-index: 1000;
+  transform: none; /* important */
+  pointer-events: none; /* prevents hover “jitter” */
+  margin-top: -12px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ladf-space-2);
+  transition: left 300ms ease, top 300ms ease;
+}
+
+.ladf-bullet-tooltip__header {
+  display: flex;
+  align-items: center;
+  gap: var(--ladf-space-2);
+}
+
+.ladf-bullet-tooltip__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  flex-shrink: 0;
+}
+
+.ladf-bullet-tooltip__name {
+  font-weight: var(--ladf-font-weight-semibold);
+  color: var(--ladf-text-primary);
+}
+
+.ladf-bullet-tooltip__row {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--ladf-space-4);
+  font-size: 0.85rem;
+}
+
+.ladf-bullet-tooltip__row--primary {
+  font-weight: var(--ladf-font-weight-semibold);
+}
+
+.ladf-bullet-tooltip__label {
+  color: var(--ladf-text-muted);
+}
+
+.ladf-bullet-tooltip__value {
+  color: var(--ladf-text-primary);
+  font-weight: 500;
+}
+
+.ladf-bullet-tooltip__value--primary {
+  font-weight: var(--ladf-font-weight-semibold);
+}
+
+.ladf-bullet-tooltip__warning {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ladf-space-2);
+  font-size: 0.8rem;
+  color: var(--ladf-accent-danger);
+}
+
+.ladf-bullet-tooltip__warning-icon {
+  font-size: 0.85rem;
+}
+
+.ladf-bullet-tooltip__warning-text {
+  font-weight: var(--ladf-font-weight-semibold);
+}

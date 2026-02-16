@@ -1,0 +1,179 @@
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
+}
+
+.ladf-button:focus-visible,
+.ladf-selection-chip:focus-visible,
+.ladf-filter-bar__chip:focus-visible,
+.ladf-filter-bar__button:focus-visible,
+.ladf-selection-bar__clear:focus-visible,
+.ladf-drill__crumb:focus-visible,
+.ladf-drill__reset:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 var(--ladf-focus-ring-size)
+    var(--ladf-border-focus, var(--ladf-color-accent));
+}
+
+.ladf-app {
+  margin: 0;
+  font-family: var(--ladf-font-family);
+  font-size: var(--ladf-font-size-base);
+  line-height: var(--ladf-line-height);
+  background: var(--ladf-app-gradient, var(--ladf-color-bg));
+  color: var(--ladf-text-primary, var(--ladf-color-text));
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ladf-space-6);
+}
+
+.ladf-app__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--ladf-space-5) var(--ladf-space-6);
+  background: linear-gradient(180deg, var(--ladf-surface-1), var(--ladf-surface-2));
+  border-bottom: 1px solid var(--ladf-border-divider, var(--ladf-color-border));
+  box-shadow: var(--ladf-shadow-low);
+}
+
+.ladf-app__branding {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ladf-space-1);
+}
+
+.ladf-app__title {
+  font-weight: var(--ladf-font-weight-bold);
+  font-size: 1.35rem;
+  letter-spacing: -0.01em;
+}
+
+.ladf-app__subtitle {
+  color: var(--ladf-text-muted, var(--ladf-color-muted));
+  font-size: 0.95rem;
+}
+
+.ladf-app__content {
+  padding: 0 var(--ladf-space-6) var(--ladf-space-8);
+  width: auto;
+  margin: 0 auto;
+  min-width: 95vw;
+  color: var(--ladf-color-text);
+}
+
+.ladf-button {
+  border: 1px solid var(--ladf-border-subtle, var(--ladf-color-border));
+  background: linear-gradient(180deg, var(--ladf-surface-1), var(--ladf-surface-2));
+  color: var(--ladf-text-primary, var(--ladf-color-text));
+  padding: var(--ladf-space-2) var(--ladf-space-4);
+  border-radius: var(--ladf-radius-md);
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease,
+    color 0.2s ease, background 0.2s ease;
+  box-shadow: var(--ladf-shadow-low);
+}
+
+.ladf-button:hover {
+  border-color: var(--ladf-border-strong, var(--ladf-color-border));
+  transform: translateY(-1px);
+  box-shadow: var(--ladf-shadow-med);
+}
+
+.ladf-button:active {
+  transform: translateY(0);
+  box-shadow: var(--ladf-shadow-low);
+}
+
+.ladf-button--primary {
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--ladf-accent-primary) 92%, #ffffff 8%),
+    var(--ladf-accent-primary)
+  );
+  color: var(--ladf-text-inverse, #ffffff);
+  border-color: transparent;
+  box-shadow: 0 8px 16px rgba(37, 99, 235, 0.25);
+}
+
+.ladf-button--primary:hover {
+  color: var(--ladf-text-inverse, #ffffff);
+}
+
+.ladf-dashboard {
+  background: linear-gradient(180deg, var(--ladf-surface-1), var(--ladf-surface-2));
+  border-radius: var(--ladf-radius-lg);
+  padding: var(--ladf-space-6);
+  border: 1px solid var(--ladf-border-subtle, var(--ladf-color-border));
+  box-shadow: var(--ladf-shadow-high);
+  position: relative;
+}
+
+.ladf-dashboard::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: var(--ladf-shadow-inset);
+  pointer-events: none;
+}
+
+.ladf-dashboard__header {
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.ladf-dashboard__title {
+  margin: 0 0 var(--ladf-space-2);
+  font-size: 1.75rem;
+  font-weight: var(--ladf-font-weight-bold);
+  letter-spacing: -0.02em;
+}
+
+.ladf-dashboard__subtitle {
+  margin: 0;
+  color: var(--ladf-text-muted, var(--ladf-color-muted));
+}
+
+.ladf-dashboard__toggle {
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+
+.ladf-error-boundary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--ladf-space-7);
+  background: var(--ladf-surface-1);
+  border: 1px solid var(--ladf-border-subtle, var(--ladf-color-border));
+  border-radius: var(--ladf-radius-lg);
+  box-shadow: var(--ladf-shadow-med);
+  min-height: 320px;
+}
+
+.ladf-error-boundary__content {
+  text-align: center;
+  max-width: 520px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ladf-space-3);
+}
+
+.ladf-error-boundary__title {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.ladf-error-boundary__message {
+  margin: 0;
+  color: var(--ladf-text-muted, var(--ladf-color-muted));
+}
+
+.ladf-error-boundary__action {
+  align-self: center;
+}

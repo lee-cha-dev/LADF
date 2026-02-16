@@ -1,0 +1,237 @@
+:root.ladf-palette-analytics,
+.ladf-palette-analytics {
+  --ladf-series-1: #4e79a7;
+  --ladf-series-2: #f28e2b;
+  --ladf-series-3: #e15759;
+  --ladf-series-4: #76b7b2;
+  --ladf-series-5: #59a14f;
+  --ladf-series-6: #edc949;
+  --ladf-series-7: #af7aa1;
+  --ladf-series-8: #ff9da7;
+  --ladf-series-9: #9c755f;
+  --ladf-series-10: #bab0ab;
+  --ladf-series-11: #7f86b7;
+  --ladf-series-12: #1f77b4;
+  --ladf-seq-1: #f7fbff;
+  --ladf-seq-2: #deebf7;
+  --ladf-seq-3: #c6dbef;
+  --ladf-seq-4: #9ecae1;
+  --ladf-seq-5: #6baed6;
+  --ladf-seq-6: #4292c6;
+  --ladf-seq-7: #2171b5;
+  --ladf-seq-8: #08519c;
+  --ladf-seq-9: #08306b;
+  --ladf-div-neg-4: #a50026;
+  --ladf-div-neg-3: #d73027;
+  --ladf-div-neg-2: #f46d43;
+  --ladf-div-neg-1: #fdae61;
+  --ladf-div-zero: #ffffbf;
+  --ladf-div-pos-1: #d9ef8b;
+  --ladf-div-pos-2: #a6d96a;
+  --ladf-div-pos-3: #66bd63;
+  --ladf-div-pos-4: #1a9850;
+}
+
+:root.ladf-palette-tableau10,
+.ladf-palette-tableau10 {
+  --ladf-series-1: #4e79a7;
+  --ladf-series-2: #f28e2b;
+  --ladf-series-3: #e15759;
+  --ladf-series-4: #76b7b2;
+  --ladf-series-5: #59a14f;
+  --ladf-series-6: #edc949;
+  --ladf-series-7: #af7aa1;
+  --ladf-series-8: #ff9da7;
+  --ladf-series-9: #9c755f;
+  --ladf-series-10: #bab0ab;
+  --ladf-series-11: #86bc86;
+  --ladf-series-12: #d4a6c8;
+  --ladf-seq-1: #f7fbff;
+  --ladf-seq-2: #deebf7;
+  --ladf-seq-3: #c6dbef;
+  --ladf-seq-4: #9ecae1;
+  --ladf-seq-5: #6baed6;
+  --ladf-seq-6: #4292c6;
+  --ladf-seq-7: #2171b5;
+  --ladf-seq-8: #08519c;
+  --ladf-seq-9: #08306b;
+  --ladf-div-neg-4: #a50026;
+  --ladf-div-neg-3: #d73027;
+  --ladf-div-neg-2: #f46d43;
+  --ladf-div-neg-1: #fdae61;
+  --ladf-div-zero: #ffffbf;
+  --ladf-div-pos-1: #d9ef8b;
+  --ladf-div-pos-2: #a6d96a;
+  --ladf-div-pos-3: #66bd63;
+  --ladf-div-pos-4: #1a9850;
+}
+
+:root.ladf-palette-set2,
+.ladf-palette-set2 {
+  --ladf-series-1: #66c2a5;
+  --ladf-series-2: #fc8d62;
+  --ladf-series-3: #8da0cb;
+  --ladf-series-4: #e78ac3;
+  --ladf-series-5: #a6d854;
+  --ladf-series-6: #ffd92f;
+  --ladf-series-7: #e5c494;
+  --ladf-series-8: #b3b3b3;
+  --ladf-series-9: #a6cee3;
+  --ladf-series-10: #1f78b4;
+  --ladf-series-11: #b2df8a;
+  --ladf-series-12: #33a02c;
+  --ladf-seq-1: #f7fcf5;
+  --ladf-seq-2: #e5f5e0;
+  --ladf-seq-3: #c7e9c0;
+  --ladf-seq-4: #a1d99b;
+  --ladf-seq-5: #74c476;
+  --ladf-seq-6: #41ab5d;
+  --ladf-seq-7: #238b45;
+  --ladf-seq-8: #006d2c;
+  --ladf-seq-9: #00441b;
+  --ladf-div-neg-4: #8c510a;
+  --ladf-div-neg-3: #bf812d;
+  --ladf-div-neg-2: #dfc27d;
+  --ladf-div-neg-1: #f6e8c3;
+  --ladf-div-zero: #f5f5f5;
+  --ladf-div-pos-1: #c7eae5;
+  --ladf-div-pos-2: #80cdc1;
+  --ladf-div-pos-3: #35978f;
+  --ladf-div-pos-4: #01665e;
+}
+
+:root.ladf-palette-dark2,
+.ladf-palette-dark2 {
+  --ladf-series-1: #1b9e77;
+  --ladf-series-2: #d95f02;
+  --ladf-series-3: #7570b3;
+  --ladf-series-4: #e7298a;
+  --ladf-series-5: #66a61e;
+  --ladf-series-6: #e6ab02;
+  --ladf-series-7: #a6761d;
+  --ladf-series-8: #666666;
+  --ladf-series-9: #1f78b4;
+  --ladf-series-10: #b2df8a;
+  --ladf-series-11: #fb9a99;
+  --ladf-series-12: #cab2d6;
+  --ladf-seq-1: #f7fbff;
+  --ladf-seq-2: #deebf7;
+  --ladf-seq-3: #c6dbef;
+  --ladf-seq-4: #9ecae1;
+  --ladf-seq-5: #6baed6;
+  --ladf-seq-6: #4292c6;
+  --ladf-seq-7: #2171b5;
+  --ladf-seq-8: #08519c;
+  --ladf-seq-9: #08306b;
+  --ladf-div-neg-4: #b2182b;
+  --ladf-div-neg-3: #d6604d;
+  --ladf-div-neg-2: #f4a582;
+  --ladf-div-neg-1: #fddbc7;
+  --ladf-div-zero: #f7f7f7;
+  --ladf-div-pos-1: #d1e5f0;
+  --ladf-div-pos-2: #92c5de;
+  --ladf-div-pos-3: #4393c3;
+  --ladf-div-pos-4: #2166ac;
+}
+
+:root.ladf-palette-okabe-ito,
+.ladf-palette-okabe-ito {
+  --ladf-series-1: #e69f00;
+  --ladf-series-2: #56b4e9;
+  --ladf-series-3: #009e73;
+  --ladf-series-4: #f0e442;
+  --ladf-series-5: #0072b2;
+  --ladf-series-6: #d55e00;
+  --ladf-series-7: #cc79a7;
+  --ladf-series-8: #000000;
+  --ladf-series-9: #999999;
+  --ladf-series-10: #bdbdbd;
+  --ladf-series-11: #80b1d3;
+  --ladf-series-12: #fdb462;
+  --ladf-seq-1: #f7fbff;
+  --ladf-seq-2: #deebf7;
+  --ladf-seq-3: #c6dbef;
+  --ladf-seq-4: #9ecae1;
+  --ladf-seq-5: #6baed6;
+  --ladf-seq-6: #4292c6;
+  --ladf-seq-7: #2171b5;
+  --ladf-seq-8: #08519c;
+  --ladf-seq-9: #08306b;
+  --ladf-div-neg-4: #8c510a;
+  --ladf-div-neg-3: #bf812d;
+  --ladf-div-neg-2: #dfc27d;
+  --ladf-div-neg-1: #f6e8c3;
+  --ladf-div-zero: #f5f5f5;
+  --ladf-div-pos-1: #c7eae5;
+  --ladf-div-pos-2: #80cdc1;
+  --ladf-div-pos-3: #35978f;
+  --ladf-div-pos-4: #01665e;
+}
+
+:root.ladf-palette-viridis,
+.ladf-palette-viridis {
+  --ladf-series-1: #440154;
+  --ladf-series-2: #482878;
+  --ladf-series-3: #3e4989;
+  --ladf-series-4: #31688e;
+  --ladf-series-5: #26828e;
+  --ladf-series-6: #1f9e89;
+  --ladf-series-7: #35b779;
+  --ladf-series-8: #6ece58;
+  --ladf-series-9: #b5de2b;
+  --ladf-series-10: #fde725;
+  --ladf-series-11: #9bd93c;
+  --ladf-series-12: #2a788e;
+  --ladf-seq-1: #440154;
+  --ladf-seq-2: #482878;
+  --ladf-seq-3: #3e4989;
+  --ladf-seq-4: #31688e;
+  --ladf-seq-5: #26828e;
+  --ladf-seq-6: #1f9e89;
+  --ladf-seq-7: #35b779;
+  --ladf-seq-8: #6ece58;
+  --ladf-seq-9: #fde725;
+  --ladf-div-neg-4: #3b4cc0;
+  --ladf-div-neg-3: #688aef;
+  --ladf-div-neg-2: #9ecae1;
+  --ladf-div-neg-1: #dce7f1;
+  --ladf-div-zero: #f7f7f7;
+  --ladf-div-pos-1: #fde0b2;
+  --ladf-div-pos-2: #f9a65a;
+  --ladf-div-pos-3: #ed6a5a;
+  --ladf-div-pos-4: #b40426;
+}
+
+:root.ladf-palette-rdylgn,
+.ladf-palette-rdylgn {
+  --ladf-series-1: #d73027;
+  --ladf-series-2: #fc8d59;
+  --ladf-series-3: #fee08b;
+  --ladf-series-4: #d9ef8b;
+  --ladf-series-5: #91cf60;
+  --ladf-series-6: #1a9850;
+  --ladf-series-7: #fdae61;
+  --ladf-series-8: #66bd63;
+  --ladf-series-9: #e0f3f8;
+  --ladf-series-10: #abdda4;
+  --ladf-series-11: #a50026;
+  --ladf-series-12: #006837;
+  --ladf-seq-1: #fff7ec;
+  --ladf-seq-2: #fee8c8;
+  --ladf-seq-3: #fdd49e;
+  --ladf-seq-4: #fdbb84;
+  --ladf-seq-5: #fc8d59;
+  --ladf-seq-6: #ef6548;
+  --ladf-seq-7: #d7301f;
+  --ladf-seq-8: #b30000;
+  --ladf-seq-9: #7f0000;
+  --ladf-div-neg-4: #a50026;
+  --ladf-div-neg-3: #d73027;
+  --ladf-div-neg-2: #f46d43;
+  --ladf-div-neg-1: #fdae61;
+  --ladf-div-zero: #ffffbf;
+  --ladf-div-pos-1: #d9ef8b;
+  --ladf-div-pos-2: #a6d96a;
+  --ladf-div-pos-3: #66bd63;
+  --ladf-div-pos-4: #1a9850;
+}

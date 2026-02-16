@@ -1,0 +1,92 @@
+.ladf-insights {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ladf-space-4);
+}
+
+.ladf-insight-card {
+  border: 1px solid var(--ladf-border-subtle, var(--ladf-color-border));
+  border-radius: var(--ladf-radius-lg);
+  padding: var(--ladf-space-4);
+  background: var(--ladf-panel-gradient, var(--ladf-color-surface));
+  display: flex;
+  flex-direction: column;
+  gap: var(--ladf-space-3);
+  box-shadow: var(--ladf-shadow-low);
+}
+
+.ladf-insight-card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--ladf-space-3);
+}
+
+.ladf-insight-card__title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: var(--ladf-font-weight-semibold);
+}
+
+.ladf-insight-card__source {
+  margin: var(--ladf-space-1) 0 0;
+  color: var(--ladf-text-muted, var(--ladf-color-muted));
+  font-size: 0.85rem;
+}
+
+.ladf-insight-card__badge {
+  padding: 2px var(--ladf-space-2);
+  border-radius: var(--ladf-radius-sm);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border: 1px solid currentColor;
+}
+
+.ladf-insight-card__narrative {
+  margin: 0;
+  color: var(--ladf-text-secondary, var(--ladf-color-text));
+  font-size: 0.95rem;
+}
+
+.ladf-insight-card__action {
+  margin: 0;
+  color: var(--ladf-text-secondary, var(--ladf-color-text));
+  font-size: 0.9rem;
+}
+
+.ladf-insight-card__evidence {
+  margin: 0;
+  padding-left: var(--ladf-space-4);
+  color: var(--ladf-text-muted, var(--ladf-color-muted));
+  font-size: 0.85rem;
+}
+
+.ladf-insight-card__evidence-item {
+  margin-bottom: var(--ladf-space-1);
+}
+
+.ladf-insight-card--positive {
+  border-color: color-mix(in srgb, var(--ladf-accent-success) 55%, transparent);
+  color: var(--ladf-accent-success);
+}
+
+.ladf-insight-card--negative {
+  border-color: color-mix(in srgb, var(--ladf-accent-danger) 55%, transparent);
+  color: var(--ladf-accent-danger);
+}
+
+.ladf-insight-card--warning {
+  border-color: color-mix(in srgb, var(--ladf-accent-warning) 60%, transparent);
+  color: var(--ladf-accent-warning);
+}
+
+.ladf-insight-card--neutral {
+  border-color: color-mix(in srgb, var(--ladf-text-muted) 60%, transparent);
+  color: var(--ladf-text-muted, var(--ladf-color-muted));
+}
+
+.ladf-insight-card--info {
+  border-color: color-mix(in srgb, var(--ladf-accent-secondary) 55%, transparent);
+  color: var(--ladf-accent-secondary);
+}

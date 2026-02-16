@@ -1,0 +1,652 @@
+:root.ladf-theme-light {
+  --ladf-surface-bg: #f3f5fb;
+  --ladf-surface-1: #ffffff;
+  --ladf-surface-2: #f9fafc;
+  --ladf-surface-3: #eef2f7;
+  --ladf-surface-well: #f5f7fb;
+  --ladf-surface-overlay: #ffffff;
+  --ladf-surface-muted: #eef2f7;
+
+  --ladf-border-subtle: #e2e8f0;
+  --ladf-border-strong: #cbd5f5;
+  --ladf-border-divider: #d8dee9;
+  --ladf-border-focus: #2563eb;
+
+  --ladf-text-primary: #0f172a;
+  --ladf-text-secondary: #1f2937;
+  --ladf-text-muted: #64748b;
+  --ladf-text-inverse: #f8fafc;
+
+  --ladf-accent-primary: #2563eb;
+  --ladf-accent-secondary: #14b8a6;
+  --ladf-accent-success: #16a34a;
+  --ladf-accent-warning: #d97706;
+  --ladf-accent-danger: #dc2626;
+  --ladf-accent-primary-soft: rgba(37, 99, 235, 0.12);
+  --ladf-accent-secondary-soft: rgba(20, 184, 166, 0.12);
+
+  --ladf-shadow-low: 0 1px 2px rgba(15, 23, 42, 0.08), 0 1px 1px rgba(15, 23, 42, 0.04);
+  --ladf-shadow-med: 0 10px 24px rgba(15, 23, 42, 0.12), 0 4px 10px rgba(15, 23, 42, 0.08);
+  --ladf-shadow-high: 0 20px 45px rgba(15, 23, 42, 0.16), 0 8px 20px rgba(15, 23, 42, 0.1);
+  --ladf-shadow-inset: inset 0 1px 0 rgba(255, 255, 255, 0.7), inset 0 -1px 0 rgba(15, 23, 42, 0.03);
+
+  --ladf-app-gradient: radial-gradient(circle at top, rgba(37, 99, 235, 0.08), transparent 55%),
+    linear-gradient(180deg, #f7f9fe 0%, #eef2f7 100%);
+  --ladf-panel-gradient: linear-gradient(180deg, #ffffff 0%, #f5f7fb 100%);
+  --ladf-panel-header-gradient: linear-gradient(180deg, #f7f9ff 0%, #eef2f7 100%);
+
+  --ladf-chart-grid: rgba(148, 163, 184, 0.35);
+  --ladf-viz-bar-muted: #E0E0E0;
+  --ladf-viz-marker: #FFE347;
+
+  --ladf-color-bg: var(--ladf-surface-bg);
+  --ladf-color-surface: var(--ladf-surface-2);
+  --ladf-color-surface-alt: var(--ladf-surface-1);
+  --ladf-color-text: var(--ladf-text-primary);
+  --ladf-color-muted: var(--ladf-text-muted);
+  --ladf-color-border: var(--ladf-border-subtle);
+  --ladf-color-accent: var(--ladf-accent-primary);
+  --ladf-color-accent-weak: var(--ladf-accent-primary-soft);
+
+}
+
+:root.fecc-theme-light {
+  --ladf-surface-bg: #f8f9fa;
+  --ladf-surface-1: #e9ecef;
+  --ladf-surface-2: #ffffff;
+  --ladf-surface-3: #f3f4f6;
+  --ladf-surface-well: #f8f9fa;
+  --ladf-surface-overlay: #ffffff;
+  --ladf-surface-muted: #e9ecef;
+
+  --ladf-border-subtle: #d1d5db;
+  --ladf-border-strong: #b9c0ca;
+  --ladf-border-divider: #d1d5db;
+  --ladf-border-focus: #186329;
+
+  --ladf-text-primary: #111827;
+  --ladf-text-secondary: #0f172a;
+  --ladf-text-muted: #64748b;
+  --ladf-text-inverse: #f8fafc;
+
+  --ladf-accent-primary: #186329;
+  --ladf-accent-secondary: #1c7330;
+  --ladf-accent-success: #16a34a;
+  --ladf-accent-warning: #f97316;
+  --ladf-accent-danger: #dc2626;
+  --ladf-accent-primary-soft: rgba(24, 99, 41, 0.12);
+  --ladf-accent-secondary-soft: rgba(28, 115, 48, 0.12);
+
+  --ladf-shadow-low: 0 1px 2px rgba(17, 24, 39, 0.08), 0 1px 1px rgba(17, 24, 39, 0.04);
+  --ladf-shadow-med: 0 10px 24px rgba(17, 24, 39, 0.12), 0 4px 10px rgba(17, 24, 39, 0.08);
+  --ladf-shadow-high: 0 20px 45px rgba(17, 24, 39, 0.16), 0 8px 20px rgba(17, 24, 39, 0.1);
+  --ladf-shadow-inset: inset 0 1px 0 rgba(255, 255, 255, 0.7), inset 0 -1px 0 rgba(17, 24, 39, 0.03);
+
+  --ladf-app-gradient: radial-gradient(circle at top, rgba(24, 99, 41, 0.08), transparent 55%),
+  linear-gradient(180deg, #f8f9fa 0%, #f3f4f6 100%);
+  --ladf-panel-gradient: linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%);
+  --ladf-panel-header-gradient: linear-gradient(180deg, #f8f9fa 0%, #e9ecef 100%);
+
+  --ladf-chart-grid: rgba(100, 116, 139, 0.3);
+  --ladf-viz-bar-muted: #E0E0E0;
+  --ladf-viz-marker: #FFE347;
+
+  --ladf-color-bg: var(--ladf-surface-bg);
+  --ladf-color-surface: var(--ladf-surface-2);
+  --ladf-color-surface-alt: var(--ladf-surface-1);
+  --ladf-color-text: var(--ladf-text-primary);
+  --ladf-color-muted: var(--ladf-text-muted);
+  --ladf-color-border: var(--ladf-border-subtle);
+  --ladf-color-accent: var(--ladf-accent-primary);
+  --ladf-color-accent-weak: var(--ladf-accent-primary-soft);
+
+}
+
+/* ========================================
+   NORD THEME
+   ======================================== */
+
+:root.ladf-theme-nord-light {
+  --ladf-surface-bg: #eceff4;
+  --ladf-surface-1: #e5e9f0;
+  --ladf-surface-2: #ffffff;
+  --ladf-surface-3: #d8dee9;
+  --ladf-surface-well: #e5e9f0;
+  --ladf-surface-overlay: #ffffff;
+  --ladf-surface-muted: #e5e9f0;
+
+  --ladf-border-subtle: #d8dee9;
+  --ladf-border-strong: #5e81ac;
+  --ladf-border-divider: #d8dee9;
+  --ladf-border-focus: #5e81ac;
+
+  --ladf-text-primary: #2e3440;
+  --ladf-text-secondary: #3b4252;
+  --ladf-text-muted: #4c566a;
+  --ladf-text-inverse: #eceff4;
+
+  --ladf-accent-primary: #5e81ac;
+  --ladf-accent-secondary: #81a1c1;
+  --ladf-accent-success: #a3be8c;
+  --ladf-accent-warning: #ebcb8b;
+  --ladf-accent-danger: #bf616a;
+  --ladf-accent-primary-soft: rgba(94, 129, 172, 0.12);
+  --ladf-accent-secondary-soft: rgba(129, 161, 193, 0.12);
+
+  --ladf-shadow-low: 0 1px 2px rgba(46, 52, 64, 0.08), 0 1px 1px rgba(46, 52, 64, 0.04);
+  --ladf-shadow-med: 0 10px 24px rgba(46, 52, 64, 0.12), 0 4px 10px rgba(46, 52, 64, 0.08);
+  --ladf-shadow-high: 0 20px 45px rgba(46, 52, 64, 0.16), 0 8px 20px rgba(46, 52, 64, 0.1);
+  --ladf-shadow-inset: inset 0 1px 0 rgba(255, 255, 255, 0.7), inset 0 -1px 0 rgba(46, 52, 64, 0.03);
+
+  --ladf-app-gradient: radial-gradient(circle at top, rgba(94, 129, 172, 0.08), transparent 55%),
+  linear-gradient(180deg, #eceff4 0%, #e5e9f0 100%);
+  --ladf-panel-gradient: linear-gradient(180deg, #ffffff 0%, #e5e9f0 100%);
+  --ladf-panel-header-gradient: linear-gradient(180deg, #eceff4 0%, #e5e9f0 100%);
+
+  --ladf-chart-grid: rgba(76, 86, 106, 0.3);
+  --ladf-viz-bar-muted: #E0E0E0;
+  --ladf-viz-marker: #FFE347;
+
+  --ladf-color-bg: var(--ladf-surface-bg);
+  --ladf-color-surface: var(--ladf-surface-2);
+  --ladf-color-surface-alt: var(--ladf-surface-1);
+  --ladf-color-text: var(--ladf-text-primary);
+  --ladf-color-muted: var(--ladf-text-muted);
+  --ladf-color-border: var(--ladf-border-subtle);
+  --ladf-color-accent: var(--ladf-accent-primary);
+  --ladf-color-accent-weak: var(--ladf-accent-primary-soft);
+}
+
+/* ========================================
+   DRACULA THEME
+   ======================================== */
+
+:root.ladf-theme-dracula-light {
+  --ladf-surface-bg: #f8f8f2;
+  --ladf-surface-1: #ffffff;
+  --ladf-surface-2: #ffffff;
+  --ladf-surface-3: #e9e9e3;
+  --ladf-surface-well: #f8f8f2;
+  --ladf-surface-overlay: #ffffff;
+  --ladf-surface-muted: #e9e9e3;
+
+  --ladf-border-subtle: #d4d4cf;
+  --ladf-border-strong: #9580ff;
+  --ladf-border-divider: #d4d4cf;
+  --ladf-border-focus: #9580ff;
+
+  --ladf-text-primary: #282a36;
+  --ladf-text-secondary: #343746;
+  --ladf-text-muted: #6272a4;
+  --ladf-text-inverse: #f8f8f2;
+
+  --ladf-accent-primary: #9580ff;
+  --ladf-accent-secondary: #ff79c6;
+  --ladf-accent-success: #3dd668;
+  --ladf-accent-warning: #d4c21a;
+  --ladf-accent-danger: #ff3838;
+  --ladf-accent-primary-soft: rgba(149, 128, 255, 0.12);
+  --ladf-accent-secondary-soft: rgba(255, 121, 198, 0.12);
+
+  --ladf-shadow-low: 0 1px 2px rgba(40, 42, 54, 0.08), 0 1px 1px rgba(40, 42, 54, 0.04);
+  --ladf-shadow-med: 0 10px 24px rgba(40, 42, 54, 0.12), 0 4px 10px rgba(40, 42, 54, 0.08);
+  --ladf-shadow-high: 0 20px 45px rgba(40, 42, 54, 0.16), 0 8px 20px rgba(40, 42, 54, 0.1);
+  --ladf-shadow-inset: inset 0 1px 0 rgba(255, 255, 255, 0.7), inset 0 -1px 0 rgba(40, 42, 54, 0.03);
+
+  --ladf-app-gradient: radial-gradient(circle at top, rgba(149, 128, 255, 0.08), transparent 55%),
+  linear-gradient(180deg, #f8f8f2 0%, #e9e9e3 100%);
+  --ladf-panel-gradient: linear-gradient(180deg, #ffffff 0%, #f8f8f2 100%);
+  --ladf-panel-header-gradient: linear-gradient(180deg, #f8f8f2 0%, #e9e9e3 100%);
+
+  --ladf-chart-grid: rgba(98, 114, 164, 0.3);
+  --ladf-viz-bar-muted: #E0E0E0;
+  --ladf-viz-marker: #FFE347;
+
+  --ladf-color-bg: var(--ladf-surface-bg);
+  --ladf-color-surface: var(--ladf-surface-2);
+  --ladf-color-surface-alt: var(--ladf-surface-1);
+  --ladf-color-text: var(--ladf-text-primary);
+  --ladf-color-muted: var(--ladf-text-muted);
+  --ladf-color-border: var(--ladf-border-subtle);
+  --ladf-color-accent: var(--ladf-accent-primary);
+  --ladf-color-accent-weak: var(--ladf-accent-primary-soft);
+}
+
+/* ========================================
+   SOLARIZED THEME
+   ======================================== */
+
+:root.ladf-theme-solarized-light {
+  --ladf-surface-bg: #fdf6e3;
+  --ladf-surface-1: #eee8d5;
+  --ladf-surface-2: #ffffff;
+  --ladf-surface-3: #eee8d5;
+  --ladf-surface-well: #eee8d5;
+  --ladf-surface-overlay: #ffffff;
+  --ladf-surface-muted: #eee8d5;
+
+  --ladf-border-subtle: #93a1a1;
+  --ladf-border-strong: #657b83;
+  --ladf-border-divider: #93a1a1;
+  --ladf-border-focus: #268bd2;
+
+  --ladf-text-primary: #657b83;
+  --ladf-text-secondary: #586e75;
+  --ladf-text-muted: #93a1a1;
+  --ladf-text-inverse: #fdf6e3;
+
+  --ladf-accent-primary: #268bd2;
+  --ladf-accent-secondary: #2aa198;
+  --ladf-accent-success: #859900;
+  --ladf-accent-warning: #b58900;
+  --ladf-accent-danger: #dc322f;
+  --ladf-accent-primary-soft: rgba(38, 139, 210, 0.12);
+  --ladf-accent-secondary-soft: rgba(42, 161, 152, 0.12);
+
+  --ladf-shadow-low: 0 1px 2px rgba(101, 123, 131, 0.08), 0 1px 1px rgba(101, 123, 131, 0.04);
+  --ladf-shadow-med: 0 10px 24px rgba(101, 123, 131, 0.12), 0 4px 10px rgba(101, 123, 131, 0.08);
+  --ladf-shadow-high: 0 20px 45px rgba(101, 123, 131, 0.16), 0 8px 20px rgba(101, 123, 131, 0.1);
+  --ladf-shadow-inset: inset 0 1px 0 rgba(255, 255, 255, 0.7), inset 0 -1px 0 rgba(101, 123, 131, 0.03);
+
+  --ladf-app-gradient: radial-gradient(circle at top, rgba(38, 139, 210, 0.08), transparent 55%),
+  linear-gradient(180deg, #fdf6e3 0%, #eee8d5 100%);
+  --ladf-panel-gradient: linear-gradient(180deg, #ffffff 0%, #eee8d5 100%);
+  --ladf-panel-header-gradient: linear-gradient(180deg, #fdf6e3 0%, #eee8d5 100%);
+
+  --ladf-chart-grid: rgba(101, 123, 131, 0.3);
+  --ladf-viz-bar-muted: #E0E0E0;
+  --ladf-viz-marker: #FFE347;
+
+  --ladf-color-bg: var(--ladf-surface-bg);
+  --ladf-color-surface: var(--ladf-surface-2);
+  --ladf-color-surface-alt: var(--ladf-surface-1);
+  --ladf-color-text: var(--ladf-text-primary);
+  --ladf-color-muted: var(--ladf-text-muted);
+  --ladf-color-border: var(--ladf-border-subtle);
+  --ladf-color-accent: var(--ladf-accent-primary);
+  --ladf-color-accent-weak: var(--ladf-accent-primary-soft);
+}
+
+/* ========================================
+   MONOKAI THEME
+   ======================================== */
+
+:root.ladf-theme-monokai-light {
+  --ladf-surface-bg: #fafafa;
+  --ladf-surface-1: #f5f5f5;
+  --ladf-surface-2: #ffffff;
+  --ladf-surface-3: #e0e0e0;
+  --ladf-surface-well: #f5f5f5;
+  --ladf-surface-overlay: #ffffff;
+  --ladf-surface-muted: #f5f5f5;
+
+  --ladf-border-subtle: #e0e0e0;
+  --ladf-border-strong: #00a8c6;
+  --ladf-border-divider: #e0e0e0;
+  --ladf-border-focus: #00a8c6;
+
+  --ladf-text-primary: #272822;
+  --ladf-text-secondary: #3e3d32;
+  --ladf-text-muted: #75715e;
+  --ladf-text-inverse: #fafafa;
+
+  --ladf-accent-primary: #00a8c6;
+  --ladf-accent-secondary: #7c5cdb;
+  --ladf-accent-success: #76b900;
+  --ladf-accent-warning: #c4a000;
+  --ladf-accent-danger: #d31145;
+  --ladf-accent-primary-soft: rgba(0, 168, 198, 0.12);
+  --ladf-accent-secondary-soft: rgba(124, 92, 219, 0.12);
+
+  --ladf-shadow-low: 0 1px 2px rgba(39, 40, 34, 0.08), 0 1px 1px rgba(39, 40, 34, 0.04);
+  --ladf-shadow-med: 0 10px 24px rgba(39, 40, 34, 0.12), 0 4px 10px rgba(39, 40, 34, 0.08);
+  --ladf-shadow-high: 0 20px 45px rgba(39, 40, 34, 0.16), 0 8px 20px rgba(39, 40, 34, 0.1);
+  --ladf-shadow-inset: inset 0 1px 0 rgba(255, 255, 255, 0.7), inset 0 -1px 0 rgba(39, 40, 34, 0.03);
+
+  --ladf-app-gradient: radial-gradient(circle at top, rgba(0, 168, 198, 0.08), transparent 55%),
+  linear-gradient(180deg, #fafafa 0%, #f5f5f5 100%);
+  --ladf-panel-gradient: linear-gradient(180deg, #ffffff 0%, #f5f5f5 100%);
+  --ladf-panel-header-gradient: linear-gradient(180deg, #fafafa 0%, #f5f5f5 100%);
+
+  --ladf-chart-grid: rgba(117, 113, 94, 0.3);
+  --ladf-viz-bar-muted: #E0E0E0;
+  --ladf-viz-marker: #FFE347;
+
+  --ladf-color-bg: var(--ladf-surface-bg);
+  --ladf-color-surface: var(--ladf-surface-2);
+  --ladf-color-surface-alt: var(--ladf-surface-1);
+  --ladf-color-text: var(--ladf-text-primary);
+  --ladf-color-muted: var(--ladf-text-muted);
+  --ladf-color-border: var(--ladf-border-subtle);
+  --ladf-color-accent: var(--ladf-accent-primary);
+  --ladf-color-accent-weak: var(--ladf-accent-primary-soft);
+}
+
+/* ========================================
+   GRUVBOX THEME
+   ======================================== */
+
+:root.ladf-theme-gruvbox-light {
+  --ladf-surface-bg: #fbf1c7;
+  --ladf-surface-1: #ebdbb2;
+  --ladf-surface-2: #ffffff;
+  --ladf-surface-3: #d5c4a1;
+  --ladf-surface-well: #ebdbb2;
+  --ladf-surface-overlay: #ffffff;
+  --ladf-surface-muted: #ebdbb2;
+
+  --ladf-border-subtle: #d5c4a1;
+  --ladf-border-strong: #bdae93;
+  --ladf-border-divider: #d5c4a1;
+  --ladf-border-focus: #076678;
+
+  --ladf-text-primary: #3c3836;
+  --ladf-text-secondary: #504945;
+  --ladf-text-muted: #7c6f64;
+  --ladf-text-inverse: #fbf1c7;
+
+  --ladf-accent-primary: #076678;
+  --ladf-accent-secondary: #8f3f71;
+  --ladf-accent-success: #79740e;
+  --ladf-accent-warning: #b57614;
+  --ladf-accent-danger: #9d0006;
+  --ladf-accent-primary-soft: rgba(7, 102, 120, 0.12);
+  --ladf-accent-secondary-soft: rgba(143, 63, 113, 0.12);
+
+  --ladf-shadow-low: 0 1px 2px rgba(60, 56, 54, 0.08), 0 1px 1px rgba(60, 56, 54, 0.04);
+  --ladf-shadow-med: 0 10px 24px rgba(60, 56, 54, 0.12), 0 4px 10px rgba(60, 56, 54, 0.08);
+  --ladf-shadow-high: 0 20px 45px rgba(60, 56, 54, 0.16), 0 8px 20px rgba(60, 56, 54, 0.1);
+  --ladf-shadow-inset: inset 0 1px 0 rgba(255, 255, 255, 0.7), inset 0 -1px 0 rgba(60, 56, 54, 0.03);
+
+  --ladf-app-gradient: radial-gradient(circle at top, rgba(7, 102, 120, 0.08), transparent 55%),
+  linear-gradient(180deg, #fbf1c7 0%, #ebdbb2 100%);
+  --ladf-panel-gradient: linear-gradient(180deg, #ffffff 0%, #ebdbb2 100%);
+  --ladf-panel-header-gradient: linear-gradient(180deg, #fbf1c7 0%, #ebdbb2 100%);
+
+  --ladf-chart-grid: rgba(124, 111, 100, 0.3);
+  --ladf-viz-bar-muted: #E0E0E0;
+  --ladf-viz-marker: #FFE347;
+
+  --ladf-color-bg: var(--ladf-surface-bg);
+  --ladf-color-surface: var(--ladf-surface-2);
+  --ladf-color-surface-alt: var(--ladf-surface-1);
+  --ladf-color-text: var(--ladf-text-primary);
+  --ladf-color-muted: var(--ladf-text-muted);
+  --ladf-color-border: var(--ladf-border-subtle);
+  --ladf-color-accent: var(--ladf-accent-primary);
+  --ladf-color-accent-weak: var(--ladf-accent-primary-soft);
+}
+
+/* ========================================
+   MATERIAL THEME
+   ======================================== */
+
+:root.ladf-theme-material-light {
+  --ladf-surface-bg: #fafafa;
+  --ladf-surface-1: #ffffff;
+  --ladf-surface-2: #ffffff;
+  --ladf-surface-3: #f5f5f5;
+  --ladf-surface-well: #f5f5f5;
+  --ladf-surface-overlay: #ffffff;
+  --ladf-surface-muted: #f5f5f5;
+
+  --ladf-border-subtle: #e0e0e0;
+  --ladf-border-strong: #bdbdbd;
+  --ladf-border-divider: #e0e0e0;
+  --ladf-border-focus: #2196f3;
+
+  --ladf-text-primary: #212121;
+  --ladf-text-secondary: #424242;
+  --ladf-text-muted: #757575;
+  --ladf-text-inverse: #ffffff;
+
+  --ladf-accent-primary: #2196f3;
+  --ladf-accent-secondary: #009688;
+  --ladf-accent-success: #4caf50;
+  --ladf-accent-warning: #ff9800;
+  --ladf-accent-danger: #f44336;
+  --ladf-accent-primary-soft: rgba(33, 150, 243, 0.12);
+  --ladf-accent-secondary-soft: rgba(0, 150, 136, 0.12);
+
+  --ladf-shadow-low: 0 1px 2px rgba(33, 33, 33, 0.08), 0 1px 1px rgba(33, 33, 33, 0.04);
+  --ladf-shadow-med: 0 10px 24px rgba(33, 33, 33, 0.12), 0 4px 10px rgba(33, 33, 33, 0.08);
+  --ladf-shadow-high: 0 20px 45px rgba(33, 33, 33, 0.16), 0 8px 20px rgba(33, 33, 33, 0.1);
+  --ladf-shadow-inset: inset 0 1px 0 rgba(255, 255, 255, 0.7), inset 0 -1px 0 rgba(33, 33, 33, 0.03);
+
+  --ladf-app-gradient: radial-gradient(circle at top, rgba(33, 150, 243, 0.08), transparent 55%),
+  linear-gradient(180deg, #fafafa 0%, #f5f5f5 100%);
+  --ladf-panel-gradient: linear-gradient(180deg, #ffffff 0%, #fafafa 100%);
+  --ladf-panel-header-gradient: linear-gradient(180deg, #fafafa 0%, #f5f5f5 100%);
+
+  --ladf-chart-grid: rgba(117, 117, 117, 0.3);
+  --ladf-viz-bar-muted: #E0E0E0;
+  --ladf-viz-marker: #FFE347;
+
+  --ladf-color-bg: var(--ladf-surface-bg);
+  --ladf-color-surface: var(--ladf-surface-2);
+  --ladf-color-surface-alt: var(--ladf-surface-1);
+  --ladf-color-text: var(--ladf-text-primary);
+  --ladf-color-muted: var(--ladf-text-muted);
+  --ladf-color-border: var(--ladf-border-subtle);
+  --ladf-color-accent: var(--ladf-accent-primary);
+  --ladf-color-accent-weak: var(--ladf-accent-primary-soft);
+}
+
+/* ========================================
+   ONE THEME
+   ======================================== */
+
+:root.ladf-theme-one-light {
+  --ladf-surface-bg: #fafafa;
+  --ladf-surface-1: #f0f0f0;
+  --ladf-surface-2: #ffffff;
+  --ladf-surface-3: #e5e5e6;
+  --ladf-surface-well: #f0f0f0;
+  --ladf-surface-overlay: #ffffff;
+  --ladf-surface-muted: #f0f0f0;
+
+  --ladf-border-subtle: #e5e5e6;
+  --ladf-border-strong: #d0d0d0;
+  --ladf-border-divider: #e5e5e6;
+  --ladf-border-focus: #4078f2;
+
+  --ladf-text-primary: #383a42;
+  --ladf-text-secondary: #383a42;
+  --ladf-text-muted: #a0a1a7;
+  --ladf-text-inverse: #fafafa;
+
+  --ladf-accent-primary: #4078f2;
+  --ladf-accent-secondary: #a626a4;
+  --ladf-accent-success: #50a14f;
+  --ladf-accent-warning: #c18401;
+  --ladf-accent-danger: #e45649;
+  --ladf-accent-primary-soft: rgba(64, 120, 242, 0.12);
+  --ladf-accent-secondary-soft: rgba(166, 38, 164, 0.12);
+
+  --ladf-shadow-low: 0 1px 2px rgba(56, 58, 66, 0.08), 0 1px 1px rgba(56, 58, 66, 0.04);
+  --ladf-shadow-med: 0 10px 24px rgba(56, 58, 66, 0.12), 0 4px 10px rgba(56, 58, 66, 0.08);
+  --ladf-shadow-high: 0 20px 45px rgba(56, 58, 66, 0.16), 0 8px 20px rgba(56, 58, 66, 0.1);
+  --ladf-shadow-inset: inset 0 1px 0 rgba(255, 255, 255, 0.7), inset 0 -1px 0 rgba(56, 58, 66, 0.03);
+
+  --ladf-app-gradient: radial-gradient(circle at top, rgba(64, 120, 242, 0.08), transparent 55%),
+  linear-gradient(180deg, #fafafa 0%, #f0f0f0 100%);
+  --ladf-panel-gradient: linear-gradient(180deg, #ffffff 0%, #f0f0f0 100%);
+  --ladf-panel-header-gradient: linear-gradient(180deg, #fafafa 0%, #f0f0f0 100%);
+
+  --ladf-chart-grid: rgba(160, 161, 167, 0.3);
+  --ladf-viz-bar-muted: #E0E0E0;
+  --ladf-viz-marker: #FFE347;
+
+  --ladf-color-bg: var(--ladf-surface-bg);
+  --ladf-color-surface: var(--ladf-surface-2);
+  --ladf-color-surface-alt: var(--ladf-surface-1);
+  --ladf-color-text: var(--ladf-text-primary);
+  --ladf-color-muted: var(--ladf-text-muted);
+  --ladf-color-border: var(--ladf-border-subtle);
+  --ladf-color-accent: var(--ladf-accent-primary);
+  --ladf-color-accent-weak: var(--ladf-accent-primary-soft);
+}
+
+/* ========================================
+   TOKYO NIGHT THEME
+   ======================================== */
+
+:root.ladf-theme-tokyo-light {
+  --ladf-surface-bg: #d5d6db;
+  --ladf-surface-1: #dfe0e5;
+  --ladf-surface-2: #ffffff;
+  --ladf-surface-3: #cbccd1;
+  --ladf-surface-well: #dfe0e5;
+  --ladf-surface-overlay: #ffffff;
+  --ladf-surface-muted: #dfe0e5;
+
+  --ladf-border-subtle: #cbccd1;
+  --ladf-border-strong: #9699a3;
+  --ladf-border-divider: #cbccd1;
+  --ladf-border-focus: #2e7de9;
+
+  --ladf-text-primary: #343b58;
+  --ladf-text-secondary: #4c505e;
+  --ladf-text-muted: #6172b0;
+  --ladf-text-inverse: #d5d6db;
+
+  --ladf-accent-primary: #2e7de9;
+  --ladf-accent-secondary: #9854f1;
+  --ladf-accent-success: #587539;
+  --ladf-accent-warning: #8c6c3e;
+  --ladf-accent-danger: #f52a65;
+  --ladf-accent-primary-soft: rgba(46, 125, 233, 0.12);
+  --ladf-accent-secondary-soft: rgba(152, 84, 241, 0.12);
+
+  --ladf-shadow-low: 0 1px 2px rgba(52, 59, 88, 0.08), 0 1px 1px rgba(52, 59, 88, 0.04);
+  --ladf-shadow-med: 0 10px 24px rgba(52, 59, 88, 0.12), 0 4px 10px rgba(52, 59, 88, 0.08);
+  --ladf-shadow-high: 0 20px 45px rgba(52, 59, 88, 0.16), 0 8px 20px rgba(52, 59, 88, 0.1);
+  --ladf-shadow-inset: inset 0 1px 0 rgba(255, 255, 255, 0.7), inset 0 -1px 0 rgba(52, 59, 88, 0.03);
+
+  --ladf-app-gradient: radial-gradient(circle at top, rgba(46, 125, 233, 0.08), transparent 55%),
+  linear-gradient(180deg, #d5d6db 0%, #dfe0e5 100%);
+  --ladf-panel-gradient: linear-gradient(180deg, #ffffff 0%, #dfe0e5 100%);
+  --ladf-panel-header-gradient: linear-gradient(180deg, #d5d6db 0%, #dfe0e5 100%);
+
+  --ladf-chart-grid: rgba(97, 114, 176, 0.3);
+  --ladf-viz-bar-muted: #E0E0E0;
+  --ladf-viz-marker: #FFE347;
+
+  --ladf-color-bg: var(--ladf-surface-bg);
+  --ladf-color-surface: var(--ladf-surface-2);
+  --ladf-color-surface-alt: var(--ladf-surface-1);
+  --ladf-color-text: var(--ladf-text-primary);
+  --ladf-color-muted: var(--ladf-text-muted);
+  --ladf-color-border: var(--ladf-border-subtle);
+  --ladf-color-accent: var(--ladf-accent-primary);
+  --ladf-color-accent-weak: var(--ladf-accent-primary-soft);
+}
+
+/* ========================================
+   CATPPUCCIN MOCHA THEME
+   ======================================== */
+
+:root.ladf-theme-catppuccin-light {
+  --ladf-surface-bg: #eff1f5;
+  --ladf-surface-1: #e6e9ef;
+  --ladf-surface-2: #ffffff;
+  --ladf-surface-3: #dce0e8;
+  --ladf-surface-well: #e6e9ef;
+  --ladf-surface-overlay: #ffffff;
+  --ladf-surface-muted: #e6e9ef;
+
+  --ladf-border-subtle: #dce0e8;
+  --ladf-border-strong: #9ca0b0;
+  --ladf-border-divider: #dce0e8;
+  --ladf-border-focus: #1e66f5;
+
+  --ladf-text-primary: #4c4f69;
+  --ladf-text-secondary: #5c5f77;
+  --ladf-text-muted: #6c6f85;
+  --ladf-text-inverse: #eff1f5;
+
+  --ladf-accent-primary: #1e66f5;
+  --ladf-accent-secondary: #8839ef;
+  --ladf-accent-success: #40a02b;
+  --ladf-accent-warning: #df8e1d;
+  --ladf-accent-danger: #d20f39;
+  --ladf-accent-primary-soft: rgba(30, 102, 245, 0.12);
+  --ladf-accent-secondary-soft: rgba(136, 57, 239, 0.12);
+
+  --ladf-shadow-low: 0 1px 2px rgba(76, 79, 105, 0.08), 0 1px 1px rgba(76, 79, 105, 0.04);
+  --ladf-shadow-med: 0 10px 24px rgba(76, 79, 105, 0.12), 0 4px 10px rgba(76, 79, 105, 0.08);
+  --ladf-shadow-high: 0 20px 45px rgba(76, 79, 105, 0.16), 0 8px 20px rgba(76, 79, 105, 0.1);
+  --ladf-shadow-inset: inset 0 1px 0 rgba(255, 255, 255, 0.7), inset 0 -1px 0 rgba(76, 79, 105, 0.03);
+
+  --ladf-app-gradient: radial-gradient(circle at top, rgba(30, 102, 245, 0.08), transparent 55%),
+  linear-gradient(180deg, #eff1f5 0%, #e6e9ef 100%);
+  --ladf-panel-gradient: linear-gradient(180deg, #ffffff 0%, #e6e9ef 100%);
+  --ladf-panel-header-gradient: linear-gradient(180deg, #eff1f5 0%, #e6e9ef 100%);
+
+  --ladf-chart-grid: rgba(108, 111, 133, 0.3);
+  --ladf-viz-bar-muted: #E0E0E0;
+  --ladf-viz-marker: #FFE347;
+
+  --ladf-color-bg: var(--ladf-surface-bg);
+  --ladf-color-surface: var(--ladf-surface-2);
+  --ladf-color-surface-alt: var(--ladf-surface-1);
+  --ladf-color-text: var(--ladf-text-primary);
+  --ladf-color-muted: var(--ladf-text-muted);
+  --ladf-color-border: var(--ladf-border-subtle);
+  --ladf-color-accent: var(--ladf-accent-primary);
+  --ladf-color-accent-weak: var(--ladf-accent-primary-soft);
+}
+
+/* ========================================
+   HORIZON THEME
+   ======================================== */
+:root.ladf-theme-horizon-light {
+  --ladf-surface-bg: #fdf0ed;
+  --ladf-surface-1: #fadad1;
+  --ladf-surface-2: #ffffff;
+  --ladf-surface-3: #f9cbbe;
+  --ladf-surface-well: #fadad1;
+  --ladf-surface-overlay: #ffffff;
+  --ladf-surface-muted: #fadad1;
+
+  --ladf-border-subtle: #f9cbbe;
+  --ladf-border-strong: #f0b8a4;
+  --ladf-border-divider: #f9cbbe;
+  --ladf-border-focus: #1d8991;
+
+  --ladf-text-primary: #403c3d;
+  --ladf-text-secondary: #302c2d;
+  --ladf-text-muted: #bdb3b1;
+  --ladf-text-inverse: #fdf0ed;
+
+  --ladf-accent-primary: #1d8991;
+  --ladf-accent-secondary: #b31e8d;
+  --ladf-accent-success: #1ebc73;
+  --ladf-accent-warning: #dc7f5a;
+  --ladf-accent-danger: #e32c58;
+  --ladf-accent-primary-soft: rgba(29, 137, 145, 0.12);
+  --ladf-accent-secondary-soft: rgba(179, 30, 141, 0.12);
+
+  --ladf-shadow-low: 0 1px 2px rgba(64, 60, 61, 0.08), 0 1px 1px rgba(64, 60, 61, 0.04);
+  --ladf-shadow-med: 0 10px 24px rgba(64, 60, 61, 0.12), 0 4px 10px rgba(64, 60, 61, 0.08);
+  --ladf-shadow-high: 0 20px 45px rgba(64, 60, 61, 0.16), 0 8px 20px rgba(64, 60, 61, 0.1);
+  --ladf-shadow-inset: inset 0 1px 0 rgba(255, 255, 255, 0.7), inset 0 -1px 0 rgba(64, 60, 61, 0.03);
+
+  --ladf-app-gradient: radial-gradient(circle at top, rgba(29, 137, 145, 0.08), transparent 55%),
+  linear-gradient(180deg, #fdf0ed 0%, #fadad1 100%);
+  --ladf-panel-gradient: linear-gradient(180deg, #ffffff 0%, #fadad1 100%);
+  --ladf-panel-header-gradient: linear-gradient(180deg, #fdf0ed 0%, #fadad1 100%);
+
+  --ladf-chart-grid: rgba(189, 179, 177, 0.3);
+  --ladf-viz-bar-muted: #E0E0E0;
+  --ladf-viz-marker: #FFE347;
+
+  --ladf-color-bg: var(--ladf-surface-bg);
+  --ladf-color-surface: var(--ladf-surface-2);
+  --ladf-color-surface-alt: var(--ladf-surface-1);
+  --ladf-color-text: var(--ladf-text-primary);
+  --ladf-color-muted: var(--ladf-text-muted);
+  --ladf-color-border: var(--ladf-border-subtle);
+  --ladf-color-accent: var(--ladf-accent-primary);
+  --ladf-color-accent-weak: var(--ladf-accent-primary-soft);
+}
