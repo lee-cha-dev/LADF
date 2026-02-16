@@ -338,7 +338,7 @@ const VizPanel = ({ panelConfig }) => {
     [brushState?.endIndex, brushState?.startIndex, brushZoomEnabled, panelConfig.options]
   );
 
-  const isKpiPanel = panelConfig.vizType === 'kpi';
+  const isKpiPanel = panelConfig.vizType === 'kpiVariant';
 
   return (
     <Panel

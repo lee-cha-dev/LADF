@@ -28,7 +28,8 @@ const exampleDashboard = {
     {
       id: 'kpi-revenue',
       panelType: 'viz',
-      vizType: 'kpi',
+      vizType: 'kpiVariant',
+      encodings: { value: 'total_revenue' },
       title: 'Total Revenue',
       subtitle: 'Last 14 days',
       layout: { x: 1, y: 1, w: 4, h: 1 },
@@ -37,11 +38,19 @@ const exampleDashboard = {
         measures: ['total_revenue'],
         dimensions: [],
       },
-      encodings: { value: 'total_revenue', label: 'Total Revenue' },
       options: {
-        format: 'currency',
-        label: 'Total Revenue',
-        caption: 'Aggregated across all regions.',
+        "variant": "clean",
+        "subvariant": "Currency",
+        "format": "currency",
+        "currency": "USD",
+        "decimals": 2,
+        "label": "",
+        "caption": "",
+        "badgeText": "",
+        "badgeTone": "neutral",
+        "icon": "",
+        "compact": "auto",
+        "compactThreshold": 1000000
       },
     },
     {
