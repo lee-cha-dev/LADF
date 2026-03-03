@@ -15,6 +15,7 @@ import {
 import ChartContainer from '../common/ChartContainer.jsx';
 import ChartTooltip from '../common/ChartTooltip.jsx';
 import { getSeriesColor, getSeriesColorsForKeys } from '../palettes/seriesColors';
+import { resolveXAxisProps, resolveYAxisProps } from './axisOptions';
 
 /**
  * Group rows by a key for multi-series scatter plots.
@@ -38,6 +39,31 @@ const groupByKey = (data, groupKey) => {
     groups.set(key, group);
   });
   return { keys: Array.from(groups.keys()), groups };
+};
+
+/**
+ * Normalize a list of keys and preserve order uniqueness.
+ * @param {Array<*>} keys - Raw keys list.
+ * @returns {string[]} Normalized keys.
+ */
+const normalizeKeys = (keys) => {
+  if (!Array.isArray(keys)) {
+    return [];
+  }
+  const seen = new Set();
+  const ordered = [];
+  keys.forEach((key) => {
+    if (key == null) {
+      return;
+    }
+    const normalized = String(key);
+    if (seen.has(normalized)) {
+      return;
+    }
+    seen.add(normalized);
+    ordered.push(normalized);
+  });
+  return ordered;
 };
 
 /**
@@ -73,13 +99,24 @@ function ScatterChartPanel({
     () => groupByKey(data, groupKey),
     [data, groupKey]
   );
-  const filteredGroupKeys = groupKeys.filter(
+  const resolvedGroupKeys = useMemo(() => {
+    const declared = normalizeKeys(options?.seriesKeys);
+    if (!declared.length) {
+      return groupKeys;
+    }
+    const groupSet = new Set(groupKeys);
+    const filtered = declared.filter((key) => groupSet.has(key));
+    return filtered.length ? filtered : groupKeys;
+  }, [groupKeys, options?.seriesKeys]);
+  const filteredGroupKeys = resolvedGroupKeys.filter(
     (key) => !hiddenKeys?.has(String(key))
   );
   const seriesColors = useMemo(
-    () => getSeriesColorsForKeys(groupKeys),
-    [groupKeys]
+    () => getSeriesColorsForKeys(resolvedGroupKeys),
+    [resolvedGroupKeys]
   );
+  const xAxisProps = resolveXAxisProps(options);
+  const yAxisProps = resolveYAxisProps(options);
   const shape = (props) => {
     const { cx, cy, fill } = props;
     if (cx == null || cy == null) {
@@ -93,16 +130,8 @@ function ScatterChartPanel({
       <ResponsiveContainer width="100%" height={280}>
         <ScatterChart margin={{ top: 8, right: 16, left: 0, bottom: 8 }}>
           <CartesianGrid stroke="var(--ladf-chart-grid)" strokeDasharray="3 3" />
-          <XAxis
-            dataKey={encodings.x}
-            tick={{ fill: 'var(--ladf-text-muted)', fontSize: 12 }}
-            axisLine={{ stroke: 'var(--ladf-border-divider)' }}
-          />
-          <YAxis
-            dataKey={encodings.y}
-            tick={{ fill: 'var(--ladf-text-muted)', fontSize: 12 }}
-            axisLine={{ stroke: 'var(--ladf-border-divider)' }}
-          />
+          <XAxis dataKey={encodings.x} {...xAxisProps} />
+          <YAxis dataKey={encodings.y} {...yAxisProps} />
           {showTooltip ? <Tooltip content={<ChartTooltip />} /> : null}
           {groupKey
             ? filteredGroupKeys.map((key, index) => {

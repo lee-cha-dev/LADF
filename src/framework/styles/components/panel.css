@@ -23,7 +23,6 @@
 .ladf-panel--chromeless .ladf-panel__body {
   padding: 0;
   align-items: stretch;
-  justify-content: stretch;
 }
 
 .ladf-panel--chromeless .ladf-panel__content {
@@ -104,6 +103,12 @@
   align-items: center;
   gap: var(--ladf-space-2);
   color: var(--ladf-text-muted, var(--ladf-color-muted));
+}
+
+.ladf-panel__state--empty {
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .ladf-panel__state-icon {

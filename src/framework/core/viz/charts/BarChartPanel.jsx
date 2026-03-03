@@ -16,6 +16,7 @@ import {
 import ChartContainer from '../common/ChartContainer.jsx';
 import ChartTooltip from '../common/ChartTooltip.jsx';
 import { getSeriesColor, getSeriesColorsForKeys } from '../palettes/seriesColors';
+import { resolveXAxisProps, resolveYAxisProps } from './axisOptions';
 
 /**
  * Resolve series keys from encodings or data.
@@ -37,6 +38,27 @@ const resolveSeriesKeys = (encodings, data) => {
     return Object.keys(data[0]).filter((key) => key !== encodings.x);
   }
   return [];
+};
+
+const isZeroValue = (value) => {
+  if (value === 0 || value === '0') {
+    return true;
+  }
+  if (value == null || value === '') {
+    return true;
+  }
+  if (typeof value === 'number') {
+    return Number.isFinite(value) && value === 0;
+  }
+  const numeric = Number(value);
+  return Number.isFinite(numeric) && numeric === 0;
+};
+
+const isZeroRow = (row, keys) => {
+  if (!row || !Array.isArray(keys) || keys.length === 0) {
+    return false;
+  }
+  return keys.every((key) => isZeroValue(row?.[key]));
 };
 
 /**
@@ -82,25 +104,45 @@ function BarChartPanel({
     colorAssignment?.mode === 'category' ||
     colorAssignment?.mode === 'diverging' ||
     colorAssignment?.mode === 'sequential';
-  const chartData =
-    isCategoryMode && hiddenKeys?.size
-      ? data.filter((row) => !hiddenKeys.has(String(row?.[encodings.x])))
-      : data;
+  const chartData = useMemo(() => {
+    const baseData =
+      isCategoryMode && hiddenKeys?.size
+        ? data.filter((row) => !hiddenKeys.has(String(row?.[encodings.x])))
+        : data;
+    if (options.filterZeroRows !== true) {
+      return baseData;
+    }
+    const keysForZero = isSeriesMode
+      ? seriesKeys
+      : Array.isArray(encodings.y)
+      ? encodings.y
+      : encodings.y
+      ? [encodings.y]
+      : [];
+    if (!keysForZero.length) {
+      return baseData;
+    }
+    return baseData.filter((row) => !isZeroRow(row, keysForZero));
+  }, [
+    data,
+    encodings.x,
+    encodings.y,
+    hiddenKeys,
+    isCategoryMode,
+    isSeriesMode,
+    options.filterZeroRows,
+    seriesKeys,
+  ]);
+  const xAxisProps = resolveXAxisProps(options);
+  const yAxisProps = resolveYAxisProps(options);
 
   return (
     <ChartContainer>
       <ResponsiveContainer width="100%" height={280}>
         <BarChart data={chartData} margin={{ top: 8, right: 16, left: 0, bottom: 8 }}>
           <CartesianGrid stroke="var(--ladf-chart-grid)" strokeDasharray="3 3" />
-          <XAxis
-            dataKey={encodings.x}
-            tick={{ fill: 'var(--ladf-text-muted)', fontSize: 12 }}
-            axisLine={{ stroke: 'var(--ladf-border-divider)' }}
-          />
-          <YAxis
-            tick={{ fill: 'var(--ladf-text-muted)', fontSize: 12 }}
-            axisLine={{ stroke: 'var(--ladf-border-divider)' }}
-          />
+          <XAxis dataKey={encodings.x} {...xAxisProps} />
+          <YAxis {...yAxisProps} />
           {showTooltip ? <Tooltip content={<ChartTooltip />} /> : null}
           {isSeriesMode
             ? filteredSeriesKeys.map((key, index) => (

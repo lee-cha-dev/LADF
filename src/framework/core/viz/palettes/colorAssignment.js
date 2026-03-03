@@ -459,6 +459,20 @@ export const buildColorAssignment = ({
 
   if (SCATTER_VIZ_TYPES.has(vizType)) {
     if (encodings?.group) {
+      const dataKeys = Array.isArray(data)
+        ? data
+            .map((row) => row?.[encodings.group])
+            .filter((value) => value != null)
+        : [];
+      const normalizedDataKeys = normalizeKeys(dataKeys);
+      const declaredKeys = normalizeKeys(options?.seriesKeys);
+      if (declaredKeys.length) {
+        const dataKeySet = new Set(normalizedDataKeys);
+        const filteredKeys = declaredKeys.filter((key) => dataKeySet.has(key));
+        if (filteredKeys.length) {
+          return buildCategoryAssignmentFromKeys(filteredKeys);
+        }
+      }
       return {
         mode: 'category',
         ...buildCategoryAssignment({ data, xKey: encodings.group }),

@@ -103,10 +103,10 @@
   color: var(--ladf-accent-primary);
 }
 
-.ladf-brush__button:hover {
-  border-color: var(--ladf-border-strong, var(--ladf-color-border));
-  transform: translateY(-1px);
-}
+/*.ladf-brush__button:hover {*/
+/*  border-color: var(--ladf-border-strong, var(--ladf-color-border));*/
+/*  transform: translateY(-1px);*/
+/*}*/
 
 .ladf-brush__button:disabled {
   cursor: not-allowed;
@@ -224,16 +224,16 @@
 
 .ladf-kpi {
   height: 100%;
-  width: 100%;
+  width: auto;
   display: flex;
   flex-direction: column;
   gap: var(--ladf-space-2);
-  padding: var(--ladf-space-4);
-  border-radius: var(--ladf-radius-lg);
-  background: var(--ladf-panel-gradient, var(--ladf-color-surface));
+  padding: var(--ladf-space-3) var(--ladf-space-4);
+  border-radius: var(--ladf-radius-md);
+  background: var(--ladf-surface-1, var(--ladf-color-surface-alt, var(--ladf-color-surface)));
   border: 1px solid var(--ladf-border-subtle, var(--ladf-color-border));
-  min-height: 140px;
-  justify-content: center;
+  justify-content: space-around;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
 .ladf-kpi--embedded {
@@ -241,24 +241,24 @@
   border-color: transparent;
   box-shadow: none;
   padding: 0;
-  min-height: unset;
+  height: auto;
 }
 
 .ladf-kpi__label {
-  font-size: 0.65rem;
+  font-size: 0.62rem;
   color: var(--ladf-text-muted, var(--ladf-color-muted));
   font-weight: var(--ladf-font-weight-semibold);
   text-transform: uppercase;
-  letter-spacing: 0.1em;
-  opacity: 0.7;
+  letter-spacing: 0.12em;
+  opacity: 0.75;
 }
 
 .ladf-kpi__value {
-  font-size: 2.5rem;
-  font-weight: var(--ladf-font-weight-bold);
+  font-size: clamp(2.4rem, 4vw, 3.0rem);
+  font-weight: var(--ladf-font-weight-semibold);
   color: var(--ladf-text-primary, var(--ladf-color-text));
-  line-height: 1.1;
-  margin: var(--ladf-space-2) 0;
+  line-height: 1;
+  margin: 0;
 }
 .ladf-kpi__value--success {
   color: var(--ladf-accent-success);
@@ -269,25 +269,27 @@
 .ladf-kpi__value--danger {
   color: var(--ladf-accent-danger);
 }
+.ladf-kpi__value--accent {
+  color: var(--ladf-accent-primary);
+}
 
 .ladf-kpi__caption {
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   color: var(--ladf-text-muted, var(--ladf-color-muted));
   line-height: 1.4;
 }
 
 .ladf-kpi--accent {
-  border-left: 4px solid var(--ladf-accent-primary);
-  padding-left: calc(var(--ladf-space-4) - 4px);
-  background: var(--ladf-color-surface);
+  border-left: 3px solid var(--ladf-accent-primary);
+  padding-left: calc(var(--ladf-space-4) - 3px);
 }
 
-.ladf-kpi--accent .ladf-kpi__value {
+.ladf-kpi--accent .ladf-kpi__value:not(.ladf-kpi__value--success):not(.ladf-kpi__value--warning):not(.ladf-kpi__value--danger):not(.ladf-kpi__value--accent) {
   color: var(--ladf-accent-primary);
 }
 
 .ladf-kpi--gradient {
-  background: var(--ladf-panel-gradient);
+  background: var(--ladf-panel-gradient, var(--ladf-surface-2));
   position: relative;
   overflow: hidden;
 }
@@ -313,7 +315,6 @@
   display: flex;
   align-items: center;
   gap: var(--ladf-space-2);
-  margin-bottom: var(--ladf-space-2);
 }
 
 .ladf-kpi__icon {
@@ -348,14 +349,14 @@
 }
 
 .ladf-kpi--icon .ladf-kpi__value {
-  margin-left: 44px;
+  /*margin-left: 44px;*/
 }
 
 .ladf-kpi--compact {
   min-height: auto;
   padding: var(--ladf-space-3) var(--ladf-space-4);
   gap: var(--ladf-space-2);
-  background: var(--ladf-color-surface);
+  background: var(--ladf-surface-1, var(--ladf-color-surface));
   border: 1px solid var(--ladf-border-subtle);
   box-shadow: none;
 }
@@ -366,7 +367,7 @@
 }
 
 .ladf-kpi--compact .ladf-kpi__value {
-  font-size: 2rem;
+  font-size: clamp(2.4rem, 4vw, 3.4rem);
   margin: 0;
 }
 
@@ -382,13 +383,25 @@
   margin-top: var(--ladf-space-2);
   padding-top: var(--ladf-space-2);
   border-top: 1px solid var(--ladf-border-subtle, var(--ladf-color-border));
+  justify-content: space-between;
+}
+
+.ladf-kpi--has-footer:not(.ladf-kpi--has-sparkline):not(.ladf-kpi--compact) .ladf-kpi__footer {
+  border-top: none;
+  padding-top: 0;
+  margin-top: var(--ladf-space-1);
+  justify-content: flex-start;
+}
+
+.ladf-kpi--compact .ladf-kpi__footer {
+  justify-content: flex-start;
 }
 
 .ladf-kpi__badge {
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
-  padding: 0.125rem 0.5rem;
+  padding: 0.15rem 0.5rem;
   border-radius: var(--ladf-radius-sm);
   font-size: 0.7rem;
   font-weight: var(--ladf-font-weight-semibold);
@@ -420,6 +433,91 @@
   width: 12px;
   height: 12px;
   flex-shrink: 0;
+}
+
+.ladf-kpi__sparkline {
+  width: 100%;
+  height: 32px;
+  display: block;
+  color: var(--ladf-accent-success);
+}
+
+.ladf-kpi__sparkline--positive,
+.ladf-kpi__sparkline--success {
+  color: var(--ladf-accent-success);
+}
+
+.ladf-kpi__sparkline--negative,
+.ladf-kpi__sparkline--danger {
+  color: var(--ladf-accent-danger);
+}
+
+.ladf-kpi__sparkline--warning {
+  color: var(--ladf-accent-warning);
+}
+
+.ladf-kpi__sparkline--accent {
+  color: var(--ladf-accent-primary);
+}
+
+.ladf-kpi__sparkline--neutral {
+  color: var(--ladf-text-muted, var(--ladf-color-muted));
+}
+
+.ladf-kpi__sparkline-line {
+  stroke: currentColor;
+  stroke-width: 1.8;
+  fill: none;
+  stroke-linecap: round;
+}
+
+.ladf-kpi__sparkline-fill {
+  fill: currentColor;
+  opacity: 0.12;
+}
+
+.ladf-kpi__trend-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.7rem;
+  font-weight: var(--ladf-font-weight-semibold);
+  padding: 0.15rem 0.45rem;
+  border-radius: var(--ladf-radius-sm);
+  color: var(--ladf-text-muted, var(--ladf-color-muted));
+  background: color-mix(in srgb, currentColor 16%, transparent);
+}
+
+.ladf-kpi__trend-chip--positive,
+.ladf-kpi__trend-chip--success {
+  color: var(--ladf-accent-success);
+}
+
+.ladf-kpi__trend-chip--negative,
+.ladf-kpi__trend-chip--danger {
+  color: var(--ladf-accent-danger);
+}
+
+.ladf-kpi__trend-chip--warning {
+  color: var(--ladf-accent-warning);
+}
+
+.ladf-kpi__trend-chip--accent {
+  color: var(--ladf-accent-primary);
+}
+
+.ladf-kpi__trend-chip--neutral {
+  color: var(--ladf-text-muted, var(--ladf-color-muted));
+}
+
+.ladf-kpi__trend-chip-icon svg {
+  width: 12px;
+  height: 12px;
+}
+
+.ladf-kpi__trend-label {
+  font-size: 0.72rem;
+  color: var(--ladf-text-muted, var(--ladf-color-muted));
 }
 
 .ladf-chart-color-0 {
