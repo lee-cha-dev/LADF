@@ -17,6 +17,7 @@ import ChartContainer from '../common/ChartContainer.jsx';
 import ChartTooltip from '../common/ChartTooltip.jsx';
 import { pivotRows } from '../../query/transforms/pivot';
 import { getSeriesColor, getSeriesColorsForKeys } from '../palettes/seriesColors';
+import { resolveXAxisProps, resolveYAxisProps } from './axisOptions';
 
 /**
  * Resolve series keys from encodings or data.
@@ -38,6 +39,27 @@ const resolveSeriesKeys = (encodings, data) => {
     return Object.keys(data[0]).filter((key) => key !== encodings.x);
   }
   return [];
+};
+
+const isZeroValue = (value) => {
+  if (value === 0 || value === '0') {
+    return true;
+  }
+  if (value == null || value === '') {
+    return true;
+  }
+  if (typeof value === 'number') {
+    return Number.isFinite(value) && value === 0;
+  }
+  const numeric = Number(value);
+  return Number.isFinite(numeric) && numeric === 0;
+};
+
+const isZeroRow = (row, keys) => {
+  if (!row || !Array.isArray(keys) || keys.length === 0) {
+    return false;
+  }
+  return keys.every((key) => isZeroValue(row?.[key]));
 };
 
 /**
@@ -74,6 +96,7 @@ function LineChartPanel({
     return [];
   }, [colorAssignment]);
   const { chartData, seriesKeys } = useMemo(() => {
+    const filterZeroRows = options?.filterZeroRows === true;
     const groupKey = encodings.group || options.seriesBy;
     const xKey = encodings.x;
     const yKey = encodings.y;
@@ -97,7 +120,10 @@ function LineChartPanel({
               data.map((row) => row?.[groupKey]).filter((value) => value != null)
             )
           ).map((value) => String(value));
-      return { chartData: pivoted, seriesKeys: groupKeys };
+      const filtered = filterZeroRows
+        ? pivoted.filter((row) => !isZeroRow(row, groupKeys))
+        : pivoted;
+      return { chartData: filtered, seriesKeys: groupKeys };
     }
     const useAssignedKeys =
       assignedKeys.length &&
@@ -105,8 +131,18 @@ function LineChartPanel({
     const resolvedKeys = useAssignedKeys
       ? assignedKeys
       : resolveSeriesKeys(encodings, data);
-    return { chartData: data, seriesKeys: resolvedKeys };
-  }, [data, encodings, assignedKeys, colorAssignment, options.seriesBy]);
+    const filtered = filterZeroRows
+      ? data.filter((row) => !isZeroRow(row, resolvedKeys))
+      : data;
+    return { chartData: filtered, seriesKeys: resolvedKeys };
+  }, [
+    data,
+    encodings,
+    assignedKeys,
+    colorAssignment,
+    options.filterZeroRows,
+    options.seriesBy,
+  ]);
   const visibleSeriesKeys = seriesKeys.filter((key) => !hiddenKeys?.has(String(key)));
   const showTooltip = options.tooltip !== false;
   const brushConfig = options.brush || {};
@@ -119,21 +155,16 @@ function LineChartPanel({
     typeof brushConfig.startIndex === 'number' ? brushConfig.startIndex : undefined;
   const brushEndIndex =
     typeof brushConfig.endIndex === 'number' ? brushConfig.endIndex : undefined;
+  const xAxisProps = resolveXAxisProps(options);
+  const yAxisProps = resolveYAxisProps(options);
 
   return (
     <ChartContainer>
       <ResponsiveContainer width="100%" height={280}>
         <LineChart data={chartData} margin={{ top: 8, right: 16, left: 0, bottom: 8 }}>
           <CartesianGrid stroke="var(--ladf-chart-grid)" strokeDasharray="3 3" />
-          <XAxis
-            dataKey={encodings.x}
-            tick={{ fill: 'var(--ladf-text-muted)', fontSize: 12 }}
-            axisLine={{ stroke: 'var(--ladf-border-divider)' }}
-          />
-          <YAxis
-            tick={{ fill: 'var(--ladf-text-muted)', fontSize: 12 }}
-            axisLine={{ stroke: 'var(--ladf-border-divider)' }}
-          />
+          <XAxis dataKey={encodings.x} {...xAxisProps} />
+          <YAxis {...yAxisProps} />
           {showTooltip ? <Tooltip content={<ChartTooltip />} /> : null}
           {visibleSeriesKeys.map((key, index) => (
             <Line

@@ -4,14 +4,51 @@
  */
 import React, { useMemo } from 'react';
 
-const VALID_VARIANTS = new Set(['clean', 'accent', 'gradient', 'icon', 'compact']);
+const VALID_VARIANTS = new Set([
+  'clean',
+  'accent',
+  'gradient',
+  'icon',
+  'compact',
+]);
 const VALID_BADGE_TONES = new Set(['neutral', 'success', 'warning', 'danger']);
-const VALID_TONES = new Set(['success', 'warning', 'danger']);
+const VALID_TONES = new Set(['success', 'warning', 'danger', 'accent', 'primary']);
+const VALID_TREND_TONES = new Set([
+  'positive',
+  'negative',
+  'neutral',
+  'accent',
+  'success',
+  'warning',
+  'danger',
+]);
+const VALID_TREND_DIRECTIONS = new Set(['up', 'down', 'flat']);
+const VALID_VALUE_FROM = new Set(['first', 'last']);
 const KPI_VARIANT_REGISTRY = new Map();
 const DEFAULT_CURRENCY_COMPACT_THRESHOLD = 1000000;
 
 const clampDecimals = (value, fallback = 0) =>
   Number.isFinite(value) && value >= 0 ? value : fallback;
+
+const normalizeValueSuffix = (suffix) => {
+  if (suffix == null) {
+    return '';
+  }
+  if (typeof suffix === 'string') {
+    return suffix.trim();
+  }
+  return String(suffix);
+};
+
+const normalizeRatioKey = (value) => {
+  if (value == null) {
+    return '';
+  }
+  if (typeof value === 'string') {
+    return value.trim();
+  }
+  return String(value);
+};
 
 const normalizeVariant = (variant) => {
   if (typeof variant !== 'string') {
@@ -39,6 +76,11 @@ const normalizeVariant = (variant) => {
   return VALID_VARIANTS.has(key) ? key : 'clean';
 };
 
+const normalizeValueFrom = (valueFrom) => {
+  const key = typeof valueFrom === 'string' ? valueFrom.toLowerCase() : valueFrom;
+  return VALID_VALUE_FROM.has(key) ? key : null;
+};
+
 const normalizeSubvariant = (subvariant) => {
   if (subvariant == null) {
     return 'standard';
@@ -54,7 +96,90 @@ const normalizeBadgeTone = (tone) => {
 
 const normalizeTone = (tone) => {
   const key = typeof tone === 'string' ? tone.toLowerCase() : tone;
+  if (key === 'primary') {
+    return 'accent';
+  }
   return VALID_TONES.has(key) ? key : undefined;
+};
+
+const normalizeTrendTone = (tone) => {
+  const key = typeof tone === 'string' ? tone.toLowerCase() : tone;
+  if (key === 'positive') return 'positive';
+  if (key === 'negative') return 'negative';
+  if (key === 'neutral') return 'neutral';
+  if (key === 'primary') return 'accent';
+  if (VALID_TREND_TONES.has(key)) {
+    return key;
+  }
+  return undefined;
+};
+
+const normalizeTrendDirection = (direction) => {
+  const key = typeof direction === 'string' ? direction.toLowerCase() : direction;
+  if (!key) {
+    return undefined;
+  }
+  if (key === 'up' || key === 'increase' || key === 'positive') {
+    return 'up';
+  }
+  if (key === 'down' || key === 'decrease' || key === 'negative') {
+    return 'down';
+  }
+  if (key === 'flat' || key === 'neutral' || key === 'even') {
+    return 'flat';
+  }
+  return VALID_TREND_DIRECTIONS.has(key) ? key : undefined;
+};
+
+const hasContent = (value) => value !== null && value !== undefined && value !== '';
+
+const parseNumeric = (value) => {
+  if (typeof value === 'number') {
+    return value;
+  }
+  if (typeof value === 'string') {
+    const match = value.match(/-?\d+(\.\d+)?/);
+    if (match) {
+      const numeric = Number(match[0]);
+      if (Number.isFinite(numeric)) {
+        return numeric;
+      }
+    }
+  }
+  if (value == null) {
+    return NaN;
+  }
+  const numeric = Number(value);
+  return Number.isFinite(numeric) ? numeric : NaN;
+};
+
+const resolveRatioValue = (options, encodings, dataRow) => {
+  if (!dataRow) {
+    return null;
+  }
+  const numeratorKey =
+    options?.ratioNumeratorKey ||
+    encodings?.numerator ||
+    encodings?.left ||
+    encodings?.ratioNumerator ||
+    null;
+  const denominatorKey =
+    options?.ratioDenominatorKey ||
+    encodings?.denominator ||
+    encodings?.right ||
+    encodings?.ratioDenominator ||
+    null;
+  if (!numeratorKey && !denominatorKey && options?.ratioDenominator == null) {
+    return null;
+  }
+  const numerator = numeratorKey ? dataRow?.[numeratorKey] : undefined;
+  const denominator = denominatorKey
+    ? dataRow?.[denominatorKey]
+    : options?.ratioDenominator ?? undefined;
+  if (numerator == null && denominator == null) {
+    return null;
+  }
+  return { numerator, denominator };
 };
 
 const resolveValueKey = (encodings, data) => {
@@ -71,7 +196,19 @@ const resolveValueKey = (encodings, data) => {
   return null;
 };
 
-const resolveLabel = (options, encodings, data, panelConfig) => {
+const resolveValueRow = (data, options) => {
+  if (!Array.isArray(data) || data.length === 0) {
+    return null;
+  }
+  const valueFrom = normalizeValueFrom(options?.valueFrom);
+  const resolved = valueFrom || (options?.sparklineFromData ? 'last' : 'first');
+  if (resolved === 'last') {
+    return data[data.length - 1] ?? null;
+  }
+  return data[0] ?? null;
+};
+
+const resolveLabel = (options, encodings, data, panelConfig, valueRow = null) => {
   if (options?.title || options?.label) {
     return options.title || options.label;
   }
@@ -79,8 +216,9 @@ const resolveLabel = (options, encodings, data, panelConfig) => {
     return panelConfig.title;
   }
   const labelKey = encodings?.label;
-  if (labelKey && data?.length && data[0]?.[labelKey] != null) {
-    return String(data[0][labelKey]);
+  const sourceRow = valueRow || data?.[0];
+  if (labelKey && sourceRow?.[labelKey] != null) {
+    return String(sourceRow[labelKey]);
   }
   if (typeof labelKey === 'string') {
     return labelKey;
@@ -90,6 +228,201 @@ const resolveLabel = (options, encodings, data, panelConfig) => {
 
 const resolveCaption = (options, panelConfig) =>
   options?.subtitle || options?.caption || panelConfig?.subtitle || '';
+
+const resolveTrendValue = (options, encodings, dataRow) => {
+  if (options?.trendChipValue !== undefined && options?.trendChipValue !== null) {
+    return options.trendChipValue;
+  }
+  if (options?.trendValue !== undefined && options?.trendValue !== null) {
+    return options.trendValue;
+  }
+  const trendKey =
+    options?.trendChipValueKey ||
+    options?.trendValueKey ||
+    encodings?.trendChipValue ||
+    encodings?.trendValue ||
+    encodings?.trend ||
+    null;
+  if (trendKey && dataRow && dataRow[trendKey] != null) {
+    return dataRow[trendKey];
+  }
+  return null;
+};
+
+const resolveTrendLabel = (options, encodings, dataRow) => {
+  const labelKey =
+    options?.trendLabelKey || encodings?.trendLabel || encodings?.context || null;
+  if (labelKey && dataRow && dataRow[labelKey] != null) {
+    return String(dataRow[labelKey]);
+  }
+  if (options?.trendLabel) {
+    return options.trendLabel;
+  }
+  return '';
+};
+
+const resolveTrendChipLabel = (options, encodings, dataRow) => {
+  const labelKey = options?.trendChipLabelKey || encodings?.trendChipLabel || null;
+  if (labelKey && dataRow && dataRow[labelKey] != null) {
+    return String(dataRow[labelKey]);
+  }
+  if (options?.trendChipLabel) {
+    return options.trendChipLabel;
+  }
+  return '';
+};
+
+const formatTrendValue = (value, options) => {
+  if (value == null || value === '') {
+    return '';
+  }
+  if (typeof value === 'string') {
+    return value;
+  }
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    const decimals = Number.isFinite(options?.trendDecimals) ? options.trendDecimals : 1;
+    return value.toLocaleString(undefined, {
+      minimumFractionDigits: decimals,
+      maximumFractionDigits: decimals,
+    });
+  }
+  return String(value);
+};
+
+const resolveTrendDirection = (direction, trendValue) => {
+  const normalized = normalizeTrendDirection(direction);
+  if (normalized) {
+    return normalized;
+  }
+  const numeric = parseNumeric(trendValue);
+  if (!Number.isFinite(numeric)) {
+    return undefined;
+  }
+  if (numeric > 0) return 'up';
+  if (numeric < 0) return 'down';
+  return 'flat';
+};
+
+const resolveTrendTone = (tone, direction) => {
+  const normalized = normalizeTrendTone(tone);
+  if (normalized) {
+    return normalized;
+  }
+  if (!direction) {
+    return undefined;
+  }
+  if (direction === 'up') return 'positive';
+  if (direction === 'down') return 'negative';
+  return 'neutral';
+};
+
+const resolveTrendIconKey = (trendIcon, direction) => {
+  if (trendIcon) {
+    return trendIcon;
+  }
+  if (direction === 'up') return 'trend-up';
+  if (direction === 'down') return 'trend-down';
+  if (direction === 'flat') return 'minus';
+  return null;
+};
+
+const resolveValueToneFromValue = (value) => {
+  const numeric = parseNumeric(value);
+  if (!Number.isFinite(numeric)) {
+    return undefined;
+  }
+  if (numeric < 0) {
+    return 'danger';
+  }
+  if (numeric > 0) {
+    return 'neutral';
+  }
+  return undefined;
+};
+
+const resolveSparklineDirection = (values) => {
+  if (!Array.isArray(values) || values.length < 2) {
+    return undefined;
+  }
+  const first = values[0];
+  const last = values[values.length - 1];
+  if (!Number.isFinite(first) || !Number.isFinite(last)) {
+    return undefined;
+  }
+  if (last > first) {
+    return 'up';
+  }
+  if (last < first) {
+    return 'down';
+  }
+  return 'flat';
+};
+
+const normalizeSparklineValues = (values, valueKey) => {
+  if (!Array.isArray(values)) {
+    return null;
+  }
+  if (values.length === 0) {
+    return null;
+  }
+  if (typeof values[0] === 'number') {
+    const numeric = values.filter((value) => Number.isFinite(value));
+    return numeric.length >= 2 ? numeric : null;
+  }
+  const key = valueKey || 'value';
+  const numeric = values
+    .map((entry) => {
+      if (entry == null) return NaN;
+      if (typeof entry === 'number') return entry;
+      if (typeof entry === 'object') return Number(entry[key]);
+      return Number(entry);
+    })
+    .filter((value) => Number.isFinite(value));
+  return numeric.length >= 2 ? numeric : null;
+};
+
+const resolveSparklineValues = (options, encodings, data, dataRow, valueKey) => {
+  if (Array.isArray(options?.sparkline)) {
+    return normalizeSparklineValues(options.sparkline, options.sparklineValueKey || valueKey);
+  }
+  const sparklineKey = options?.sparklineKey || encodings?.sparkline || null;
+  if (sparklineKey && dataRow) {
+    return normalizeSparklineValues(
+      dataRow[sparklineKey],
+      options?.sparklineValueKey || valueKey
+    );
+  }
+  if (options?.sparklineFromData && Array.isArray(data) && data.length > 1) {
+    const key = options?.sparklineValueKey || valueKey;
+    if (key) {
+      const values = data.map((row) => row?.[key]).filter((value) => value != null);
+      return normalizeSparklineValues(values, key);
+    }
+  }
+  return null;
+};
+
+const buildSparklinePaths = (values, width = 100, height = 32, padding = 2) => {
+  if (!Array.isArray(values) || values.length < 2) {
+    return null;
+  }
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const range = max - min || 1;
+  const step = width / (values.length - 1);
+  const usableHeight = height - padding * 2;
+  const points = values.map((value, index) => {
+    const x = index * step;
+    const y = padding + (max - value) * (usableHeight / range);
+    return [x, y];
+  });
+  const line = points
+    .map((point, index) => `${index === 0 ? 'M' : 'L'}${point[0]},${point[1]}`)
+    .join(' ');
+  const last = points[points.length - 1];
+  const area = `${line} L${last[0]},${height} L0,${height} Z`;
+  return { line, area };
+};
 
 const formatDuration = (value, decimals) => {
   const safeDecimals = Math.min(6, clampDecimals(decimals, 0));
@@ -139,6 +472,18 @@ const formatRatio = (value, options) => {
     return numerator.toLocaleString(undefined, { maximumFractionDigits: 0 });
   }
   return value == null ? '--' : String(value);
+};
+
+const appendValueSuffix = (value, suffix) => {
+  if (!suffix || value == null || value === '' || value === '--') {
+    return value;
+  }
+  const normalizedSuffix = normalizeValueSuffix(suffix);
+  if (!normalizedSuffix) {
+    return value;
+  }
+  const needsSpace = !/^[%)]/.test(normalizedSuffix);
+  return `${value}${needsSpace ? ' ' : ''}${normalizedSuffix}`;
 };
 
 const formatHours = (value, decimals) => {
@@ -247,7 +592,13 @@ const VARIANT_SUBVARIANT_PRESETS = {
   icon: {
     standard: { icon: 'users' },
     rating: { icon: 'star', format: 'number', decimals: 1 },
-    alert: { icon: 'alert', valueTone: 'danger', iconTone: 'danger' },
+    alert: {
+      icon: 'alert',
+      valueTone: 'danger',
+      iconTone: 'danger',
+      format: 'number',
+      decimals: 0,
+    },
     capacity: { icon: 'box', valueTone: 'warning', iconTone: 'warning' },
     velocity: { icon: 'spark', valueTone: 'success', iconTone: 'success' },
   },
@@ -308,6 +659,9 @@ const applySubvariantPreset = (variant, subvariant, viewModel) => {
     next.compactThreshold = mergedPreset.compactThreshold;
   }
   if (!viewModel.icon && mergedPreset.icon) next.icon = mergedPreset.icon;
+  if (!viewModel.valueSuffix && mergedPreset.valueSuffix) {
+    next.valueSuffix = mergedPreset.valueSuffix;
+  }
   if (!viewModel.badgeText && mergedPreset.badgeText) next.badgeText = mergedPreset.badgeText;
   if (!viewModel.badgeIcon && mergedPreset.badgeIcon) next.badgeIcon = mergedPreset.badgeIcon;
   if (viewModel.badgeTone === 'neutral' && mergedPreset.badgeTone) {
@@ -315,6 +669,13 @@ const applySubvariantPreset = (variant, subvariant, viewModel) => {
   }
   if (viewModel.valueTone == null && mergedPreset.valueTone) next.valueTone = mergedPreset.valueTone;
   if (viewModel.iconTone == null && mergedPreset.iconTone) next.iconTone = mergedPreset.iconTone;
+  if (viewModel.trendTone == null && mergedPreset.trendTone) next.trendTone = mergedPreset.trendTone;
+  if (viewModel.trendChipTone == null && mergedPreset.trendTone) {
+    next.trendChipTone = mergedPreset.trendTone;
+  }
+  if (viewModel.sparklineTone == null && mergedPreset.sparklineTone) {
+    next.sparklineTone = mergedPreset.sparklineTone;
+  }
   if (typeof mergedPreset.decimals === 'number' && viewModel.decimals == null) {
     next.decimals = mergedPreset.decimals;
   }
@@ -330,14 +691,44 @@ const normalizeOptions = (options) => ({
   compact: options?.compact ?? null,
   compactThreshold: Number.isFinite(options?.compactThreshold) ? options.compactThreshold : null,
   ratioDenominator: options?.ratioDenominator ?? null,
+  ratioNumeratorKey: normalizeRatioKey(
+    options?.ratioNumeratorKey ?? options?.ratioLeftKey
+  ),
+  ratioDenominatorKey: normalizeRatioKey(
+    options?.ratioDenominatorKey ?? options?.ratioRightKey
+  ),
   title: options?.title || options?.label || '',
   subtitle: options?.subtitle || options?.caption || '',
+  valueFrom: normalizeValueFrom(options?.valueFrom),
   badgeText: options?.badgeText || '',
   badgeTone: normalizeBadgeTone(options?.badgeTone),
   badgeIcon: options?.badgeIcon || '',
   icon: options?.icon || '',
   valueTone: normalizeTone(options?.valueTone),
   iconTone: normalizeTone(options?.iconTone),
+  trendValue: options?.trendValue ?? options?.delta ?? options?.change ?? null,
+  trendValueKey: options?.trendValueKey || options?.trendKey || options?.deltaKey || '',
+  trendLabel: options?.trendLabel || options?.contextLabel || '',
+  trendLabelKey: options?.trendLabelKey || options?.contextKey || '',
+  trendChipValue: options?.trendChipValue ?? null,
+  trendChipValueKey: options?.trendChipValueKey || '',
+  trendChipLabel: options?.trendChipLabel || '',
+  trendChipLabelKey: options?.trendChipLabelKey || '',
+  trendTone: normalizeTrendTone(options?.trendTone ?? options?.trendChipTone),
+  trendChipTone: normalizeTrendTone(options?.trendChipTone ?? options?.trendTone),
+  trendDirection: normalizeTrendDirection(options?.trendDirection ?? options?.trendChipDirection),
+  trendIcon: options?.trendIcon || '',
+  trendChipIcon: options?.trendChipIcon || '',
+  trendDecimals: Number.isFinite(options?.trendDecimals) ? options.trendDecimals : null,
+  sparkline: Array.isArray(options?.sparkline) ? options.sparkline : null,
+  sparklineKey: options?.sparklineKey || options?.sparklineField || '',
+  sparklineValueKey: options?.sparklineValueKey || '',
+  sparklineFromData: options?.sparklineFromData === true,
+  sparklineTone: normalizeTrendTone(options?.sparklineTone),
+  showSparkline: options?.showSparkline ?? null,
+  valueSuffix: normalizeValueSuffix(
+    options?.valueSuffix ?? options?.suffix ?? options?.unit ?? options?.capacitySuffix
+  ),
   value: options?.value,
 });
 
@@ -467,14 +858,16 @@ class BaseKpiVariant {
   }
 
   className() {
+    const subvariantClass = this.viewModel.subvariant
+      ? String(this.viewModel.subvariant).toLowerCase().replace(/[^a-z0-9]+/g, '-')
+      : null;
     const classes = [
       'ladf-kpi',
       `ladf-kpi--${this.viewModel.variant}`,
-      this.viewModel.subvariant
-        ? `ladf-kpi--subvariant-${String(this.viewModel.subvariant)
-            .toLowerCase()
-            .replace(/[^a-z0-9]+/g, '-')}`
-        : null,
+      subvariantClass ? `ladf-kpi--subvariant-${subvariantClass}` : null,
+      subvariantClass ? `ladf-kpi--subtype-${subvariantClass}` : null,
+      this.viewModel.sparklinePaths ? 'ladf-kpi--has-sparkline' : null,
+      this.viewModel.hasFooter ? 'ladf-kpi--has-footer' : null,
     ];
     return classes.filter(Boolean).join(' ');
   }
@@ -504,12 +897,67 @@ class BaseKpiVariant {
     return <div className="ladf-kpi__caption">{this.viewModel.caption}</div>;
   }
 
+  renderSparkline() {
+    if (!this.viewModel.sparklinePaths) {
+      return null;
+    }
+    const toneClass = this.viewModel.sparklineTone
+      ? `ladf-kpi__sparkline--${this.viewModel.sparklineTone}`
+      : '';
+    return (
+      <svg
+        className={`ladf-kpi__sparkline ${toneClass}`.trim()}
+        viewBox="0 0 100 32"
+        preserveAspectRatio="none"
+        aria-hidden="true"
+      >
+        <path className="ladf-kpi__sparkline-line" d={this.viewModel.sparklinePaths.line} />
+        <path className="ladf-kpi__sparkline-fill" d={this.viewModel.sparklinePaths.area} />
+      </svg>
+    );
+  }
+
+  renderTrendChip() {
+    if (!hasContent(this.viewModel.trendChipValue)) {
+      return null;
+    }
+    const toneClass = this.viewModel.trendChipTone
+      ? `ladf-kpi__trend-chip--${this.viewModel.trendChipTone}`
+      : '';
+    const iconKey = this.viewModel.trendIconKey;
+    const iconNode = iconKey ? resolveIconNode(iconKey) : null;
+    return (
+      <div className={`ladf-kpi__trend-chip ${toneClass}`.trim()}>
+        {iconNode ? <span className="ladf-kpi__trend-chip-icon">{iconNode}</span> : null}
+        <span className="ladf-kpi__trend-chip-text">{this.viewModel.trendChipValue}{this.viewModel.trendChipLabel}</span>
+      </div>
+    );
+  }
+
+  renderFooter() {
+    const trendChip = this.renderTrendChip();
+    const trendLabel = this.viewModel.trendLabel ? (
+      <div className="ladf-kpi__trend-label">{this.viewModel.trendLabel}</div>
+    ) : null;
+    if (!trendChip && !trendLabel) {
+      return null;
+    }
+    return (
+      <div className="ladf-kpi__footer">
+        {trendChip}
+        {trendLabel}
+      </div>
+    );
+  }
+
   renderContent() {
     return (
       <>
         {this.renderLabel()}
         {this.renderValue()}
         {this.renderCaption()}
+        {this.renderSparkline()}
+        {this.renderFooter()}
       </>
     );
   }
@@ -549,6 +997,8 @@ class IconKpiVariant extends BaseKpiVariant {
         {this.renderIcon()}
         {this.renderValue()}
         {this.renderCaption()}
+        {this.renderSparkline()}
+        {this.renderFooter()}
       </>
     );
   }
@@ -613,13 +1063,20 @@ function KpiVariant({ data = [], encodings = {}, options = {}, panelConfig = nul
   const viewModel = useMemo(() => {
     const normalized = normalizeOptions(options);
     const valueKey = resolveValueKey(encodings, data);
+    const valueRow = resolveValueRow(data, normalized);
+    const ratioValue =
+      normalized.format === 'ratio'
+        ? resolveRatioValue(normalized, encodings, valueRow)
+        : null;
     const rawValue =
       normalized.value !== undefined && normalized.value !== null
         ? normalized.value
+        : ratioValue
+        ? ratioValue
         : valueKey
-        ? data?.[0]?.[valueKey]
+        ? valueRow?.[valueKey]
         : null;
-    const label = resolveLabel(normalized, encodings, data, panelConfig);
+    const label = resolveLabel(normalized, encodings, data, panelConfig, valueRow);
     const caption = resolveCaption(normalized, panelConfig);
 
     const hydrated = applySubvariantPreset(normalized.variant, normalized.subvariant, {
@@ -630,9 +1087,62 @@ function KpiVariant({ data = [], encodings = {}, options = {}, panelConfig = nul
       caption,
     });
 
+    const trendChipValueRaw = resolveTrendValue(hydrated, encodings, valueRow);
+    const trendChipValue = formatTrendValue(trendChipValueRaw, hydrated);
+    const trendChipLabel = resolveTrendChipLabel(hydrated, encodings, valueRow);
+    const trendLabel = resolveTrendLabel(hydrated, encodings, valueRow);
+    const trendDirection = resolveTrendDirection(hydrated.trendDirection, trendChipValueRaw);
+    const trendTone =
+      hydrated.trendTone != null ? hydrated.trendTone : resolveTrendTone(null, trendDirection);
+    const trendChipTone =
+      hydrated.trendChipTone != null ? hydrated.trendChipTone : trendTone;
+    const trendIconKey = resolveTrendIconKey(
+      hydrated.trendChipIcon || hydrated.trendIcon,
+      trendDirection
+    );
+
+    const sparklineValues = resolveSparklineValues(
+      hydrated,
+      encodings,
+      data,
+      valueRow,
+      valueKey
+    );
+    const shouldShowSparkline = Boolean(sparklineValues) && Boolean(hydrated.showSparkline);
+    const sparklinePaths = shouldShowSparkline ? buildSparklinePaths(sparklineValues) : null;
+    const sparklineDirection = resolveSparklineDirection(sparklineValues);
+    const valueTone =
+      hydrated.valueTone != null ? hydrated.valueTone : resolveValueToneFromValue(rawValue);
+    const sparklineTone =
+      hydrated.sparklineTone != null
+        ? hydrated.sparklineTone
+        : resolveTrendTone(
+            null,
+            sparklineDirection || trendDirection || resolveTrendDirection(null, rawValue)
+          ) || valueTone || 'success';
+    const hasFooter =
+      hasContent(trendChipValue) || hasContent(trendLabel) || hasContent(hydrated.badgeText);
+    const isStandardLayout = !sparklinePaths || !hasFooter;
+
     return {
       ...hydrated,
-      formattedValue: formatKpiValue(rawValue, hydrated),
+      valueTone,
+      trendChipValue,
+      trendChipLabel,
+      trendChipTone,
+      trendValue: trendChipValue,
+      trendLabel,
+      trendTone,
+      trendDirection,
+      trendIconKey,
+      sparklinePaths,
+      sparklineTone,
+      hasFooter,
+      isStandardLayout,
+      formattedValue: appendValueSuffix(
+        formatKpiValue(rawValue, hydrated),
+        hydrated.valueSuffix
+      ),
     };
   }, [data, encodings, options, panelConfig]);
 

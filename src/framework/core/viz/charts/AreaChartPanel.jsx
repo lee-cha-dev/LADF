@@ -17,6 +17,7 @@ import ChartContainer from '../common/ChartContainer.jsx';
 import ChartTooltip from '../common/ChartTooltip.jsx';
 import { pivotRows } from '../../query/transforms/pivot';
 import { getSeriesColor, getSeriesColorsForKeys } from '../palettes/seriesColors';
+import { resolveXAxisProps, resolveYAxisProps } from './axisOptions';
 
 /**
  * Resolve series keys from encodings or data.
@@ -119,6 +120,8 @@ function AreaChartPanel({
     typeof brushConfig.startIndex === 'number' ? brushConfig.startIndex : undefined;
   const brushEndIndex =
     typeof brushConfig.endIndex === 'number' ? brushConfig.endIndex : undefined;
+  const xAxisProps = resolveXAxisProps(options);
+  const yAxisProps = resolveYAxisProps(options);
 
   return (
     <ChartContainer>
@@ -128,15 +131,8 @@ function AreaChartPanel({
           margin={{ top: 8, right: 16, left: 0, bottom: 8 }}
         >
           <CartesianGrid stroke="var(--ladf-chart-grid)" strokeDasharray="3 3" />
-          <XAxis
-            dataKey={encodings.x}
-            tick={{ fill: 'var(--ladf-text-muted)', fontSize: 12 }}
-            axisLine={{ stroke: 'var(--ladf-border-divider)' }}
-          />
-          <YAxis
-            tick={{ fill: 'var(--ladf-text-muted)', fontSize: 12 }}
-            axisLine={{ stroke: 'var(--ladf-border-divider)' }}
-          />
+          <XAxis dataKey={encodings.x} {...xAxisProps} />
+          <YAxis {...yAxisProps} />
           {showTooltip ? <Tooltip content={<ChartTooltip />} /> : null}
           {visibleSeriesKeys.map((key, index) => {
             const color =

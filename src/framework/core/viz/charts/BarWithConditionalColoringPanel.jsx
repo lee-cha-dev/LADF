@@ -2,7 +2,7 @@
  * @module core/viz/charts/BarWithConditionalColoringPanel
  * @description Bar chart visualization panel with per-bar conditional colors.
  */
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   Bar,
   BarChart,
@@ -15,7 +15,9 @@ import {
 } from 'recharts';
 import ChartContainer from '../common/ChartContainer.jsx';
 import ChartTooltip from '../common/ChartTooltip.jsx';
-import { getChartColorClass } from '../common/chartColors';
+import { getChartColor, getChartColorClass } from '../common/chartColors';
+import { getSeriesColor } from '../palettes/seriesColors';
+import { resolveXAxisProps, resolveYAxisProps } from './axisOptions';
 
 const legendColorClassMap = {
   'var(--ladf-accent-primary)': 'ladf-chart-legend__swatch--accent-primary',
@@ -42,7 +44,7 @@ const resolveLegendSwatchClass = (color, index) => {
   return getChartColorClass(index);
 };
 
-const resolveBarColor = ({ row, encodings, options }) => {
+const resolveBarColor = ({ row, encodings, options, colorAssignment }) => {
   if (typeof options?.colorFn === 'function') {
     return options.colorFn(row);
   }
@@ -50,6 +52,29 @@ const resolveBarColor = ({ row, encodings, options }) => {
     return row?.[encodings.color]
       ? 'var(--ladf-accent-warning)'
       : 'var(--ladf-accent-primary)';
+  }
+  if (colorAssignment?.mode === 'category') {
+    const categoryKey = row?.[encodings?.x];
+    const assignedColor = colorAssignment?.getColor?.(categoryKey);
+    if (assignedColor) {
+      return assignedColor;
+    }
+  }
+  if (
+    colorAssignment?.mode === 'diverging' ||
+    colorAssignment?.mode === 'sequential'
+  ) {
+    const value = row?.[encodings?.y];
+    const assignedColor = colorAssignment?.getColor?.(value);
+    if (assignedColor) {
+      return assignedColor;
+    }
+  }
+  if (colorAssignment?.mode === 'series' || colorAssignment?.mode === 'single') {
+    const assignedColor = colorAssignment?.getColor?.(encodings?.y);
+    if (assignedColor) {
+      return assignedColor;
+    }
   }
   return 'var(--ladf-accent-primary)';
 };
@@ -67,35 +92,66 @@ function BarWithConditionalColoringPanel({
   colorAssignment,
   hiddenKeys,
 }) {
-  void colorAssignment;
-  void hiddenKeys;
   const showTooltip = options.tooltip !== false;
   const legendItems = Array.isArray(options.legendItems) ? options.legendItems : [];
+  const orientation = options.orientation === 'horizontal' ? 'horizontal' : 'vertical';
+  const isHorizontal = orientation === 'horizontal';
+  const chartData = useMemo(() => {
+    if (hiddenKeys?.size && encodings?.x) {
+      return data.filter((row) => !hiddenKeys.has(String(row?.[encodings.x])));
+    }
+    return data;
+  }, [data, encodings.x, hiddenKeys]);
+  const barRadius = isHorizontal ? [0, 6, 6, 0] : [6, 6, 0, 0];
+  const xAxisProps = resolveXAxisProps(options);
+  const yAxisProps = resolveYAxisProps(options);
 
   return (
     <ChartContainer>
       <ResponsiveContainer width="100%" height={280}>
-        <BarChart data={data} margin={{ top: 8, right: 16, left: 0, bottom: 8 }}>
+        <BarChart
+          data={chartData}
+          layout={isHorizontal ? 'vertical' : 'horizontal'}
+          margin={{ top: 8, right: 16, left: 0, bottom: 8 }}
+        >
           <CartesianGrid stroke="var(--ladf-chart-grid)" strokeDasharray="3 3" />
-          <XAxis
-            dataKey={encodings.x}
-            tick={{ fill: 'var(--ladf-text-muted)', fontSize: 12 }}
-            axisLine={{ stroke: 'var(--ladf-border-divider)' }}
-          />
-          <YAxis
-            tick={{ fill: 'var(--ladf-text-muted)', fontSize: 12 }}
-            axisLine={{ stroke: 'var(--ladf-border-divider)' }}
-          />
+          {isHorizontal ? (
+            <>
+              <XAxis
+                type="number"
+                {...xAxisProps}
+              />
+              <YAxis
+                type="category"
+                dataKey={encodings.x}
+                {...yAxisProps}
+              />
+            </>
+          ) : (
+            <>
+              <XAxis
+                dataKey={encodings.x}
+                {...xAxisProps}
+              />
+              <YAxis
+                {...yAxisProps}
+              />
+            </>
+          )}
           {showTooltip ? <Tooltip content={<ChartTooltip />} /> : null}
           <Bar
             dataKey={encodings.y}
-            radius={[6, 6, 0, 0]}
+            fill={getSeriesColor(0)}
+            radius={barRadius}
             onClick={handlers.onClick}
           >
-            {data.map((row, index) => (
+            {chartData.map((row, index) => (
               <Cell
                 key={`cell-${index}`}
-                fill={resolveBarColor({ row, encodings, options })}
+                fill={
+                  resolveBarColor({ row, index, encodings, options, colorAssignment }) ||
+                  getChartColor(index)
+                }
               />
             ))}
           </Bar>

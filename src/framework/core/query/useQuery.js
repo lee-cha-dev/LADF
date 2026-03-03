@@ -27,6 +27,7 @@ import { queryCache } from './cache';
  * @property {QueryCache} [cache] - Cache implementation (LRU-style by default).
  * @property {number} [staleTime=30000] - Milliseconds until cached data is stale.
  * @property {boolean} [enabled=true] - When false, skip executing the query.
+ * @property {string} [cacheKey] - Optional cache key prefix to avoid collisions.
  * @property {function(QueryState): void} [onSuccess] - Called after successful fetch.
  * @property {function(Error): void} [onError] - Called after failed fetch.
  * @property {function(ProviderResult, QuerySpec): (boolean|string|string[]|{valid: boolean=, errors: string[]=, error: string=})} [validateResult]
@@ -135,6 +136,16 @@ const normalizeProviderResult = (result) => ({
 
 /**
  * @param {QueryState|null} entry - Cached entry.
+ * @returns {boolean} True when the entry contains an empty data array.
+ */
+const isEmptySuccess = (entry) =>
+  entry?.status === 'success' &&
+  Array.isArray(entry.data) &&
+  entry.data.length === 0 &&
+  !entry.error;
+
+/**
+ * @param {QueryState|null} entry - Cached entry.
  * @returns {QueryState} Initial state for hook.
  */
 const createInitialState = (entry) => ({
@@ -196,6 +207,7 @@ export const useQuery = (
     cache = queryCache,
     staleTime = 30000,
     enabled = true,
+    cacheKey,
     onSuccess,
     onError,
     validateResult,
@@ -204,9 +216,13 @@ export const useQuery = (
 ) => {
   const activeProvider = useMemo(() => assertDataProvider(provider), [provider]);
   const hash = useMemo(() => hashQuerySpec(querySpec), [querySpec]);
+  const resolvedCacheKey = useMemo(
+    () => (cacheKey ? `${cacheKey}:${hash}` : hash),
+    [cacheKey, hash]
+  );
   const abortRef = useRef(null);
   const [state, setState] = useState(() =>
-    createInitialState(cache.get(hash))
+    createInitialState(cache.get(resolvedCacheKey))
   );
 
   const fetchData = useCallback(async (currentHash) => {
@@ -309,7 +325,7 @@ export const useQuery = (
       return undefined;
     }
 
-    const cached = cache.get(hash);
+    const cached = cache.get(resolvedCacheKey);
     if (cached?.data) {
       setState(createInitialState(cached));
     } else if (!cached) {
@@ -320,8 +336,16 @@ export const useQuery = (
       }));
     }
 
-    if (!cached || isStale(cached, staleTime)) {
-      void fetchData(hash);
+    const shouldFetch = !cached || isStale(cached, staleTime) || isEmptySuccess(cached);
+    if (shouldFetch) {
+      if (!cached || isEmptySuccess(cached)) {
+        setState((prev) => ({
+          ...prev,
+          status: 'loading',
+          error: null,
+        }));
+      }
+      void fetchData(resolvedCacheKey);
     }
 
     return () => {
@@ -329,7 +353,7 @@ export const useQuery = (
         abortRef.current.abort();
       }
     };
-  }, [hash, enabled, staleTime, cache, fetchData]);
+  }, [resolvedCacheKey, enabled, staleTime, cache, fetchData]);
 
   return {
     data: state.data,
@@ -338,7 +362,7 @@ export const useQuery = (
     error: state.error,
     status: state.status,
     updatedAt: state.updatedAt,
-    isStale: isStale(cache.get(hash), staleTime),
-    refetch: () => fetchData(hash),
+    isStale: isStale(cache.get(resolvedCacheKey), staleTime),
+    refetch: () => fetchData(resolvedCacheKey),
   };
 };
