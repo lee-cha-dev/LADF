@@ -137,6 +137,21 @@ describe('KpiPanel', () => {
     expect(getByText(/^8$/)).toBeInTheDocument();
   });
 
+  it('uses explicit trend key instead of sparkline delta when provided', () => {
+    const series = [
+      { month: '2024-01', value: 1, trend: 50 },
+      { month: '2024-02', value: 3, trend: 50 },
+    ];
+    const { getByText } = render(
+      <KpiVariant
+        data={series}
+        encodings={{ value: 'value' }}
+        options={{ trendChipValueKey: 'trend', sparklineFromData: true }}
+      />
+    );
+    expect(getByText('50.0')).toBeInTheDocument();
+  });
+
   it('uses panel title and subtitle as defaults when label/caption are not provided', () => {
     const { container, getByText } = render(
       <KpiVariant

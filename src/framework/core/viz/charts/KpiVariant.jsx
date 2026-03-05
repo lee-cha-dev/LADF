@@ -1128,11 +1128,18 @@ function KpiVariant({ data = [], encodings = {}, options = {}, panelConfig = nul
 
     const trendChipValueRaw = resolveTrendValue(hydrated, encodings, valueRow);
     const sparklineDelta = resolveSparklineDelta(sparklineValues);
+    const hasTrendKey =
+      hydrated.trendChipValueKey ||
+      hydrated.trendValueKey ||
+      encodings?.trendChipValue ||
+      encodings?.trendValue ||
+      encodings?.trend;
     const hasExplicitTrendValue =
       options?.trendValue != null ||
       options?.trendChipValue != null ||
       options?.delta != null ||
-      options?.change != null;
+      options?.change != null ||
+      hasTrendKey;
     const resolvedTrendValueRaw =
       hydrated.sparklineDeriveTrend &&
       Number.isFinite(sparklineDelta) &&
