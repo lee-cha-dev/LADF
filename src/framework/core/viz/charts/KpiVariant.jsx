@@ -1100,7 +1100,13 @@ function KpiVariant({ data = [], encodings = {}, options = {}, panelConfig = nul
         ? valueRow?.[valueKey]
         : null;
     const hasExplicitValue = normalized.value !== undefined && normalized.value !== null;
-    if (!hasExplicitValue && ratioValue == null && Number.isFinite(sparklineLatestValue)) {
+    const hasValueFromData = valueKey != null && valueRow?.[valueKey] != null;
+    if (
+      !hasExplicitValue &&
+      ratioValue == null &&
+      !hasValueFromData &&
+      Number.isFinite(sparklineLatestValue)
+    ) {
       rawValue = sparklineLatestValue;
     }
     const label = resolveLabel(normalized, encodings, data, panelConfig, valueRow);
