@@ -358,6 +358,18 @@ const resolveSparklineDirection = (values) => {
   return 'flat';
 };
 
+const resolveSparklineDelta = (values) => {
+  if (!Array.isArray(values) || values.length < 2) {
+    return null;
+  }
+  const first = values[0];
+  const last = values[values.length - 1];
+  if (!Number.isFinite(first) || !Number.isFinite(last)) {
+    return null;
+  }
+  return last - first;
+};
+
 const normalizeSparklineValues = (values, valueKey) => {
   if (!Array.isArray(values)) {
     return null;
@@ -724,6 +736,7 @@ const normalizeOptions = (options) => ({
   sparklineKey: options?.sparklineKey || options?.sparklineField || '',
   sparklineValueKey: options?.sparklineValueKey || '',
   sparklineFromData: options?.sparklineFromData === true,
+  sparklineDeriveTrend: options?.sparklineDeriveTrend !== false,
   sparklineTone: normalizeTrendTone(options?.sparklineTone),
   showSparkline: options?.showSparkline ?? null,
   valueSuffix: normalizeValueSuffix(
@@ -1068,7 +1081,17 @@ function KpiVariant({ data = [], encodings = {}, options = {}, panelConfig = nul
       normalized.format === 'ratio'
         ? resolveRatioValue(normalized, encodings, valueRow)
         : null;
-    const rawValue =
+    const sparklineValues = resolveSparklineValues(
+      normalized,
+      encodings,
+      data,
+      valueRow,
+      valueKey
+    );
+    const sparklineLatestValue = Array.isArray(sparklineValues)
+      ? sparklineValues[sparklineValues.length - 1]
+      : null;
+    let rawValue =
       normalized.value !== undefined && normalized.value !== null
         ? normalized.value
         : ratioValue
@@ -1076,6 +1099,10 @@ function KpiVariant({ data = [], encodings = {}, options = {}, panelConfig = nul
         : valueKey
         ? valueRow?.[valueKey]
         : null;
+    const hasExplicitValue = normalized.value !== undefined && normalized.value !== null;
+    if (!hasExplicitValue && ratioValue == null && Number.isFinite(sparklineLatestValue)) {
+      rawValue = sparklineLatestValue;
+    }
     const label = resolveLabel(normalized, encodings, data, panelConfig, valueRow);
     const caption = resolveCaption(normalized, panelConfig);
 
@@ -1088,10 +1115,25 @@ function KpiVariant({ data = [], encodings = {}, options = {}, panelConfig = nul
     });
 
     const trendChipValueRaw = resolveTrendValue(hydrated, encodings, valueRow);
-    const trendChipValue = formatTrendValue(trendChipValueRaw, hydrated);
+    const sparklineDelta = resolveSparklineDelta(sparklineValues);
+    const hasExplicitTrendValue =
+      options?.trendValue != null ||
+      options?.trendChipValue != null ||
+      options?.delta != null ||
+      options?.change != null;
+    const resolvedTrendValueRaw =
+      hydrated.sparklineDeriveTrend &&
+      Number.isFinite(sparklineDelta) &&
+      !hasExplicitTrendValue
+        ? sparklineDelta
+        : trendChipValueRaw;
+    const trendChipValue = formatTrendValue(resolvedTrendValueRaw, hydrated);
     const trendChipLabel = resolveTrendChipLabel(hydrated, encodings, valueRow);
     const trendLabel = resolveTrendLabel(hydrated, encodings, valueRow);
-    const trendDirection = resolveTrendDirection(hydrated.trendDirection, trendChipValueRaw);
+    const trendDirection = resolveTrendDirection(
+      hydrated.trendDirection,
+      resolvedTrendValueRaw
+    );
     const trendTone =
       hydrated.trendTone != null ? hydrated.trendTone : resolveTrendTone(null, trendDirection);
     const trendChipTone =
@@ -1101,14 +1143,8 @@ function KpiVariant({ data = [], encodings = {}, options = {}, panelConfig = nul
       trendDirection
     );
 
-    const sparklineValues = resolveSparklineValues(
-      hydrated,
-      encodings,
-      data,
-      valueRow,
-      valueKey
-    );
-    const shouldShowSparkline = Boolean(sparklineValues) && Boolean(hydrated.showSparkline);
+    const shouldShowSparkline =
+      Boolean(sparklineValues) && hydrated.showSparkline !== false;
     const sparklinePaths = shouldShowSparkline ? buildSparklinePaths(sparklineValues) : null;
     const sparklineDirection = resolveSparklineDirection(sparklineValues);
     const valueTone =
