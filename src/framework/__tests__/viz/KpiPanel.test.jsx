@@ -101,6 +101,22 @@ describe('KpiPanel', () => {
     expect(queryByText('Manual label')).toBeNull();
   });
 
+  it('falls back to trend value when the primary value is missing', () => {
+    const rows = [{ primary: null, trend: 15 }];
+    const { getByText } = render(
+      <KpiVariant data={rows} encodings={{ value: 'primary', trendValue: 'trend' }} />
+    );
+    expect(getByText(/^15$/)).toBeInTheDocument();
+  });
+
+  it('keeps the primary value when trend data is also present', () => {
+    const rows = [{ primary: 9, trend: 2 }];
+    const { getByText } = render(
+      <KpiVariant data={rows} encodings={{ value: 'primary', trendValue: 'trend' }} />
+    );
+    expect(getByText(/^9$/)).toBeInTheDocument();
+  });
+
   it('keeps the primary value when sparkline values come from a different key', () => {
     const series = [
       { month: '2024-01', primary: 5, spark: 10 },

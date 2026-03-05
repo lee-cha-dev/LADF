@@ -101,6 +101,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: var(--ladf-space-2);
   color: var(--ladf-text-muted, var(--ladf-color-muted));
 }
