@@ -1091,6 +1091,7 @@ function KpiVariant({ data = [], encodings = {}, options = {}, panelConfig = nul
     const sparklineLatestValue = Array.isArray(sparklineValues)
       ? sparklineValues[sparklineValues.length - 1]
       : null;
+    const trendValueFallback = resolveTrendValue(normalized, encodings, valueRow);
     let rawValue =
       normalized.value !== undefined && normalized.value !== null
         ? normalized.value
@@ -1101,7 +1102,12 @@ function KpiVariant({ data = [], encodings = {}, options = {}, panelConfig = nul
         : null;
     const hasExplicitValue = normalized.value !== undefined && normalized.value !== null;
     const hasValueFromData = valueKey != null && valueRow?.[valueKey] != null;
+    const hasTrendFallback = trendValueFallback !== null && trendValueFallback !== undefined;
+    if (rawValue == null && hasTrendFallback) {
+      rawValue = trendValueFallback;
+    }
     if (
+      rawValue == null &&
       !hasExplicitValue &&
       ratioValue == null &&
       !hasValueFromData &&
