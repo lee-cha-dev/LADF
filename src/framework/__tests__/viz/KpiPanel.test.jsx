@@ -101,18 +101,23 @@ describe('KpiPanel', () => {
     expect(queryByText('Manual label')).toBeNull();
   });
 
-  it('falls back to trend value when the primary value is missing', () => {
-    const rows = [{ primary: null, trend: 15 }];
-    const { getByText } = render(
-      <KpiVariant data={rows} encodings={{ value: 'primary', trendValue: 'trend' }} />
+  it('falls back to trend value when no primary value is provided', () => {
+    const rows = [{ label: 'row', trend: '15' }];
+    const { getAllByText } = render(
+      <KpiVariant data={rows} encodings={{ trendValue: 'trend' }} options={{ trendValueKey: 'trend' }} />
     );
-    expect(getByText(/^15$/)).toBeInTheDocument();
+    const valueNodes = getAllByText(/^15$/);
+    expect(valueNodes[0].className).toContain('ladf-kpi__value');
   });
 
   it('keeps the primary value when trend data is also present', () => {
     const rows = [{ primary: 9, trend: 2 }];
     const { getByText } = render(
-      <KpiVariant data={rows} encodings={{ value: 'primary', trendValue: 'trend' }} />
+      <KpiVariant
+        data={rows}
+        encodings={{ value: 'primary' }}
+        options={{ trendValueKey: 'trend', trendChipValueKey: 'trend' }}
+      />
     );
     expect(getByText(/^9$/)).toBeInTheDocument();
   });

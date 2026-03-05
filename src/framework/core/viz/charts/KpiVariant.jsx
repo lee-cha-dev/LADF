@@ -1101,16 +1101,16 @@ function KpiVariant({ data = [], encodings = {}, options = {}, panelConfig = nul
         ? valueRow?.[valueKey]
         : null;
     const hasExplicitValue = normalized.value !== undefined && normalized.value !== null;
-    const hasValueFromData = valueKey != null && valueRow?.[valueKey] != null;
+    const userSelectedValueKey =
+      encodings?.value != null || encodings?.y != null || hasExplicitValue;
     const hasTrendFallback = trendValueFallback !== null && trendValueFallback !== undefined;
-    if (rawValue == null && hasTrendFallback) {
+    const allowFallbacks = !userSelectedValueKey && ratioValue == null;
+    if (rawValue == null && hasTrendFallback && allowFallbacks) {
       rawValue = trendValueFallback;
     }
     if (
       rawValue == null &&
-      !hasExplicitValue &&
-      ratioValue == null &&
-      !hasValueFromData &&
+      allowFallbacks &&
       Number.isFinite(sparklineLatestValue)
     ) {
       rawValue = sparklineLatestValue;
