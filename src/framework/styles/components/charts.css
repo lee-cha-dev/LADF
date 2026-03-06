@@ -230,7 +230,8 @@
   gap: var(--ladf-space-2);
   padding: var(--ladf-space-3) var(--ladf-space-4);
   border-radius: var(--ladf-radius-md);
-  background: var(--ladf-surface-1, var(--ladf-color-surface-alt, var(--ladf-color-surface)));
+  /*background: var(--ladf-surface-1, var(--ladf-color-surface-alt, var(--ladf-color-surface)));*/
+  background: var(--ladf-surface-2);
   border: 1px solid var(--ladf-border-subtle, var(--ladf-color-border));
   justify-content: space-around;
   transition: transform 0.15s ease, box-shadow 0.15s ease;
