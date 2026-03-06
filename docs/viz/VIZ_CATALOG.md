@@ -28,7 +28,8 @@ Options (supported): `options.tooltip`, `options.stacked`, `options.stackedKeys`
 `options.diverging`, `options.filterZeroRows`,
 `options.legend`, `options.legendMode`, `options.legendPosition`,
 `options.xAxis.enabled`, `options.yAxis.enabled`,
-`options.xAxis.tickRotation`, `options.yAxis.tickFormatter`.
+`options.xAxis.tickRotation`, `options.xAxis.interval`,
+`options.yAxis.tickFormatter`, `options.yAxis.interval`.
 
 ## line (vizType: line)
 Intended use: Trends over ordered categories or time.
@@ -40,7 +41,8 @@ Options (supported): `options.tooltip`, `options.brush.enabled`,
 `options.seriesKeys`, `options.seriesBy` (fallback grouping key),
 `options.legend`, `options.legendMode`, `options.legendPosition`,
 `options.xAxis.enabled`, `options.yAxis.enabled`,
-`options.xAxis.tickRotation`, `options.yAxis.tickFormatter`.
+`options.xAxis.tickRotation`, `options.xAxis.interval`,
+`options.yAxis.tickFormatter`, `options.yAxis.interval`.
 
 ## area (vizType: area)
 Intended use: Filled trends over ordered categories or time.
@@ -52,7 +54,8 @@ Options (supported): `options.tooltip`, `options.brush.enabled`,
 `options.seriesBy` (fallback grouping key),
 `options.legend`, `options.legendMode`, `options.legendPosition`,
 `options.xAxis.enabled`, `options.yAxis.enabled`,
-`options.xAxis.tickRotation`, `options.yAxis.tickFormatter`.
+`options.xAxis.tickRotation`, `options.xAxis.interval`,
+`options.yAxis.tickFormatter`, `options.yAxis.interval`.
 
 ## barWithConditionalColoring (vizType: barWithConditionalColoring)
 Intended use: Categorical bars with per-row conditional color rules.
@@ -64,7 +67,8 @@ Options (supported): `options.tooltip`, `options.orientation` (`"horizontal"` or
 `"vertical"`), `options.colorFn` (custom row -> color function),
 `options.legendItems` (array of `{ label, color }` for custom legend),
 `options.xAxis.enabled`, `options.yAxis.enabled`,
-`options.xAxis.tickRotation`, `options.yAxis.tickFormatter`.
+`options.xAxis.tickRotation`, `options.xAxis.interval`,
+`options.yAxis.tickFormatter`, `options.yAxis.interval`.
 
 ## bulletChart (vizType: bulletChart)
 Intended use: Compare categories with inline targets and percent column.
@@ -129,7 +133,8 @@ Encodings: `encodings.x` (x value), `encodings.y` (y value), `encodings.group`
 Options (supported): `options.tooltip`, `options.pointSize`,
 `options.legend`, `options.legendMode`, `options.legendPosition`,
 `options.seriesKeys`, `options.xAxis.enabled`, `options.yAxis.enabled`,
-`options.xAxis.tickRotation`, `options.yAxis.tickFormatter`.
+`options.xAxis.tickRotation`, `options.xAxis.interval`,
+`options.yAxis.tickFormatter`, `options.yAxis.interval`.
 
 ## composed (vizType: composed)
 Intended use: Combine bar and line measures on one categorical axis.
@@ -138,7 +143,8 @@ Encodings: `encodings.x` (category), `encodings.y` (measure or array).
 Options (supported): `options.tooltip`, `options.legend`, `options.legendMode`,
 `options.legendPosition`, `options.seriesKeys`, `options.barKeys`, `options.lineKeys`,
 `options.xAxis.enabled`, `options.yAxis.enabled`,
-`options.xAxis.tickRotation`, `options.yAxis.tickFormatter`.
+`options.xAxis.tickRotation`, `options.xAxis.interval`,
+`options.yAxis.tickFormatter`, `options.yAxis.interval`.
 
 ## radar (vizType: radar)
 Intended use: Compare multiple measures across a shared dimension.

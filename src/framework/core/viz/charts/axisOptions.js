@@ -10,6 +10,8 @@ const ROTATION_HEIGHT = 56;
 const resolveRotation = (value) =>
   typeof value === 'number' && Number.isFinite(value) ? value : 0;
 
+const hasInterval = (value) => value !== undefined && value !== null;
+
 /**
  * Resolve props for a chart X axis.
  * @param {Object} options - Viz options object.
@@ -28,6 +30,9 @@ export const resolveXAxisProps = (options = {}) => {
     tick,
     axisLine: BASE_AXIS_LINE,
   };
+  if (hasInterval(axisOptions.interval)) {
+    props.interval = axisOptions.interval;
+  }
   if (rotation) {
     props.height = ROTATION_HEIGHT;
   }
@@ -46,6 +51,9 @@ export const resolveYAxisProps = (options = {}) => {
     tick: { ...BASE_TICK_STYLE },
     axisLine: BASE_AXIS_LINE,
   };
+  if (hasInterval(axisOptions.interval)) {
+    props.interval = axisOptions.interval;
+  }
   if (typeof axisOptions.tickFormatter === 'function') {
     props.tickFormatter = axisOptions.tickFormatter;
   }
