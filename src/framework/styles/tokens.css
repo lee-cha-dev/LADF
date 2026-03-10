@@ -1,0 +1,23 @@
+:root {
+  --ladf-font-family: "Inter", "Segoe UI", system-ui, sans-serif;
+  --ladf-font-size-base: 16px;
+  --ladf-font-weight-semibold: 600;
+  --ladf-font-weight-bold: 700;
+  --ladf-line-height: 1.5;
+
+  --ladf-space-1: 4px;
+  --ladf-space-2: 8px;
+  --ladf-space-3: 12px;
+  --ladf-space-4: 16px;
+  --ladf-space-5: 20px;
+  --ladf-space-6: 24px;
+  --ladf-space-7: 28px;
+  --ladf-space-8: 32px;
+
+  --ladf-radius-sm: 6px;
+  --ladf-radius-md: 10px;
+  --ladf-radius-lg: 16px;
+
+  --ladf-focus-ring-size: 3px;
+  --ladf-focus-ring-offset: 2px;
+}

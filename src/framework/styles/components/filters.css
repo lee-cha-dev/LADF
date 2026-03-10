@@ -1,0 +1,120 @@
+.ladf-selection-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 16px;
+  padding: 12px 16px;
+  border: 1px solid var(--ladf-border-subtle, var(--ladf-color-border));
+  border-radius: 14px;
+  background: var(--ladf-surface-1);
+  box-shadow: var(--ladf-shadow-low);
+}
+
+.ladf-selection-bar__title {
+  font-weight: 600;
+  color: var(--ladf-text-primary, var(--ladf-color-text));
+}
+
+.ladf-selection-bar__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ladf-selection-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: var(--ladf-accent-primary-soft);
+  color: var(--ladf-accent-primary);
+  font-size: 12px;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.ladf-selection-chip__label {
+  font-weight: 600;
+}
+
+.ladf-selection-chip__remove {
+  font-weight: 700;
+  color: var(--ladf-text-muted, var(--ladf-color-muted));
+}
+
+.ladf-selection-bar__clear {
+  margin-left: auto;
+  border: none;
+  background: none;
+  color: var(--ladf-accent-primary);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.ladf-selection-bar__clear:hover,
+.ladf-selection-chip:hover {
+  transform: translateY(-1px);
+}
+
+.ladf-drill {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 16px;
+  padding: 12px 16px;
+  border-radius: 14px;
+  border: 1px solid var(--ladf-border-subtle, var(--ladf-color-border));
+  background: var(--ladf-surface-1);
+  box-shadow: var(--ladf-shadow-low);
+}
+
+.ladf-drill__title {
+  font-weight: 600;
+  color: var(--ladf-text-primary, var(--ladf-color-text));
+}
+
+.ladf-drill__crumbs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ladf-drill__crumb {
+  border: 1px solid var(--ladf-border-subtle, var(--ladf-color-border));
+  background: var(--ladf-surface-2);
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 12px;
+  color: var(--ladf-text-secondary, var(--ladf-color-text));
+  cursor: pointer;
+  transition: border-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+.ladf-drill__crumb:hover {
+  border-color: var(--ladf-accent-primary);
+  color: var(--ladf-accent-primary);
+  transform: translateY(-1px);
+}
+
+.ladf-drill__reset {
+  margin-left: auto;
+  border: none;
+  background: none;
+  color: var(--ladf-accent-primary);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+@media (max-width: 720px) {
+  .ladf-selection-bar__clear {
+    margin-left: 0;
+  }
+
+  .ladf-drill__reset {
+    margin-left: 0;
+  }
+}
