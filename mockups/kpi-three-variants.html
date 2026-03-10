@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KPI Card Variants</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #1a1a1a;
+            color: #e0e0e0;
+            padding: 40px 24px;
+        }
+
+        h1 { font-size: 22px; color: #fff; margin-bottom: 6px; }
+        .page-desc { font-size: 12px; color: #666; margin-bottom: 48px; line-height: 1.6; }
+
+        .section { margin-bottom: 52px; }
+
+        .section-header { margin-bottom: 20px; }
+        .section-title {
+            font-size: 16px;
+            color: #fff;
+            border-left: 4px solid #4a9eff;
+            padding-left: 14px;
+            margin-bottom: 4px;
+        }
+        .section-desc {
+            font-size: 11px;
+            color: #555;
+            padding-left: 18px;
+        }
+
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 280px));
+            gap: 14px;
+        }
+
+        .kpi-card {
+            background: #242424;
+            border-radius: 10px;
+            border: 1px solid #2e2e2e;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.15s, box-shadow 0.15s;
+            min-width: 240px;
+            max-width: 280px;
+        }
+        .kpi-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.45);
+        }
+
+        .kpi-label {
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.9px;
+            color: #555;
+        }
+
+        .kpi-value {
+            font-weight: 800;
+            line-height: 1;
+            color: #fff;
+        }
+
+        .positive { color: #4ade80; }
+        .negative { color: #f87171; }
+        .neutral  { color: #888; }
+
+        svg.sparkline { width: 100%; display: block; }
+
+        /* ══════════════════════════════════
+           VARIANT 2 — Screenshot style
+           Light card feel on dark bg,
+           huge value dominates, tiny footer
+        ══════════════════════════════════ */
+        .v2 {
+            background: #1e1e1e;
+            border: 1px solid #2a2a2a;
+            padding: 24px 24px 20px;
+        }
+
+        .v2 .kpi-label {
+            margin-bottom: 10px;
+            color: #4a4a4a;
+        }
+
+        .v2 .kpi-value {
+            font-size: 50px;
+            font-weight: 700;
+            margin-bottom: 14px;
+            line-height: 1;
+        }
+
+        .v2 .footer-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .v2 .trend-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            font-size: 11px;
+            font-weight: 700;
+            background: rgba(74, 222, 128, 0.12);
+            color: #4ade80;
+            padding: 2px 7px;
+            border-radius: 4px;
+        }
+        .v2 .trend-chip.neg {
+            background: rgba(248, 113, 113, 0.12);
+            color: #f87171;
+        }
+        .v2 .trend-chip.neu {
+            background: rgba(136, 136, 136, 0.12);
+            color: #888;
+        }
+
+        .v2 .context-label {
+            font-size: 11px;
+            color: #444;
+        }
+
+        /* ══════════════════════════════════
+           VARIANT 3 — Hybrid
+           Large value (screenshot scale),
+           sparkline middle (Option B),
+           chip + label footer (screenshot)
+        ══════════════════════════════════ */
+        .v3 { padding: 18px 20px 0; }
+
+        .v3 .kpi-label { margin-bottom: 8px; }
+
+        .v3 .kpi-value {
+            font-size: 50px;
+            font-weight: 700;
+            margin-bottom: 14px;
+            line-height: 1;
+        }
+
+        .v3 svg.sparkline { height: 32px; }
+
+        .v3 .footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 0 14px;
+            border-top: 1px solid #2e2e2e;
+            margin-top: 10px;
+        }
+
+        .v3 .trend-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            font-size: 11px;
+            font-weight: 700;
+            background: rgba(74, 222, 128, 0.12);
+            color: #4ade80;
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+        .v3 .trend-chip.neg {
+            background: rgba(248, 113, 113, 0.12);
+            color: #f87171;
+        }
+        .v3 .trend-chip.neu {
+            background: rgba(136,136,136,0.12);
+            color: #888;
+        }
+
+        .v3 .trend-label { font-size: 11px; color: #555; }
+
+        /* accent variants */
+        .al { border-left: 3px solid #4a9eff; }
+        .al .kpi-value { color: #4a9eff; }
+        .al .v2 .trend-chip, .al .v3 .trend-chip { background: rgba(74,158,255,0.12); color: #4a9eff; }
+
+        .ag .kpi-value { color: #4ade80; }
+    </style>
+</head>
+<body>
+
+    <h1>KPI Layout Variants</h1>
+    <p class="page-desc">B (refined) · Screenshot-inspired · Hybrid blend — same four metrics across all three.</p>
+
+    <!-- ═══ VARIANT 2: Screenshot Inspired ═══ -->
+    <div class="section">
+        <div class="section-header">
+            <div class="section-title">Variant 2 — Screenshot Inspired</div>
+            <div class="section-desc">Oversized value dominates. No sparkline — the number IS the visual weight. Chip + plain text label below.</div>
+        </div>
+        <div class="kpi-grid">
+
+            <div class="kpi-card v2">
+                <div class="kpi-label">Total Revenue</div>
+                <div class="kpi-value">$148.2M</div>
+                <div class="footer-row">
+                    <div class="trend-chip">▲ +23.4%</div>
+                    <div class="context-label">vs Q4 FY2024</div>
+                </div>
+            </div>
+
+            <div class="kpi-card v2">
+                <div class="kpi-label">Gross Margin</div>
+                <div class="kpi-value" style="color:#4a9eff;">67.3%</div>
+                <div class="footer-row">
+                    <div class="trend-chip" style="background:rgba(74,158,255,0.12);color:#4a9eff;">▲ +4.1pts</div>
+                    <div class="context-label">Best in 5 years</div>
+                </div>
+            </div>
+
+            <div class="kpi-card v2">
+                <div class="kpi-label">Net New ARR</div>
+                <div class="kpi-value">$31.7M</div>
+                <div class="footer-row">
+                    <div class="trend-chip">▲ +18.9%</div>
+                    <div class="context-label">vs Q3 FY2025</div>
+                </div>
+            </div>
+
+            <div class="kpi-card v2">
+                <div class="kpi-label">Churn Rate</div>
+                <div class="kpi-value" style="color:#4ade80;">1.8%</div>
+                <div class="footer-row">
+                    <div class="trend-chip neg">▼ -0.6pts</div>
+                    <div class="context-label">Monthly net churn</div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ═══ VARIANT 3: Hybrid ═══ -->
+    <div class="section">
+        <div class="section-header">
+            <div class="section-title">Variant 3 — Hybrid Blend</div>
+            <div class="section-desc">Oversized KPI + Option B's sparkline middle + screenshot's chip footer. Best of both.</div>
+        </div>
+        <div class="kpi-grid">
+
+            <div class="kpi-card v3">
+                <div class="kpi-label">Total Revenue</div>
+                <div class="kpi-value">$148.2M</div>
+                <svg class="sparkline" viewBox="0 0 100 32" preserveAspectRatio="none">
+                    <path d="M0,26 L14,22 L28,24 L43,18 L57,20 L71,14 L86,9 L100,5" fill="none" stroke="#4ade80" stroke-width="1.8" stroke-linecap="round"/>
+                    <path d="M0,26 L14,22 L28,24 L43,18 L57,20 L71,14 L86,9 L100,5 L100,32 L0,32Z" fill="#4ade80" opacity="0.07"/>
+                </svg>
+                <div class="footer">
+                    <div class="trend-chip">▲ +23.4%</div>
+                    <div class="trend-label">vs Q4 FY2024</div>
+                </div>
+            </div>
+
+            <div class="kpi-card v3 al">
+                <div class="kpi-label">Gross Margin</div>
+                <div class="kpi-value">67.3%</div>
+                <svg class="sparkline" viewBox="0 0 100 32" preserveAspectRatio="none">
+                    <path d="M0,28 L20,24 L40,20 L60,16 L80,11 L100,7" fill="none" stroke="#4a9eff" stroke-width="1.8" stroke-linecap="round"/>
+                    <path d="M0,28 L20,24 L40,20 L60,16 L80,11 L100,7 L100,32 L0,32Z" fill="#4a9eff" opacity="0.07"/>
+                </svg>
+                <div class="footer">
+                    <div class="trend-chip" style="background:rgba(74,158,255,0.12);color:#4a9eff;">▲ +4.1pts</div>
+                    <div class="trend-label">Best in 5 years</div>
+                </div>
+            </div>
+
+            <div class="kpi-card v3">
+                <div class="kpi-label">Net New ARR</div>
+                <div class="kpi-value">$31.7M</div>
+                <svg class="sparkline" viewBox="0 0 100 32" preserveAspectRatio="none">
+                    <path d="M0,30 L16,26 L33,22 L50,18 L66,13 L83,8 L100,4" fill="none" stroke="#4ade80" stroke-width="1.8" stroke-linecap="round"/>
+                    <path d="M0,30 L16,26 L33,22 L50,18 L66,13 L83,8 L100,4 L100,32 L0,32Z" fill="#4ade80" opacity="0.07"/>
+                </svg>
+                <div class="footer">
+                    <div class="trend-chip">▲ +18.9%</div>
+                    <div class="trend-label">vs Q3 FY2025</div>
+                </div>
+            </div>
+
+            <div class="kpi-card v3">
+                <div class="kpi-label">Churn Rate</div>
+                <div class="kpi-value" style="color:#4ade80;">1.8%</div>
+                <svg class="sparkline" viewBox="0 0 100 32" preserveAspectRatio="none">
+                    <path d="M0,10 L14,12 L28,9 L43,13 L57,11 L71,9 L86,7 L100,6" fill="none" stroke="#4ade80" stroke-width="1.8" stroke-linecap="round"/>
+                    <path d="M0,10 L14,12 L28,9 L43,13 L57,11 L71,9 L86,7 L100,6 L100,32 L0,32Z" fill="#4ade80" opacity="0.07"/>
+                </svg>
+                <div class="footer">
+                    <div class="trend-chip neg">▼ -0.6pts</div>
+                    <div class="trend-label">Monthly net churn</div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</body>
+</html>
